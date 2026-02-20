@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	　　xmlns:th="http://www.thymeleaf.org"
+	  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	  >
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.0/css/bootstrap.min.css}"/>
+	<link rel="stylesheet" th:href="@{/css/common.css}" />
+	<title th:text="#{login.title}">ログイン画面</title>
+</head>
+<body class="g-login-page">
+	<div class="bs-component" id="global-header" layout:fragment="header">
+		<div　class="fixed-top">
+			<nav class="sticky-top navbar navbar-expand-lg navbar-dark bg-success p-0">
+		    	<div class="navbar-brand ms-3"　th:text="#{layout.title}">
+					Web版入退室管理システム
+			    </div>
+			</nav>
+		</div>
+	</div>
+
+	<div class="fs-3 ms-3 fw-bold">ログイン</div>
+	
+	<!--/* ログインフォーム */-->
+
+	<form th:action="@{/login/auth}" method="POST" id="loginForm">
+		
+		<div class="col-12 g-center">
+			<div>
+				<label class="fw-bold m-2" for="username"　th:text="#{login.userName}">ユーザー名</label>
+				<input class="col-2" type="text" name="username" maxlength="20"　pattern="[A-Za-z0-9]*">
+			</div>
+			
+			<div>
+				<label class="fw-bold m-2" for="password"　th:text="#{login.password}">パスワード</label>
+				<input class="col-2" type="password" name="password" autocomplete="off" maxlength="20" pattern="[A-Za-z0-9]*">
+			</div> 	
+		</div>
+		
+		<div class="g-center m-3">
+			<button type="submit" class="btn btn-success" th:text="#{login.login}" th:tabindex="3">ログイン</button>
+		</div>
+		
+		<!--/* ログインエラー用 */-->
+		<div class="g-center g-error-message g-mb-30" th:if="${isError}">
+			<div class="g-mb-24">
+				<p class="g-fw-bold g-mb-4" th:utext="${invalidinfo}">ログイン認証に失敗しました。ID、パスワードが一致しません。</p>
+			</div>
+		</div>
+		 <!--/* /ログインエラー用 */-->
+
+		  
+	</form>
+
+	<!--/* /ログインフォーム */-->
+</body>
+</html>

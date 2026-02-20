@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	　　xmlns:th="http://www.thymeleaf.org"
+	  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	  layout:decorate="~{layout/layout}">
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" th:href="@{/css/common.css}" />
+	<title th:text="#{gateRegistration.title}">ゲート登録・編集</title>
+</head>
+<body>
+	<div layout:fragment="content">
+		<div class="fs-3 ms-3 fw-bold" th:text="#{gateRegistration.title}">ゲート登録・編集</div>	
+		<main class="p-3">	
+			<!-- タブのコンテナ -->
+			<ul class="nav nav-tabs">
+				<li class="nav-item">
+					<button class="nav-link active" type="button" id="gateInfoTab" data-bs-toggle="tab" data-bs-target="#gateInfo" th:text="#{gateRegistration.title}">
+						ゲート登録・編集
+					</button>
+				</li>
+				<li class="nav-item">
+					<button class="nav-link" type="button" id="antipassTab" data-bs-toggle="tab" data-bs-target="#antipassSend" th:text="#{gateRegistration.title.antipass}">
+						アンチパス送信
+					</button>				
+				</li>
+			</ul>	
+			<!-- コンテンツのコンテナ -->
+			<div class="tab-content">
+				<!--タブ1 ゲート登録・編集-->
+				<div id="gateInfo" class="tab-pane active" style="width:1260px;">
+					<form id="GateRegistrationForm" name="GateRegistrationForm" method="post">		
+						<div class="container"> 
+							<div class="row">							
+							    <div class="col-6">
+									<div class="p-3">
+										<div class="border border-1 border-secondary" style="height:300px;">
+											<p th:text="#{gateRegistration.gateInfo}">
+											◆ゲート基本情報
+											</p>
+											<div class="m-1">
+												<label class="col-2" for="gateno" th:text="#{gateRegistration.gateno}">ゲート番号：</label>
+												<input class="js-inputtype-integer col-1" type="text" id="gateno" name="gateno" maxlength="4" inputmode="numeric" th:value="${gateRegistrationForm.gateno}">
+											</div>
+											<div class="m-1">
+												<label class="col-2" for="hosttype" th:text="#{gateRegistration.hosttype}">装置タイプ：</label>
+												<select class="col-5" id="hosttype" name="hosttype" style="height:30px;">
+													<option value=""> </option>
+													<option th:each="devicetype, stat : ${gateRegistrationForm.mstDevicetypeList}" th:value="${devicetype.devicetype_no}" th:text="${devicetype.devicetype_name}"></option>
+												</select>
+											</div>
+											<div class="m-1">
+												<label class="col-2" for="hostno" th:text="#{gateRegistration.hostno}">ホスト番号：</label>
+												<input class="js-inputtype-integer col-1" type="text" id="hostno" name="hostno" maxlength="3"　inputmode="numeric" th:value="${gateRegistrationForm.hostno}">
+											</div>
+											<div class="m-1">
+												<label class="col-2" for="addressno" th:text="#{gateRegistration.addressno}">アドレス番号：</label>
+												<input class="js-inputtype-integer col-1" type="text" id="addressno" name="addressno" maxlength="2" inputmode="numeric" th:value="${gateRegistrationForm.addressno}">
+											</div>
+											<div class="m-1">
+												<label class="col-2" for="rgateno" th:text="#{gateRegistration.rgateno}">装置内線番号：</label>
+												<input class="js-inputtype-integer col-1" type="text" id="rgateno" name="rgateno" maxlength="2"　inputmode="numeric" th:value="${gateRegistrationForm.rgateno}">
+											</div>
+											<div class="m-1">
+												<label class="col-2" for="name" th:text="#{gateRegistration.name}">ゲート名称:</label>
+												<input class="col-9" type="text" id="name" name="name" maxlength="20"　th:value="${gateRegistrationForm.name}">
+											</div>
+											<div class="m-1">
+												<label class="col-2" for="zaino" th:text="#{gateRegistration.zaino}">在室番号:</label>
+												<input class="js-inputtype-integer col-1" type="text" id="zaino" name="zaino" maxlength="4" inputmode="numeric" th:value="${gateRegistrationForm.zaino}">
+											</div>
+										</div>									
+								 	 </div>							    
+							    </div>
+							    <div class="col-6">
+									<div class="p-3">
+										<div class="border border-1 border-secondary" style="height:300px;">
+											<p th:text="#{gateRegistration.gatetype}">
+											◆ゲートタイプ
+											</p>										
+
+											<div class="container"> 
+												<div class="row">							
+												    <div class="col-6">
+														<div th:each="gatetype, stat : ${gateRegistrationForm.mstGatetypeList}" th:if="${stat.index} < ${gateRegistrationForm.mstGatetypeList.size() / 2}">
+															<div class="col-7 m-1" th:if="${gatetype.gatetype_no == 1}" >
+																<input type="checkbox" id="gatetype_0" name="gatetype_0" value="1" th:attr="disabled=${gatetype.can_edit == 1 ? 'disabled' : null}"/>
+																<label for="gatetype_0" th:text="${gatetype.gatetype_name}">0=接続状態</label>
+															</div>													
+															<div class="col-7 m-1" th:if="${gatetype.gatetype_no  == 2}">
+																<input type="checkbox" id="gatetype_1" name="gatetype_1" value="1" th:attr="disabled=${gatetype.can_edit == 1 ? 'disabled' : null}"/>
+																<label for="gatetype_1" th:text="${gatetype.gatetype_name}">1=</label>
+															</div>
+															<div class="col-7 m-1" th:if="${gatetype.gatetype_no == 3}" >
+																<input type="checkbox" id="gatetype_2" name="gatetype_2" value="1" th:attr="disabled=${gatetype.can_edit == 1 ? 'disabled' : null}"/>
+																<label for="gatetype_2" th:text="${gatetype.gatetype_name}">2=</label>
+															</div>													
+															<div class="col-7 m-1" th:if="${gatetype.gatetype_no == 4}" >
+																<input type="checkbox" id="gatetype_3" name="gatetype_3" value="1" th:attr="disabled=${gatetype.can_edit == 1 ? 'disabled' : null}"/>
+																<label for="gatetype_3" th:text="${gatetype.gatetype_name}">3=</label>
+															</div>													
+															<div class="col-7 m-1" th:if="${gatetype.gatetype_no == 5}" >
+																<input type="checkbox" id="gatetype_4" name="gatetype_4" value="1" th:attr="disabled=${gatetype.can_edit == 1 ? 'disabled' : null}"/>
+																<label for="gatetype_4" th:text="${gatetype.gatetype_name}">4=</label>
+															</div>	
+															<div class="col-7 m-1" th:if="${gatetype.gatetype_no == 6}" >
+																<input type="checkbox" id="gatetype_5" name="gatetype_5" value="1" th:attr="disabled=${gatetype.can_edit == 1 ? 'disabled' : null}"/>
+																<label for="gatetype_5" th:text="${gatetype.gatetype_name}">5=</label>
+															</div>
+															<div class="col-7 m-1" th:if="${gatetype.gatetype_no == 7}" >
+																<input type="checkbox" id="gatetype_6" name="gatetype_6" value="1" th:attr="disabled=${gatetype.can_edit == 1 ? 'disabled' : null}"/>
+																<label for="gatetype_6" th:text="${gatetype.gatetype_name}">6=</label>
+															</div>
+															<div class="col-7 m-1" th:if="${gatetype.gatetype_no == 8}" >
+																<input type="checkbox" id="gatetype_7" name="gatetype_7" value="1" th:attr="disabled=${gatetype.can_edit == 1 ? 'disabled' : null}"/>
+																<label for="gatetype_7" th:text="${gatetype.gatetype_name}">7=</label>
+															</div>																										
+														</div>
+													</div>	
+													<div class="col-6">
+														<div th:each="gatetype, stat : ${gateRegistrationForm.mstGatetypeList}" th:if="${stat.index} >= ${gateRegistrationForm.mstGatetypeList.size() / 2}">
+															<div class="col-7 m-1" th:if="${gatetype.gatetype_no == 9}" >
+																<input type="checkbox" id="gatetype_8" name="gatetype_8" value="1" th:attr="disabled=${gatetype.can_edit == 1 ? 'disabled' : null}"/>
+																<label for="gatetype_8" th:text="${gatetype.gatetype_name}">8=</label>
+															</div>													
+															<div class="col-7 m-1" th:if="${gatetype.gatetype_no == 10}" >
+																<input type="checkbox" id="gatetype_9" name="gatetype_9" value="1" th:attr="disabled=${gatetype.can_edit == 1 ? 'disabled' : null}"/>
+																<label for="gatetype_9" th:text="${gatetype.gatetype_name}">9=</label>
+															</div>
+															<div class="col-7 m-1" th:if="${gatetype.gatetype_no == 11}" >
+																<input type="checkbox" id="gatetype_A" name="gatetype_A" value="1" th:attr="disabled=${gatetype.can_edit == 1 ? 'disabled' : null}"/>
+																<label for="gatetype_A" th:text="${gatetype.gatetype_name}">A=</label>
+															</div>													
+															<div class="col-7 m-1" th:if="${gatetype.gatetype_no == 12}" >
+																<input type="checkbox" id="gatetype_B" name="gatetype_B" value="1" th:attr="disabled=${gatetype.can_edit == 1 ? 'disabled' : null}"/>
+																<label for="gatetype_B" th:text="${gatetype.gatetype_name}">B=</label>
+															</div>													
+															<div class="col-7 m-1" th:if="${gatetype.gatetype_no == 13}" >
+																<input type="checkbox" id="gatetype_C" name="gatetype_C" value="1" th:attr="disabled=${gatetype.can_edit == 1 ? 'disabled' : null}"/>
+																<label for="gatetype_C" th:text="${gatetype.gatetype_name}">C=</label>
+															</div>	
+															<div class="col-7 m-1" th:if="${gatetype.gatetype_no == 14}" >
+																<input type="checkbox" id="gatetype_D" name="gatetype_D" value="1" th:attr="disabled=${gatetype.can_edit == 1 ? 'disabled' : null}"/>
+																<label for="gatetype_D" th:text="${gatetype.gatetype_name}">D=</label>
+															</div>
+															<div class="col-7 m-1" th:if="${gatetype.gatetype_no == 15}" >
+																<input type="checkbox" id="gatetype_E" name="gatetype_E" value="1" th:attr="disabled=${gatetype.can_edit == 1 ? 'disabled' : null}"/>
+																<label for="gatetype_E" th:text="${gatetype.gatetype_name}">E=</label>
+															</div>
+															<div class="col-7 m-1" th:if="${gatetype.gatetype_no == 16}" >
+																<input type="checkbox" id="gatetype_F" name="gatetype_F" value="1" th:attr="disabled=${gatetype.can_edit == 1 ? 'disabled' : null}"/>
+																<label for="gatetype_F" th:text="${gatetype.gatetype_name}">F=</label>
+															</div>																										
+														</div>	
+													</div>	
+												</div>
+											</div>													
+							  			</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!--装置タイプの選択内容で最大接続回数を設定する-->
+						<div name="setcntList" id="setcntList" style="display: none;">
+							<div th:each="devicetype, stat : ${gateRegistrationForm.mstDevicetypeList}" th:value="${devicetype.devicetype_no}" th:text="${devicetype.devicetype_setcnt}"></div>
+						</div>
+						<input type="hidden" name="setcnt" id="setcnt">
+						
+						<!--データ出力とダウンロードの判別用-->
+						<input type="hidden" name="downloadType" id="downloadType">		
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>		
+					</form>				
+						
+					<div class="ms-4">
+						<button type="submit" class="btn btn-success" th:text="#{gateRegistration.regist}" id="regist">登録</button>
+						<button type="submit" class="btn btn-success" th:text="#{gateRegistration.clear}" id="clear">クリア</button>
+						<button type="submit" class="btn btn-success ms-2" th:text="#{gateRegistration.delete}" id="delete">削除</button>
+					</div>		
+	
+					<div class="m-4">
+						<button type="submit" class="btn btn-success" th:text="#{gateRegistration.download}" id="download">ダウンロード</button>
+						<button type="submit" class="btn btn-success" th:text="#{gateRegistration.dataoutput}" id="outputData">データ出力</button>
+						<button type="submit" class="btn btn-success" th:text="#{gateRegistration.upload}" id="upload">アップロード</button>
+						<button type="submit" class="btn btn-success" th:text="#{gateRegistration.print}" id="print">印刷</button>
+					</div>	
+					<div class="scroll" style="width:1260px;height:260px;">
+						<table class="table ms-4" id="gateDataListTbl">
+							<thead class="sticky-top" >
+							    <tr>
+							        <th th:text="#{gateRegistration.gatelist.gateno}">ゲート番号</th>
+							        <th th:text="#{gateRegistration.gatelist.hosttype}">装置タイプ</th>
+							        <th th:text="#{gateRegistration.gatelist.hostno}">ホスト番号</th>
+									<th th:text="#{gateRegistration.gatelist.addressno}">アドレス番号</th>
+									<th th:text="#{gateRegistration.gatelist.rgateno}">回線番号</th>
+									<th th:text="#{gateRegistration.gatelist.name}">ゲート名称</th>
+									<th th:text="#{gateRegistration.gatelist.zaino}">在室番号</th>
+									<th th:text="#{gateRegistration.gatelist.gatetype}">ゲートタイプ</th>
+							    </tr>
+							</thead>			
+							<tbody>
+								<tr th:if="${#lists.size(gateRegistrationForm.mstGateList) > 0}" th:each="gate : ${gateRegistrationForm.mstGateList}">
+									<td class="selectItem" th:text="${gate.gateno}"></td>
+									<td class="selectItem" th:text="${gate.devicetype_name}"></td>
+									<td class="selectItem" th:text="${gate.hostno}"></td>
+									<td class="selectItem" th:text="${gate.addressno}"></td>
+									<td class="selectItem" th:text="${gate.rgateno}"></td>
+									<td class="selectItem" th:text="${gate.name}"></td>
+									<td class="selectItem" th:text="${gate.zaino}"></td>
+									<td class="selectItem" th:text="${#strings.toString(gate.gatetype_0) 
+										+ #strings.toString(gate.gatetype_1) 
+										+ #strings.toString(gate.gatetype_2) 
+											+ #strings.toString(gate.gatetype_3) 
+										+ ' '
+										+ #strings.toString(gate.gatetype_4) 
+										+ #strings.toString(gate.gatetype_5)
+										+ #strings.toString(gate.gatetype_6)
+										+ #strings.toString(gate.gatetype_7)
+										+ ' '
+										+ #strings.toString(gate.gatetype_8)
+										+ #strings.toString(gate.gatetype_9)
+										+ #strings.toString(gate.gatetype_A)
+										+ #strings.toString(gate.gatetype_B)
+										+ ' '
+										+ #strings.toString(gate.gatetype_C)
+										+ #strings.toString(gate.gatetype_D)
+										+ #strings.toString(gate.gatetype_E)
+										+ #strings.toString(gate.gatetype_F)
+										}">
+									</td>
+									
+									<input type="hidden" th:value="${gate.insendgate}">
+									<input type="hidden" th:value="${gate.outsendgate}">
+									<input type="hidden" th:value="${gate.hosttype}">
+								</tr>	
+							</tbody>	
+						</table>	
+					</div>		
+					<!--ファイルアップロード用フォーム-->
+					<form id="uploadForm" enctype="multipart/form-data" method="post">
+						<input type="file" id="uploadFile" name="uploadFile" accept=".csv" style="display: none;">
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+					</form>					
+				</div>
+				
+				
+				<!--タブ2 アンチパス送信-->
+				<div id="antipassSend" class="tab-pane">	
+					<form id="antipassFrom" name="antipassFrom" method="post">
+						<div class="border border-1 border-secondary" style="width:1200px;height:640px;">
+							<div class="p-2">
+								<label for="antipassGateno" th:text="#{gateRegistration.gateno}">ゲート番号：</label>
+								<input type="text" id="antipassGateno" name="antipassGateno" class="col-1 m-2" disabled>
+								<label for="antipassName" th:text="#{gateRegistration.name}">ゲート名称:</label>
+								<input type="text" id="antipassName" name="antipassName" class="col-4" disabled>
+							</div>			
+			
+							<div class="container ms-2" style="width:1200px;"> 
+								<div class="row">							
+								    <div class="col-5 ms-1">
+										<p th:text="#{gateRegistration.sendgate.in}">
+											◆入室時の送信ゲート
+										</p>
+										<div class="ms-1 border border-1 border-secondary">	
+											
+											
+											
+											
+											<div th:each="gate, stat : ${gateRegistrationForm.mstGateList}">
+
+												
+													<label class="col-9" th:for="insendgate + ${stat.count-1}" th:text="${gate.gateno} + ' ' + ${gate.name}">0001 Gate1</label>
+													<select th:id="insendgate + ${stat.count-1}" th:name="insendgate + ${stat.count-1}">
+														<option value=""> </option>
+														<option value="0" th:text="#{gateRegistration.sendgate.op0}">不在</option>
+														<option value="1" th:text="#{gateRegistration.sendgate.op1}">在室</option>
+														<option value="2" th:text="#{gateRegistration.sendgate.op2}">入退室不可</option>
+														<option value="3" th:text="#{gateRegistration.sendgate.op3}">変化無し</option>
+													</select>
+												
+																				
+											</div>
+											
+											
+										</div>												
+									</div>
+									<div class="col-5 ms-1"> 
+										<p th:text="#{gateRegistration.sendgate.out}">
+											◆退室時の送信ゲート
+										</p>
+										<div class="ms-1 border border-1 border-secondary">
+											<div th:each="gate, stat : ${gateRegistrationForm.mstGateList}">
+												<label class="col-9" th:for="outsendgate + ${stat.count-1}" th:text="${gate.gateno} + ' ' + ${gate.name}">0001 Gate1</label>
+												<select th:id="outsendgate + ${stat.count-1}" th:name="outsendgate + ${stat.count-1}">
+													<option value=""> </option>
+													<option value="0" th:text="#{gateRegistration.sendgate.op0}">不在</option>
+													<option value="1" th:text="#{gateRegistration.sendgate.op1}">在室</option>
+													<option value="2" th:text="#{gateRegistration.sendgate.op2}">入退室不可</option>
+													<option value="3" th:text="#{gateRegistration.sendgate.op3}">変化無し</option>
+												</select>						
+											</div>
+										</div>
+									</div>							
+								</div>	
+							</div>	
+
+							<input type="hidden" id="insendgate" name="insendgate">
+							<input type="hidden" id="outsendgate" name="outsendgate">
+						</div>
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+					</form>
+					
+					<div class="p-1">
+						<button type="submit" class="btn btn-success antipassRegist" th:text="#{gateRegistration.regist}">登録</button>
+						<button type="submit" class="btn btn-success antipassclear" th:text="#{gateRegistration.clear}">クリア</button>
+					</div>	
+					
+				</div>				
+			</div>
+		</main>
+				
+		
+		<!--アップロード結果表示用モーダル-->
+		<div id="uploadDialog" class="modal" style="display:none;">
+			<div class="modal-dialog">
+				<div class="modal-content">			
+					<div class="modal-header">
+					  <div class="modal-title uploadOKMsg" id="labelComfirm" th:text="#{gateRegistration.upload.modal.header.confirm}">確認</div>
+					  <div class="modal-title uploadNG" id="labelError" th:text="#{gateRegistration.upload.modal.header.error}">エラー</div>
+					</div>
+					
+					<div class="modal-body">
+						<div class="uploadNG">
+							<div th:text="#{gateRegistration.upload.modal.errorMsg1}">登録内容に不備があるため、一部のデータはアップロードできませんでした。</div>
+							<div th:text="#{gateRegistration.upload.modal.errorMsg2}">詳細は以下の「エラー内容の詳細表示」からご確認ください。</div>
+						</div>
+						<div class="uploadOKMsg">
+							<p th:text="#{gateRegistration.upload.modal.comfirmMsg}">アップロードが正常に終了しました。</p>
+						</div>
+						<div class="m-3">
+							<div class="container"> 
+								<div class="row">							
+								    <div class="col-3">
+										<div th:text="#{gateRegistration.upload.modal.uploadCount}">データ件数:</div>
+									</div>
+									<div class="col-3">
+										<div class="updoadCnt" align="right">0</div>
+									</div>
+									<div class="col-3">
+										<div th:text="#{gateRegistration.upload.modal.count}">件</div>
+									</div>
+								</div>
+								<div class="row">							
+								    <div class="col-3">
+										<div th:text="#{gateRegistration.upload.modal.updateCount}">更新件数:</div>
+									</div>
+									<div class="col-3">
+										<div class="updateCnt" align="right">0</div>
+									</div>
+									<div class="col-3">
+										<div th:text="#{gateRegistration.upload.modal.count}">件</div>
+									</div>
+								</div>
+								<div class="row">							
+								    <div class="col-3">
+										<div th:text="#{gateRegistration.upload.modal.errorCount}">異常件数:</div>
+									</div>
+									<div class="col-3">
+										<div class="errorCnt" align="right">0</div>
+									</div>
+									<div class="col-3">
+										<div th:text="#{gateRegistration.upload.modal.count}">件</div>
+									</div>
+								</div>
+							</div>					
+						</div>
+						<div id="uploadNGDetail" class="d-flex justify-content-center align-items-center">
+							<div class="btn btn-link uploadNG" id="errorLink" th:text="#{gateRegistration.upload.modal.errorDetail}">エラー内容の詳細表示</div>
+						</div>
+					</div>
+					<div class="modal-footer d-flex justify-content-center align-items-center">	
+						<button id="uploadOK" class="btn btn-secondary" th:text="#{gateRegistration.upload.modal.button.ok}">OK</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		
+		<!--アップロード結果エラー内容表示用モーダル-->
+		<div id="uploadErrorModal" class="modal" style="display:none;">
+			<div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+				<div class="modal-content">			
+					<div class="modal-header bg-success text-white" style="height:30px;">
+						<div class="modal-title d-flex justify-content-center m-2">
+							<div th:text="#{gateRegistration.upload.modal.errorDetail.header}">Web版入退室管理システム</div>
+						</div>						
+					</div>
+					<div class="modal-body">
+						<div class="container">
+							<div class="row">
+								<div class="col-3 flex m-0 d-flex align-items-end">
+									<div class="fw-bold" th:text="#{gateRegistration.upload.modal.errorDetail.screen}">ゲートメンテナンス</div>
+								</div>
+								<div class="col-6 d-flex justify-content-center m-2">
+									<div class="fs-3 fw-bold ms-5" th:text="#{gateRegistration.upload.modal.errorDetail.title}">アップロード 異常データリスト</div>
+								</div>
+								<div class="col-3">	
+								</div>
+							</div>
+						</div>							
+						<div class="flex p-2 fw-bold">
+							<div th:text="#{gateRegistration.upload.modal.uploadCount}">データ件数:</div><div class="errorCnt">0</div><div th:text="#{gateRegistration.upload.modal.count}">件</div>
+						</div>
+						<div class="flex ms-2">
+							<div class="col-1" th:text="#{gateRegistration.upload.modal.errorDetail.item.lineNo}">行番号</div>
+							<div class="col-11" th:text="#{gateRegistration.upload.modal.errorDetail.item.error}">エラー内容</div>
+						</div>
+						<hr class="m-0">
+						<div class="flex ms-2" id="errorDataTbl" style="height:480px;">
+							<div class="col-1">NO</div>
+							<div class="col-11">ERROR</div>
+						</div>
+					</div>	
+					<div class="modal-footer d-flex justify-content-center align-items-center">		
+						<button id="uploadErrorOK" class="btn btn-secondary" th:text="#{gateRegistration.upload.modal.button.ok}">OK</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<!--印刷用モーダル-->
+		<div id="printModal" class="modal" style="display:none;">
+			<div class="modal-dialog modal-dialog-centered modal-fullscreen modal-dialog-scrollable">
+				<div class="modal-content">		
+					<div class="modal-header bg-success text-white" style="height:30px;">
+						<div class="modal-title d-flex justify-content-center m-2">
+							<div th:text="#{gateRegistration.upload.modal.errorDetail.header}">Web版入退室管理システム</div>
+						</div>
+						<button type="button" class="btn-close m-2" data-bs-dismiss="modal" aria-label="Close"></button>						
+					</div>
+					<div class="modal-body">
+						<div class="container-fluid">
+							<div class="row fw-bold">
+								<div class="col flex m-0 d-flex align-items-end justify-content-start">
+									<div></div>
+								</div>
+								<div class="col d-flex justify-content-center m-2">
+									<div class="fs-3" th:text="#{gateRegistration.print.modal.title}">ゲートメンテナンス</div>
+								</div>
+								<div class="col flex m-0 d-flex align-items-end justify-content-end">
+									<div th:text="#{gateRegistration.print.modal.printDate}">印刷日：</div><div class="printDate"></div>
+								</div>		
+							</div>
+						</div>	
+						
+						<div class="flex fw-bold m-4">
+							<div th:text="#{gateRegistration.print.modal.uploadCount}">データ件数:</div><div class="listCnt">0</div><div th:text="#{gateRegistration.print.modal.count}">件</div>
+						</div>
+						
+						<table class="table m-2">
+							<thead class="sticky-top">
+							    <tr>
+							        <th th:text="#{gateRegistration.gatelist.gateno}">ゲート番号</th>
+							        <th th:text="#{gateRegistration.gatelist.hosttype}">装置タイプ</th>
+							        <th th:text="#{gateRegistration.gatelist.hostno}">ホスト番号</th>
+									<th th:text="#{gateRegistration.gatelist.addressno}">アドレス番号</th>
+									<th th:text="#{gateRegistration.gatelist.rgateno}">回線番号</th>
+									<th th:text="#{gateRegistration.gatelist.name}">ゲート名称</th>
+									<th th:text="#{gateRegistration.gatelist.zaino}">在室番号</th>
+									<th th:text="#{gateRegistration.gatelist.gatetype}">ゲートタイプ</th>
+							    </tr>
+							</thead>
+							<tbody id="printDataTbl">
+								<!--create Data-->
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>			
+		</div>
+					
+		
+	<!--Javascriptで表示するためのメッセージ-->
+		<input type="hidden" name="message" id="message" th:value="${gateRegistrationForm.message}">
+		<input type="hidden" name="antipassTabMessage" id="antipassTabMessage" th:value="#{gateRegistration.error.antipassTab}">
+		<input type="hidden" name="gateDataErrMessage" id="gateDataErrMessage" th:value="#{gateRegistration.error.gateData}">
+		<input type="hidden" name="gateDataErrEmptyGateno" id="gateDataErrEmptyGateno" th:value="#{gateRegistration.error.empty.gateno}">
+		<input type="hidden" name="gateDataErrInputGateno" id="gateDataErrInputGateno" th:value="#{gateRegistration.error.input.gateno}">
+		<input type="hidden" name="gateDataErrRangeGateno" id="gateDataErrRangeGateno" th:value="#{gateRegistration.error.range.gateno}">
+		<input type="hidden" name="gateDataErrEmptyHostno" id="gateDataErrEmptyHostno" th:value="#{gateRegistration.error.empty.hostno}">
+		<input type="hidden" name="gateDataErrInputHostno" id="gateDataErrInputHostno" th:value="#{gateRegistration.error.input.hostno}">
+		<input type="hidden" name="gateDataErrRangeHostno" id="gateDataErrRangeHostno" th:value="#{gateRegistration.error.range.hostno}">	
+		<input type="hidden" name="gateDataErrEmptyAddressno" id="gateDataErrEmptyAddressno" th:value="#{gateRegistration.error.empty.addressno}">
+		<input type="hidden" name="gateDataErrInputAddressno" id="gateDataErrInputAddressno" th:value="#{gateRegistration.error.input.addressno}">
+		<input type="hidden" name="gateDataErrInputNotzeroAddressno" id="gateDataErrInputNotzeroAddressno" th:value="#{gateRegistration.error.input.notzero.addressno}">
+		<input type="hidden" name="gateDataErrEmptyRgateno" id="gateDataErrEmptyRgateno" th:value="#{gateRegistration.error.empty.rgateno}">
+		<input type="hidden" name="gateDataErrInputRgateno" id="gateDataErrInputRgateno" th:value="#{gateRegistration.error.input.rgateno}">
+		<input type="hidden" name="gateDataErrInputNotzeroRgateno" id="gateDataErrInputNotzeroRgateno" th:value="#{gateRegistration.error.input.notzero.rgateno}">
+		<input type="hidden" name="gateDataErrInputGateName" id="gateDataErrInputGateName" th:value="#{gateRegistration.error.input.gateName}">
+		<input type="hidden" name="gateDataErrInputZaino" id="gateDataErrInputZaino" th:value="#{gateRegistration.error.input.zaino}">
+		<input type="hidden" name="gateDataErrInputNotzeroZaino" id="gateDataErrInputNotzeroZaino" th:value="#{gateRegistration.error.input.notzero.zaino}">
+		<input type="hidden" name="gateDataRegistConfirm" id="gateDataRegistConfirm" th:value="#{gateRegistration.regist.confirm}">
+		<input type="hidden" name="gateDataDeleteCaution" id="gateDataDeleteCaution" th:value="#{gateRegistration.delete.caution}">
+		<input type="hidden" name="gateDataDeleteConfirm" id="gateDataDeleteConfirm" th:value="#{gateRegistration.delete.confirm}">
+		<input type="hidden" name="gateDataDownloadNoData" id="gateDataDownloadNoData" th:value="#{gateRegistration.download.noData}">
+		<input type="hidden" name="gateDataOutputDataNoData" id="gateDataOutputDataNoData" th:value="#{gateRegistration.outputData.noData}">
+		<input type="hidden" name="gateDataPrintNoData" id="gateDataPrintNoData" th:value="#{gateRegistration.print.noData}">
+		<input type="hidden" name="gateDataPrintConfirm" id="gateDataPrintConfirm" th:value="#{gateRegistration.print.confirm}">
+		<input type="hidden" name="gateDataUploadCaution" id="gateDataUploadCaution" th:value="#{gateRegistration.upload.caution}">
+			
+		<script type="text/javascript" th:src="@{/js/gate/gate.js}"></script>
+	</div>
+</body>
+</html>

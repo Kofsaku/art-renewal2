@@ -1,0 +1,638 @@
+/* 統一テーブル・フィルターコンポーネント */
+
+/* ========================
+   基本テーブルスタイル
+   ======================== */
+
+.unified-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #d0d0d0;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--box-shadow);
+    background: white;
+    margin-bottom: 1rem;
+}
+
+.unified-table th {
+    background: linear-gradient(180deg, #f7f7f7 0%, #e7e7e7 100%);
+    border-right: 1px solid #d0d0d0;
+    border-bottom: 1px solid #d0d0d0;
+    color: #333;
+    font-weight: 600;
+    padding: 12px 15px;
+    text-align: center;
+    position: relative;
+    cursor: move;
+    user-select: none;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.unified-table th:hover {
+    background: linear-gradient(180deg, #e7e7e7 0%, #d0d0d0 100%);
+    transform: translateY(-1px);
+}
+
+.unified-table td {
+    border-right: 1px solid #e7e7e7;
+    border-bottom: 1px solid #e7e7e7;
+    padding: 10px 15px;
+    background: white;
+    font-size: 0.85rem;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.unified-table tbody tr:nth-child(even) td {
+    background: #f9f9f9;
+}
+
+.unified-table tbody tr:hover td {
+    background: #e7f3ff;
+    cursor: pointer;
+}
+
+/* ========================
+   ステータス行スタイル
+   ======================== */
+
+.unified-table .row-normal {
+    background-color: #ffffff !important;
+}
+
+.unified-table .row-normal td {
+    background-color: #ffffff !important;
+}
+
+.unified-table .row-warning {
+    background-color: #fff3cd !important;
+}
+
+.unified-table .row-warning td {
+    background-color: #fff3cd !important;
+}
+
+.unified-table .row-error {
+    background-color: #f8d7da !important;
+}
+
+.unified-table .row-error td {
+    background-color: #f8d7da !important;
+}
+
+.unified-table .row-info {
+    background-color: #d1ecf1 !important;
+}
+
+.unified-table .row-info td {
+    background-color: #d1ecf1 !important;
+}
+
+/* ========================
+   ステータスインジケーター
+   ======================== */
+
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.status-normal { background-color: #28a745; }
+.status-warning { background-color: #ffc107; }
+.status-error { background-color: #dc3545; }
+.status-info { background-color: #17a2b8; }
+.status-offline { background-color: #6c757d; }
+
+/* ========================
+   Excel風フィルター
+   ======================== */
+
+.unified-table th {
+    padding-right: 25px;
+}
+
+.excel-filter-trigger {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.1);
+    border-radius: 2px;
+    transition: all 0.2s ease;
+}
+
+.excel-filter-trigger:hover {
+    background: rgba(0,0,0,0.3);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.excel-filter-trigger::after {
+    content: '▼';
+    font-size: 8px;
+    color: #333;
+    font-weight: bold;
+}
+
+.excel-filter-trigger.active::after {
+    content: '▲';
+    color: #1976d2;
+}
+
+.unified-table th.filtered {
+    background: linear-gradient(135deg, #1976d2, #1565c0);
+    color: white;
+}
+
+/* ========================
+   Excel風フィルターメニュー
+   ======================== */
+
+.excel-filter-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 2px solid #e7e7e7;
+    border-radius: 0;
+    padding: 0;
+    z-index: 1000;
+    min-width: 280px;
+    max-width: 350px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 画面右端でのメニュー位置調整 */
+.excel-filter-menu.position-left {
+    right: auto;
+    left: -280px !important;
+}
+
+.excel-filter-menu.position-center {
+    right: auto;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+}
+
+/* 右端カラムでの強制左配置 - より強力な修正 */
+.unified-table th:last-child .excel-filter-menu,
+.unified-table th:nth-last-child(1) .excel-filter-menu,
+.unified-table th:nth-last-child(2) .excel-filter-menu {
+    right: auto !important;
+    left: -320px !important;
+}
+
+/* position-leftクラスが適用された場合の確実な位置指定 */
+.excel-filter-menu.position-left {
+    right: auto !important;
+    left: -320px !important;
+}
+
+/* インラインスタイルでも確実に */
+.excel-filter-menu[style*="left: -320px"] {
+    right: auto !important;
+    left: -320px !important;
+}
+
+/* さらに安全な措置として、画面幅に応じた調整 */
+@media (max-width: 1400px) {
+    .unified-table th:last-child .excel-filter-menu,
+    .unified-table th:nth-last-child(1) .excel-filter-menu,
+    .unified-table th:nth-last-child(2) .excel-filter-menu,
+    .excel-filter-menu.position-left {
+        left: -340px !important;
+    }
+}
+
+@media (max-width: 1200px) {
+    .unified-table th:last-child .excel-filter-menu,
+    .unified-table th:nth-last-child(1) .excel-filter-menu,
+    .unified-table th:nth-last-child(2) .excel-filter-menu,
+    .excel-filter-menu.position-left {
+        left: -280px !important;
+    }
+}
+
+.excel-filter-menu.show {
+    display: block;
+}
+
+/* 最終手段 - 利用終了日列の強制左配置 */
+.unified-table th:last-child .excel-filter-menu.show {
+    right: auto !important;
+    left: -320px !important;
+    transform: none !important;
+}
+
+/* テーブル右端に合わせた配置 */
+.excel-filter-menu.position-table-aligned {
+    position: absolute !important;
+    top: 100% !important;
+    right: auto !important;
+    z-index: 1000 !important;
+}
+
+/* スマート位置調整 */
+.excel-filter-menu.position-smart {
+    position: absolute !important;
+    top: 100% !important;
+    right: auto !important;
+    z-index: 1000 !important;
+}
+
+.excel-filter-header {
+    background: linear-gradient(180deg, #f7f7f7 0%, #e7e7e7 100%);
+    border-bottom: 1px solid #d0d0d0;
+    padding: 8px 12px;
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #333;
+}
+
+.excel-search-section {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e7e7e7;
+    background: #fafafa;
+}
+
+.excel-search-box {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #b7b7b7;
+    border-radius: 0;
+    font-size: 0.85em;
+    background: white;
+}
+
+.excel-search-box:focus {
+    outline: none;
+    border-color: #4472c4;
+    box-shadow: 0 0 3px rgba(68, 114, 196, 0.3);
+}
+
+.excel-filter-actions {
+    padding: 8px 12px;
+    background: #f7f7f7;
+    border-bottom: 1px solid #e7e7e7;
+    display: flex;
+    gap: 8px;
+}
+
+.excel-action-btn {
+    padding: 4px 12px;
+    border: 1px solid #b7b7b7;
+    background: white;
+    font-size: 0.8em;
+    cursor: pointer;
+    border-radius: 0;
+    transition: all 0.1s ease;
+}
+
+.excel-action-btn:hover {
+    background: #e7e7e7;
+}
+
+.excel-action-btn.primary {
+    background: #4472c4;
+    color: white;
+    border-color: #4472c4;
+}
+
+.excel-action-btn.primary:hover {
+    background: #365a9b;
+}
+
+.excel-filter-list {
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+}
+
+.excel-filter-item {
+    display: flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: background-color 0.1s ease;
+}
+
+.excel-filter-item:hover {
+    background: #e7f3ff;
+}
+
+.excel-filter-item input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.excel-filter-item.select-all {
+    background: #f7f7f7;
+    font-weight: 600;
+    border-bottom: 2px solid #d0d0d0;
+}
+
+.excel-filter-stats {
+    padding: 6px 12px;
+    background: #f7f7f7;
+    border-top: 1px solid #e7e7e7;
+    font-size: 0.75em;
+    color: #666;
+    text-align: center;
+}
+
+/* ========================
+   フィルター状態表示
+   ======================== */
+
+.filter-status-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 15px;
+    background: #fff3cd;
+    border: 2px solid #856404;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filter-active-badge {
+    font-weight: 600;
+    color: #856404;
+}
+
+.filter-details {
+    font-size: 0.8em;
+    color: #666;
+}
+
+/* ========================
+   テーブルコンテナ
+   ======================== */
+
+.unified-table-container {
+    border: 1px solid #dee2e6;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+    background: white;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    border-radius: var(--border-radius);
+    width: 100%;
+}
+
+/* テーブル全体の水平スクロール強化 */
+.unified-table {
+    min-width: 800px; /* 最小幅を設定して水平スクロールを促す */
+}
+
+/* 狭い画面での水平スクロール対応 */
+@media (max-width: 1400px) {
+    .table-responsive {
+        overflow-x: scroll;
+    }
+    
+    .unified-table {
+        min-width: 1200px;
+    }
+}
+
+/* ========================
+   ページネーション統一
+   ======================== */
+
+.pagination-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border-radius: var(--border-radius);
+    border: 1px solid #dee2e6;
+}
+
+.items-per-page {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+}
+
+.page-info {
+    font-size: 0.9em;
+    color: var(--secondary-color);
+    font-weight: 500;
+}
+
+.pagination {
+    margin: 0;
+}
+
+.pagination .page-item .page-link {
+    color: var(--primary-color);
+    border-color: #dee2e6;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* ========================
+   アクションツールバー統一
+   ======================== */
+
+.unified-action-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid #dee2e6;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.unified-action-toolbar .primary-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.unified-action-toolbar .secondary-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.filter-badge {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+/* ========================
+   フィルターパネル統一
+   ======================== */
+
+.unified-filter-panel {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.unified-filter-panel .filter-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.unified-filter-panel .filter-group {
+    min-width: 200px;
+    flex: 1;
+}
+
+.unified-filter-panel .filter-group h6 {
+    margin-bottom: 8px;
+    color: #495057;
+    font-size: 0.95rem;
+    font-weight: bold;
+}
+
+/* ========================
+   レスポンシブ対応
+   ======================== */
+
+@media (max-width: 1200px) {
+    .unified-table {
+        font-size: 0.8em;
+    }
+    
+    .unified-table th,
+    .unified-table td {
+        padding: 8px 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .unified-table th,
+    .unified-table td {
+        padding: 6px 8px;
+        font-size: 0.75rem;
+    }
+    
+    .pagination-controls {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+    
+    .unified-action-toolbar {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+    
+    /* モバイル画面でのフィルターメニュー調整 */
+    .excel-filter-menu {
+        min-width: 250px;
+        max-width: 300px;
+        right: 10px;
+    }
+    
+    .excel-filter-menu.position-left {
+        left: -230px;
+    }
+    
+    /* フィルタートリガーを小さく */
+    .excel-filter-trigger {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .excel-filter-trigger::after {
+        font-size: 7px;
+    }
+}
+
+/* ========================
+   隠し列対応
+   ======================== */
+
+.hidden-column {
+    display: none !important;
+}
+
+.column-visibility-toggle {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background: rgba(255,255,255,0.8);
+    border-radius: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    color: #495057;
+    transition: all 0.2s ease;
+}
+
+.column-visibility-toggle:hover {
+    background: rgba(255,255,255,1);
+    transform: scale(1.2);
+}
+
+.column-visibility-toggle.hidden {
+    background: rgba(220,53,69,0.8);
+    color: white;
+}
+
+/* ========================
+   ドラッグ＆ドロップ対応
+   ======================== */
+
+.unified-table th.dragging {
+    opacity: 0.5;
+    z-index: 1000;
+    transform: rotate(3deg);
+}
+
+.unified-table th.drag-over {
+    border-left: 3px solid var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+}

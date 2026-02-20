@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+     >
+	<body>
+		<div layout:fragment="menu">
+			<nav class="navbar navbar-expand-lg">
+				<div class="container-fluid">
+					<ul class="navbar-nav ms-auto flex-wrap">
+						<!--TODO　URL決まったら修正-->
+						
+							<li class="nav-item dropdown" sec:authorize="principal.user.initialMenuDispFlg=='1'">
+								<a href="#" class="nav-link dropdown-toggle p-0 text-primary" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+								  <u th:text="#{menu.initialSettingMenu}">初期設定メニュー</u>
+								</a>
+								<ul class="dropdown-menu">
+								  <li><a class="dropdown-item text-primary" th:href="@{'/initial'}"　th:text="#{menu.initialSettingMenu.initialSettings}"} sec:authorize="principal.user.initialDispFlg=='1'">初期設定</a></li>
+								  <li><a class="dropdown-item text-primary" th:href="@{'/gateRegistration'}" th:text="#{menu.initialSettingMenu.gateRegistration}" sec:authorize="principal.user.gateRegistrationDispFlg=='1'">ゲート登録</a></li>
+								  <li><a class="dropdown-item text-primary" th:href="@{'/device'}"　th:text="#{menu.initialSettingMenu.deviceRegistration}" sec:authorize="principal.user.deviceRegistrationDispFlg=='1'">装置登録</a></li>
+								  <li><a class="dropdown-item text-primary" th:href="@{'/tenant'}"　th:text="#{menu.initialSettingMenu.tenantRegistration}" sec:authorize="principal.user.tenantRegistrationDispFlg=='1' and principal.user.filterflag==1">テナント登録</a></li>
+								  <li><a class="dropdown-item text-primary" href="#"　th:text="#{menu.initialSettingMenu.floorRegistration}" sec:authorize="principal.user.floorRegistrationDispFlg=='1'">フロア登録</a></li>
+								  <li><a class="dropdown-item text-primary" href="#"　th:text="#{menu.initialSettingMenu.groupControlRegistration}" sec:authorize="principal.user.groupControlRegistrationDispFlg=='1'">一斉制御グループ登録</a></li>
+								  <li><a class="dropdown-item text-primary" href="#"　th:text="#{menu.initialSettingMenu.errorPopupSettings}" sec:authorize="principal.user.errorPopupSettingsDispFlg=='1'">エラーブザーポップアップ設定</a></li>								</ul>	
+							</li>
+						<li class="nav-item d-flex ms-3" sec:authorize="principal.user.individualRegistrationDispFlg=='1'">
+							<a th:href="@{'/gate'}" th:text="#{menu.individualRegistration}">個人登録</a>
+						</li>
+						<li class="nav-item d-flex ms-3" sec:authorize="principal.user.gateEditDispFlg=='1'">
+							<a th:href="@{'/gateEdit'}" th:text="#{menu.gateEdit}">ゲート編集</a>
+						</li>
+						<li class="nav-item d-flex ms-3" sec:authorize="principal.user.reportDispFlg=='1'">
+							<a th:href="@{'/gate'}" th:text="#{menu.report}">報告書</a>
+						</li>
+						<li class="nav-item d-flex ms-3" sec:authorize="principal.user.listInTheRoomDispFlg=='1'">
+							<a th:href="@{'/gate'}" th:text="#{menu.listInTheRoom}">在室一覧</a>
+						</li>
+						<li class="nav-item d-flex ms-3" sec:authorize="principal.user.dataMonitorDispFlg=='1'">
+							<a th:href="@{'/gate'}" th:text="#{menu.dataMonitor}">データモニター</a>
+						</li>
+						<li class="nav-item d-flex ms-3" sec:authorize="principal.user.statusMonitorDispFlg=='1'">
+							<a th:href="@{'/gate'}" th:text="#{menu.statusMonitor}">ステータスモニター</a>
+						</li>
+						<li class="nav-item d-flex ms-3" sec:authorize="principal.user.mapStatusDispFlg=='1'">
+							<a th:href="@{'/gate'}" th:text="#{menu.mapStatus}">マップステータス</a>
+						</li>
+						<li class="nav-item dropdown ms-3 me-5" sec:authorize="principal.user.systemDispFlg=='1'">
+							<a href="#" class="nav-link dropdown-toggle p-0 text-primary" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+							  <u th:text="#{menu.system}">システム</u>
+							</a>
+							<ul class="dropdown-menu dropdown-menu-end">
+							  <li sec:authorize="principal.user.operationLogReportDispFlg=='1'"><a class="dropdown-item text-primary" href="#" th:text="#{menu.system.operationLogReport}">操作ログ報告書</a></li>
+							  <li sec:authorize="principal.user.holidaySettingsDispFlg=='1'"><a class="dropdown-item text-primary" href="#" th:text="#{menu.system.holidaySettings}">休日設定</a></li>
+							  <li sec:authorize="principal.user.timeTransmissionDispFlg=='1'"><a class="dropdown-item text-primary" href="#" th:text="#{menu.system.timeTransmission}">時刻送信</a></li>
+							  <li sec:authorize="principal.user.backupDispFlg=='1'"><a class="dropdown-item text-primary" href="#" th:text="#{menu.system.backup}">バックアップ</a></li>
+							  <li sec:authorize="principal.user.massSendingDispFlg=='1'"><a class="dropdown-item text-primary" href="#" th:text="#{menu.system.massSending}">一斉送信</a></li>
+							  <li sec:authorize="principal.user.antipassFreeDispFlg=='1'"><a class="dropdown-item text-primary" href="#" th:text="#{menu.system.antipassFree}">アンチパスフリー</a></li>
+							  <li sec:authorize="principal.user.userRegistrationDispFlg=='1'"><a class="dropdown-item text-primary" href="#" th:text="#{menu.system.userRegistration}">ユーザー登録</a></li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</nav>
+		</div>
+    </body>
+</html>

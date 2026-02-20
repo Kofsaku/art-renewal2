@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<body>
+	<div class="bs-component" id="global-header" layout:fragment="header">
+		<div　class="fixed-top">
+			<nav class="sticky-top navbar navbar-expand-lg navbar-dark bg-success p-0">
+				<ul class="d-flex list-unstyled col-12 p-0" style="height:30px;">
+					<li class="p-0 col-11">
+				    	<div class="navbar-brand ms-3"　th:text="#{layout.title}">
+							Web版入退室管理システム
+					    </div>
+					</li>
+					<li class="p-0 col-1">
+						<div class="border border-1 border-white m-1 g-center">
+							<a class="text-white fs-5 text-decoration-none ms-2" th:href="@{/logout}" th:onclick="'if(confirm(\'' + #{header.logout.confirm} + '\')==false)return false;'">
+								<th:block th:text="#{header.logout}">ログアウト</th:block>
+							</a>
+						</div>
+					</li>
+				</ul>	
+			</nav>
+		</div>
+	</div>
+</body>
+</html>

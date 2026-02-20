@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ステータスモニター</title>
+    <style>
+        body, html {
+            overflow-x: auto;
+            min-width: 0;
+            width: 100%;
+            max-width: none !important;
+        }
+
+        .container-fluid {
+            max-width: none !important;
+            padding: 0 !important;
+        }
+
+        .status-monitor-container {
+            position: relative;
+            height: calc(100vh - 140px);
+            width: 100%;
+            padding-left: 280px;
+            padding-top: 15px;
+            padding-right: 15px;
+            padding-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        .left-sidebar {
+            position: fixed;
+            left: 15px;
+            top: 140px;
+            width: 250px;
+            height: calc(100vh - 155px);
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .gate-button-list {
+            height: calc(100vh - 240px);
+            max-height: calc(100vh - 240px);
+            overflow-y: scroll;
+            overflow-x: hidden;
+            padding-right: 5px;
+            margin-top: 10px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .left-sidebar.collapsed .gate-button-list {
+            margin-top: 55px;
+            height: calc(100vh - 255px);
+            max-height: calc(100vh - 255px);
+        }
+
+        .left-sidebar.collapsed .sidebar-toggle {
+            left: 15px;
+        }
+
+        .left-sidebar.collapsed {
+            width: 60px;
+            padding: 10px 5px;
+        }
+
+        .status-monitor-container.sidebar-collapsed {
+            padding-left: 90px;
+        }
+
+        .sidebar-toggle {
+            position: absolute;
+            top: 12px;
+            left: 8px;
+            width: 30px;
+            height: 30px;
+            background: #007bff;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .sidebar-toggle:hover {
+            background: #0056b3;
+        }
+
+        .main-content {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .monitor-header {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .gate-grid-container {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+            margin-right: 0px;
+        }
+
+        .gate-grid {
+            display: grid;
+            gap: 6px;
+            width: 100%;
+            grid-auto-rows: 80px;
+            box-sizing: border-box;
+        }
+
+        .gate-grid.layout-64 {
+            grid-auto-rows: 60px;
+            gap: 4px;
+            max-height: none;
+        }
+
+        .gate-grid.layout-64 .gate-card {
+            height: 60px;
+            padding: 6px;
+        }
+
+        .gate-grid.layout-64 .gate-number {
+            font-size: 0.7em;
+            margin-bottom: 2px;
+            line-height: 1.1;
+            text-align: center;
+            word-break: break-all;
+        }
+
+        .gate-grid.layout-64 .gate-status-indicator {
+            width: 10px;
+            height: 10px;
+        }
+
+        .gate-grid.layout-64 .icon-grid {
+            width: 70px;
+            height: 18px;
+            gap: 2px;
+        }
+
+        .gate-grid.layout-64 .status-icon {
+            font-size: 8px;
+            min-height: 18px;
+        }
+
+        .gate-card {
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 8px;
+            background: white;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            position: relative;
+            transition: all 0.3s ease;
+            height: 80px;
+        }
+
+        .gate-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+
+        .gate-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 80px;
+            margin-right: 10px;
+        }
+
+        .gate-number {
+            font-weight: bold;
+            font-size: 0.75em;
+            margin-bottom: 3px;
+            color: #495057;
+            line-height: 1.2;
+            text-align: center;
+            word-break: break-all;
+        }
+
+        .gate-status-indicator {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            width: 140px;
+            height: 32px;
+            margin-right: auto;
+            border: 1px solid #dee2e6;
+            background-color: white;
+        }
+
+        .status-icon {
+            width: 100%;
+            height: 100%;
+            display: block;
+            background-color: transparent;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-right: 1px solid #eee;
+            transition: all 0.2s ease;
+        }
+
+        .status-icon:last-child {
+            border-right: none;
+        }
+
+        .status-icon:hover {
+            background-color: #f8f9fa;
+        }
+
+        .icon-door-closed, .icon-door-open,
+        .icon-lock-locked, .icon-lock-unlocked,
+        .icon-error, .icon-security-active {
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .icon-door-closed {
+            background-image: url('/resources/static/images/gate/1_door_state/door_closed.png');
+        }
+        .icon-door-open {
+            background-image: url('/resources/static/images/gate/1_door_state/door_opening.png');
+        }
+
+        .icon-lock-locked {
+            background-image: url('/resources/static/images/gate/2_lock_state/door_locking.png');
+        }
+        .icon-lock-unlocked {
+            background-image: url('/resources/static/images/gate/2_lock_state/door_unlocking.png');
+        }
+
+        .icon-alarm-normal {
+            background-image: none;
+        }
+        .icon-error {
+            background-image: url('/resources/static/images/gate/3_alarm_state/alarm_abnormal.png');
+            animation: pulse-error 2s infinite;
+        }
+
+        .icon-security-normal {
+            background-image: none;
+        }
+        .icon-security-active {
+            background-image: url('/resources/static/images/gate/4_security_state/gate_sec_set.png');
+        }
+
+        .icon-offline {
+            background-color: #e9ecef;
+            opacity: 0.5;
+        }
+
+        @keyframes pulse-error {
+            0% { transform: scale(0.9); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(0.9); }
+        }
+
+        .status-normal {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border-color: #1e7e34;
+        }
+
+        .status-warning {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            border-color: #e0a800;
+        }
+
+        .status-error {
+            background: linear-gradient(135deg, #dc3545, #e74c3c);
+            border-color: #bd2130;
+        }
+
+        .status-offline {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            border-color: #495057;
+        }
+
+        .legend-panel {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 10px 15px;
+            min-width: 200px;
+            margin-left: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .legend-indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .layout-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .layout-btn {
+            padding: 5px 10px;
+            border: 1px solid #dee2e6;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .layout-btn.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .gate-list-title {
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            color: #495057;
+            font-size: 1.1em;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 5px;
+            padding-left: 45px;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .left-sidebar.collapsed .gate-list-title {
+            display: none;
+        }
+
+        .gate-button {
+            display: block;
+            width: 100%;
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9em;
+        }
+
+        .gate-button:hover {
+            background: #e9ecef;
+            transform: translateX(2px);
+        }
+
+        .gate-button.active {
+            background: #007bff;
+            color: white;
+            border-color: #0056b3;
+        }
+
+        .gate-button-status {
+            float: right;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-top: 2px;
+        }
+
+        .left-sidebar.collapsed .gate-button {
+            padding: 6px;
+            text-align: center;
+            font-size: 0.7em;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .left-sidebar.collapsed .gate-button-status {
+            float: none;
+            display: block;
+            margin: 2px auto 0;
+        }
+
+        .gate-button-text {
+            display: inline;
+        }
+
+        .left-sidebar.collapsed .gate-button-text {
+            display: none;
+        }
+
+        .gate-button-short {
+            display: none;
+        }
+
+        .left-sidebar.collapsed .gate-button-short {
+            display: inline;
+            font-size: 0.6em;
+        }
+
+        .left-sidebar.collapsed .gate-list-title {
+            display: none;
+        }
+
+        .left-sidebar.collapsed .gate-button {
+            margin-bottom: 8px;
+            border-radius: 8px;
+            width: 45px;
+            height: 45px;
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6em;
+            line-height: 1;
+        }
+
+        .collapsed-gate-icon {
+            display: none;
+        }
+
+        .left-sidebar.collapsed .collapsed-gate-icon {
+            display: block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin: 2px auto 0;
+        }
+
+        .left-sidebar.collapsed .gate-button-text,
+        .left-sidebar.collapsed .gate-button-status {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="status-monitor-container">
+            <!-- 左サイドバー：ゲートボタン一覧 -->
+            <div class="left-sidebar" id="leftSidebar">
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <span id="toggleIcon">‹</span>
+                </button>
+                <div class="gate-list-title">◆ ゲートボタン一覧</div>
+                <div class="gate-button-list">
+                    <div id="gateButtonList">
+                        <!-- JavaScriptで動的に生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- メインコンテンツ：ステータス一覧 -->
+            <div class="main-content">
+                <div class="monitor-header">
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <h2>ステータス一覧</h2>
+                        <!-- 凡例パネル -->
+                        <div class="legend-panel" id="legendPanel">
+                            <h6 style="margin: 0 0 10px 0; font-size: 0.9em;">状態凡例</h6>
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px;">
+                                <div class="legend-item">
+                                    <input type="checkbox" class="status-filter-checkbox" value="normal" checked style="margin-right: 5px;">
+                                    <div class="legend-indicator status-normal"></div>
+                                    <span style="font-size: 0.8em;">正常</span>
+                                </div>
+                                <div class="legend-item">
+                                    <input type="checkbox" class="status-filter-checkbox" value="warning" checked style="margin-right: 5px;">
+                                    <div class="legend-indicator status-warning"></div>
+                                    <span style="font-size: 0.8em;">警告</span>
+                                </div>
+                                <div class="legend-item">
+                                    <input type="checkbox" class="status-filter-checkbox" value="error" checked style="margin-right: 5px;">
+                                    <div class="legend-indicator status-error"></div>
+                                    <span style="font-size: 0.8em;">異常</span>
+                                </div>
+                                <div class="legend-item">
+                                    <input type="checkbox" class="status-filter-checkbox" value="offline" checked style="margin-right: 5px;">
+                                    <div class="legend-indicator status-offline"></div>
+                                    <span style="font-size: 0.8em;">オフライン</span>
+                                </div>
+                            </div>
+                            <h6 style="margin: 0 0 10px 0; font-size: 0.9em; border-top: 1px solid #ddd; padding-top: 10px;">アイコン凡例</h6>
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <div class="legend-item">
+                                    <div class="icon-door-closed" style="width: 16px; height: 16px; margin-right: 8px;"></div>
+                                    <span style="font-size: 0.8em;">開扉/閉扉</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="icon-lock-locked" style="width: 16px; height: 16px; margin-right: 8px;"></div>
+                                    <span style="font-size: 0.8em;">解錠/施錠</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="icon-error" style="width: 16px; height: 16px; margin-right: 8px;"></div>
+                                    <span style="font-size: 0.8em;">異常</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="icon-security-active" style="width: 16px; height: 16px; margin-right: 8px;"></div>
+                                    <span style="font-size: 0.8em;">警備セット</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layout-controls">
+                        <span>表示:</span>
+                        <button class="layout-btn" data-layout="16">16件</button>
+                        <button class="layout-btn active" data-layout="32">32件</button>
+                        <button class="layout-btn" data-layout="64">64件</button>
+                    </div>
+                </div>
+
+                <!-- ゲート状態グリッド -->
+                <div class="gate-grid-container">
+                    <div class="gate-grid" id="gateGrid">
+                        <!-- JavaScriptで動的に生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" th:src="@{/js/statusMonitor.js}"></script>
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                if (window.statusMonitor) {
+                    document.querySelectorAll('.status-filter-checkbox').forEach(checkbox => {
+                        checkbox.onclick = function() {
+                            window.statusMonitor.updateStatusFilters();
+                        };
+                    });
+                    statusMonitor.generateGateGroups();
+                    statusMonitor.renderGateButtons();
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>

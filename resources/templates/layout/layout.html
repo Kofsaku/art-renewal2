@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="_csrf" th:content="${_csrf.token}"/>
+	<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+	<link rel="stylesheet" th:href="@{/css/common.css}" />
+	<link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.0/css/bootstrap.min.css}"/>
+	<title th:text="#{layout.title}">TRIDENT</title>
+	<script type="text/javascript" th:src="@{/js/jquery/3.7.1/jquery.min.js}"></script>
+	<script type="text/javascript" th:src="@{/js/common.js}"></script>
+	<script type="text/javascript" th:src="@{/js/popper.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/bootstrap/5.3.0/js/bootstrap.min.js}"></script>
+</head>
+<body>
+	<!-- ヘッダー -->
+	<div layout:replace="~{layout/header::header}"></div>
+	<!-- メニュー -->
+	<div layout:replace="~{layout/menu::menu}"></div>
+	<!--content-->
+	<div layout:fragment="content" th:remove="tag"></div>
+	<!-- フッター -->
+	<div layout:replace="~{layout/footer::footer}"></div>
+	<!--共通のエラーメッセージ-->
+	<input type="hidden" name="serverErrorMessage" id="serverErrorMessage" th:value="#{error.serverError}">
+</body>
+</html>

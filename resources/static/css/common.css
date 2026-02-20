@@ -1,0 +1,139 @@
+@charset "UTF-8";
+
+body {
+	font-size: 14px;
+	line-height: 1.8;
+	background-color: rgb(255, 255, 255);
+	}
+
+	
+/*テーブルのヘッダー色*/	
+table thead tr:first-child th {  color: rgb(0, 0, 0);  background: rgb(192, 192, 192);}
+
+/*フォーカスされたテーブル行に色がつくようにする*/
+#gateDataListTbl tr:hover td{
+background-color: rgb(219, 255, 255)!important;
+}
+
+.selectline{
+	background: rgb(128, 255, 255)!important;	
+}
+
+/*スクロールの非表示*/
+.scroll{
+	overflow-y: scroll;
+	/*縦方向はスクロール可*/
+	overflow-x: hidden;
+	/*横方向はスクロール不可*/
+}
+
+/*0～24の時間ラベル表示*/
+.timeline-container {
+  width: 100%;
+  max-width: 500px;
+  background-color: #dcdcdc;
+}
+.hour-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.hour-labels span {
+  flex: 1;
+  text-align: left;
+}
+.line-area {
+  position: relative;
+  height: 20px;
+}
+/* 横線：後ろに回す */
+.line-area::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: black;
+  z-index: 0;
+}
+/* 縦線：前面に表示 */
+.line-area .hour-line {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 1px;
+  background-color: black;
+  z-index: 1;
+}
+
+/* 赤の帯*/
+.red-band {
+  height: 20px;
+  background-color: red;
+  margin-top: 2px;
+  width: calc(25 * 20px);
+  position: relative;
+}
+
+/* 青の帯*/
+.blue-band {
+  position: absolute;
+  height: 100%;
+  background-color: blue;
+  top: 0;
+}
+
+.flex{
+	display: flex;
+	flex-wrap: wrap;
+	margin:10px;
+}
+
+.hidden{
+	display: none;
+}
+
+/*タブの色指定*/
+.nav .nav-item .nav-link.active, .nav-pills .show > .nav-link {
+    color: rgb(255, 255, 255);
+    background-color: rgb(23, 136, 84);
+}
+
+.nav .nav-item .nav-link {
+    color: rgb(0, 0, 0);
+	border: rgb(192, 192, 192) 1px solid;
+}
+
+/*タブ非活性の色指定*/
+.nav-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/*Bootstrapにする前にエラー画面とログイン画面で使ってる　Bootstrapで対応できるなら対応して削除*/
+.g-mb-24 {
+  margin-bottom: 24px !important; }
+  
+.g-mb-30 {
+  margin-bottom: 30px !important; }
+
+.g-fw-bold {
+  font-weight: bold; }
+		  
+.g-center{
+	text-align: center !important;
+}
+	
+.g-error-message {
+  color: #ED1C24;
+/*  background-color: #FFDBE5;*/
+  padding: 20px 20px;
+  border-radius: 4px;
+  font-size: 13px; }
+  .g-error-message .g-error-message__link {
+    color: #ED1C24; }
+    .g-error-message .g-error-message__link:hover {
+      text-decoration: none;}
+	  

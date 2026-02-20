@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" th:href="@{/css/common.css}" />
+	<title th:text="#{tenant.title}">テナント登録・編集</title>
+</head>
+<!--※テナント登録です※-->
+<body>
+	<div layout:fragment="content">
+		<div class="fs-3 ms-3 fw-bold" th:text="#{tenant.title}">テナント登録・編集</div>	
+		<main class="p-3">	
+			<!-- タブのコンテナ -->
+			<ul class="nav nav-tabs">
+				<li class="nav-item">
+					<button class="nav-link active" type="button" id="tenantInfoTab" data-bs-toggle="tab" data-bs-target="#tenantInfo" th:text="#{tenant.title}">
+						テナント登録・編集
+					</button>
+				</li>
+				<li class="nav-item">
+					<button class="nav-link" type="button" id="gatesetTab" data-bs-toggle="tab" data-bs-target="#gatesetSend" th:text="#{tenant.title.gateset}">
+						ゲート設定
+					</button>				
+				</li>
+			</ul>	
+			<!-- コンテンツのコンテナ -->
+			<div class="tab-content">
+				<!--タブ1 テナント登録・編集-->
+				<div id="tenantInfo" class="tab-pane active" style="width:1260px;">
+					<form id="tenantForm" name="tenantForm" method="post" th:object="${tenantForm}">
+					    <div class="container-fluid"> <!-- ← containerをfluidに変更 -->
+					        <div class="row">
+					            <div class="col-6 ms-0 ps-0"> <!-- ← 左マージン・パディングを完全に削除 -->
+					                <div class="p-3">
+										<!-- テキストエリア1 -->
+					                    <div class="border border-1 border-secondary p-2">
+					                        <div class="mb-2">
+					                            <label class="col-3" for="tenantno" th:text="#{tenant.tenantno}">テナント番号：</label>
+					                            <input class="col-2" type="text" id="tenantno" name="tenantno" maxlength="3" inputmode="numeric" th:value="${tenantForm.tenantno}">
+					                        </div>
+					                        <div class="mb-2">
+					                            <label class="col-3" for="name" th:text="#{tenant.name}">テナント名称：</label>
+					                            <input class="col-8" type="text" id="name" name="name" maxlength="20" th:value="${tenantForm.name}">
+					                        </div>
+					                        <div class="mb-2">
+					                            <label class="col-3" for="kana" th:text="#{tenant.kana}">テナント名称カナ：</label>
+					                            <input class="col-8" type="text" id="kana" name="kana" maxlength="16" th:value="${tenantForm.kana}">
+					                        </div>
+					                    </div>
+					                </div>
+
+					                <!-- ボタンエリア1 -->
+					                <div class="ms-0 ps-3 mb-2"> <!-- ← ボタンも左端に寄せ -->
+					                    <button type="submit" class="btn btn-success" th:text="#{tenant.regist}" id="regist">登録</button>
+					                    <button type="submit" class="btn btn-success ms-1" th:text="#{tenant.clear}" id="clear">クリア</button>
+					                </div>
+
+					                <!-- ボタンエリア2 -->
+					                <div class="ms-0 ps-2 mb-2"> <!-- ← 同じく左寄せ -->
+										<button type="submit" class="btn btn-success ms-2" th:text="#{tenant.delete}" id="delete">削除</button>
+					                    <button type="submit" class="btn btn-success" th:text="#{tenant.download}" id="download">ダウンロード</button>
+					                    <button type="submit" class="btn btn-success ms-1" th:text="#{tenant.dataoutput}" id="outputData">データ出力</button>
+					                    <button type="submit" class="btn btn-success ms-1" th:text="#{tenant.upload}" id="upload">アップロード</button>
+					                    <button type="submit" class="btn btn-success ms-1" th:text="#{tenant.print}" id="print">印刷</button>
+					                </div>
+					            </div>
+					        </div>
+					    </div>
+					    <!-- 隠しフィールド -->
+					    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+					    <input type="hidden" name="downloadType" id="downloadType">
+					</form>
+
+					<!-- データ一覧エリア -->
+					<div class="col-6 ms-0 ps-0"> <!-- ← 入力欄やボタンと同じ枠で囲む -->
+					    <div class="scroll" style="width:1260px;height:260px;">
+					        <table class="table mb-4" id="tenantDataListTbl">
+					            <thead class="sticky-top">
+					                <tr>
+					                    <th th:text="#{tenant.tenantlist.tenantno}">テナント番号</th>
+					                    <th th:text="#{tenant.tenantlist.name}">テナント名称</th>
+					                    <th th:text="#{tenant.tenantlist.kana}">テナント名称カナ</th>
+					                </tr>
+					            </thead>			
+					            <tbody>
+					                <tr th:if="${#lists.size(tenantForm.mstTenantList) > 0}" th:each="tenant : ${tenantForm.mstTenantList}">
+					                    <td class="selectItem" th:text="${tenant.tenantno}"></td>
+					                    <td class="selectItem" th:text="${tenant.name}"></td>
+					                    <td class="selectItem" th:text="${tenant.kana}"></td>
+										
+										<input type="hidden" th:value="${tenant.gate}">
+					                </tr>	
+					            </tbody>	
+					        </table>	
+					    </div>
+					</div>
+
+					<!--ファイルアップロード用フォーム-->
+					<form id="uploadForm" enctype="multipart/form-data" method="post">
+						<input type="file" id="uploadFile" name="uploadFile" accept=".csv" style="display: none;">
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+					</form>					
+				</div>
+				
+				
+				<!--タブ2 ゲート設定-->
+				<div id="gatesetSend" class="tab-pane">	
+					<form id="gatesetForm" name="gatesetForm" method="post">
+						<!-- テキストエリア2 -->
+						<div class="border border-1 border-secondary" style="width:1300px;height:640px;">
+							<div class="p-2">
+								<label for="gatesetTenantno" th:text="#{tenant.tenantno}">テナント番号：</label>
+								<input type="text" id="gatesetTenantno" name="gatesetTenantno" class="col-1 m-2" disabled>
+								<label for="gatesetName" th:text="#{tenant.name}">テナント名称:</label>
+								<input type="text" id="gatesetName" name="gatesetName" class="col-4" disabled>
+							</div>			
+							<div class="container" style="width:1300px;"> 
+								<div class="d-flex">
+									<!-- ゲートデータエリア1 -->						
+								    <div class="col-5">
+										<p th:text="#{tenant.gate}">
+											◆ゲートデータ
+										</p>
+										<div class="border border-1 border-secondary">	
+											<div class="scroll" style="width:525px;height:500px;">
+												<table class="table" id="gateDataListTbl">
+													<thead class="sticky-top" >
+													    <tr>
+													        <th th:text="#{gateRegistration.gatelist.gateno}">ゲート番号</th>
+															<th th:text="#{gateRegistration.gatelist.name}">ゲート名称</th>
+													    </tr>
+													</thead>			
+													<tbody>
+														<tr th:if="${#lists.size(tenantForm.mstGateList) > 0}" th:each="gate : ${tenantForm.mstGateList}">
+															<td class="selectItem" th:text="${gate.gateno}"></td>
+															<td class="selectItem" th:text="${gate.name}"></td>
+														</tr>	
+													</tbody>	
+												</table>
+											</div>
+										</div>
+									</div>
+									<!-- ボタンエリア3 -->
+									<div class="d-flex flex-column" style="margin-top: 200px;">
+										<div class="mx-3 mb-2">
+											<button type="button" class="btn btn-success" th:text="#{tenant.gateMoveRight}" id="moveRight" style="width:80px;">→</button>
+										</div>
+										<div class="mx-3 mb-2">
+											<button type="button" class="btn btn-success" th:text="#{tenant.gateMoveAllLeft}" id="moveAllLeft" style="width:80px;">←←</button>
+										</div>
+										<div class="mx-3 mb-2">
+											<button type="button" class="btn btn-success" th:text="#{tenant.gateMoveLeft}" id="moveLeft" style="width:80px;">←</button>
+										</div>
+									</div>
+									<!-- ゲートデータエリア2 -->
+									<div class="col-5"> 
+										<p th:text="#{tenant.selectgate}">
+											◆選択されたゲートデータ
+										</p>
+										<div class="border border-1 border-secondary">	
+											<div class="scroll" style="width:525px;height:500px;">
+												<table class="table" id="gateDataSelectListTbl">
+													<thead class="sticky-top" >
+													    <tr>
+													        <th th:text="#{gateRegistration.gatelist.gateno}">ゲート番号</th>
+															<th th:text="#{gateRegistration.gatelist.name}">ゲート名称</th>
+													    </tr>
+													</thead>			
+													<tbody>
+													</tbody>	
+												</table>
+											</div>
+											
+											<input type="hidden" id="tenantgate" name="tenantgate" value="">
+											
+										</div>
+									</div>
+									<!-- ボタンエリア4 -->
+									<div class="d-flex flex-column" style="margin-top: 40px;">
+										<div class="ps-3 mb-2">
+											<button type="submit" class="btn btn-success gatesetRegist" th:text="#{tenant.regist}" id="gateRegist">登録</button>
+										</div>
+									</div>
+								</div>	
+							</div>	
+						</div>
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+					</form>
+				</div>				
+			</div>
+		</main>	
+		<!--アップロード結果表示用モーダル-->
+		<div id="uploadDialog" class="modal" style="display:none;">
+			<div class="modal-dialog">
+				<div class="modal-content">			
+					<div class="modal-header">
+					  <div class="modal-title uploadOKMsg" id="labelComfirm" th:text="#{tenant.upload.modal.header.confirm}">確認</div>
+					  <div class="modal-title uploadNG" id="labelError" th:text="#{tenant.upload.modal.header.error}">エラー</div>
+					</div>
+					
+					<div class="modal-body">
+						<div class="uploadNG">
+							<div th:text="#{tenant.upload.modal.errorMsg1}">登録内容に不備があるため、一部のデータはアップロードできませんでした。</div>
+							<div th:text="#{tenant.upload.modal.errorMsg2}">詳細は以下の「エラー内容の詳細表示」からご確認ください。</div>
+						</div>
+						<div class="uploadOKMsg">
+							<p th:text="#{tenant.upload.modal.comfirmMsg}">アップロードが正常に終了しました。</p>
+						</div>
+						<div class="m-3">
+							<div class="container"> 
+								<div class="row">							
+								    <div class="col-3">
+										<div th:text="#{tenant.upload.modal.uploadCount}">データ件数:</div>
+									</div>
+									<div class="col-3">
+										<div class="uploadCnt" align="right">0</div>
+									</div>
+									<div class="col-3">
+										<div th:text="#{tenant.upload.modal.count}">件</div>
+									</div>
+								</div>
+								<div class="row">							
+								    <div class="col-3">
+										<div th:text="#{tenant.upload.modal.updateCount}">更新件数:</div>
+									</div>
+									<div class="col-3">
+										<div class="updateCnt" align="right">0</div>
+									</div>
+									<div class="col-3">
+										<div th:text="#{tenant.upload.modal.count}">件</div>
+									</div>
+								</div>
+								<div class="row">							
+								    <div class="col-3">
+										<div th:text="#{tenant.upload.modal.errorCount}">異常件数:</div>
+									</div>
+									<div class="col-3">
+										<div class="errorCnt" align="right">0</div>
+									</div>
+									<div class="col-3">
+										<div th:text="#{tenant.upload.modal.count}">件</div>
+									</div>
+								</div>
+							</div>					
+						</div>
+						<div id="uploadNGDetail" class="d-flex justify-content-center align-items-center">
+							<div class="btn btn-link uploadNG" id="errorLink" th:text="#{tenant.upload.modal.errorDetail}">エラー内容の詳細表示</div>
+						</div>
+					</div>
+					<div class="modal-footer d-flex justify-content-center align-items-center">	
+						<button id="uploadOK" class="btn btn-secondary" th:text="#{tenant.upload.modal.button.ok}">OK</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		
+		<!--アップロード結果エラー内容表示用モーダル-->
+		<div id="uploadErrorModal" class="modal" style="display:none;">
+			<div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+				<div class="modal-content">			
+					<div class="modal-header bg-success text-white" style="height:30px;">
+						<div class="modal-title d-flex justify-content-center m-2">
+							<div th:text="#{tenant.upload.modal.errorDetail.header}">Web版入退室管理システム</div>
+						</div>						
+					</div>
+					<div class="modal-body">
+						<div class="container">
+							<div class="row">
+								<div class="col-3 flex m-0 d-flex align-items-end">
+									<div class="fw-bold" th:text="#{tenant.upload.modal.errorDetail.screen}">テナントメンテナンス</div>
+								</div>
+								<div class="col-6 d-flex justify-content-center m-2">
+									<div class="fs-3 fw-bold ms-5" th:text="#{tenant.upload.modal.errorDetail.title}">アップロード 異常データリスト</div>
+								</div>
+								<div class="col-3">	
+								</div>
+							</div>
+						</div>							
+						<div class="flex p-2 fw-bold">
+							<div th:text="#{tenant.upload.modal.uploadCount}">データ件数:</div><div class="errorCnt">0</div><div th:text="#{tenant.upload.modal.count}">件</div>
+						</div>
+						<div class="flex ms-2">
+							<div class="col-1" th:text="#{tenant.upload.modal.errorDetail.item.lineNo}">行番号</div>
+							<div class="col-11" th:text="#{tenant.upload.modal.errorDetail.item.error}">エラー内容</div>
+						</div>
+						<hr class="m-0">
+						<div class="flex ms-2" id="errorDataTbl" style="height:480px;">
+							<div class="col-1">NO</div>
+							<div class="col-11">ERROR</div>
+						</div>
+					</div>	
+					<div class="modal-footer d-flex justify-content-center align-items-center">		
+						<button id="uploadErrorOK" class="btn btn-secondary" th:text="#{tenant.upload.modal.button.ok}">OK</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<!--印刷用モーダル-->
+		<div id="printModal" class="modal" style="display:none;">
+			<div class="modal-dialog modal-dialog-centered modal-fullscreen modal-dialog-scrollable">
+				<div class="modal-content">		
+					<div class="modal-header bg-success text-white" style="height:30px;">
+						<div class="modal-title d-flex justify-content-center m-2">
+							<div th:text="#{tenant.upload.modal.errorDetail.header}">Web版入退室管理システム</div>
+						</div>
+						<button type="button" class="btn-close m-2" data-bs-dismiss="modal" aria-label="Close"></button>						
+					</div>
+					<div class="modal-body">
+						<div class="container-fluid">
+							<div class="row fw-bold">
+								<div class="col flex m-0 d-flex align-items-end justify-content-start">
+									<div></div>
+								</div>
+								<div class="col d-flex justify-content-center m-2">
+									<div class="fs-3" th:text="#{tenant.print.modal.title}">テナントメンテナンス</div>
+								</div>
+								<div class="col flex m-0 d-flex align-items-end justify-content-end">
+									<div th:text="#{tenant.print.modal.printDate}">印刷日：</div><div class="printDate"></div>
+								</div>		
+							</div>
+						</div>	
+						
+						<div class="flex fw-bold m-4">
+							<div th:text="#{tenant.print.modal.uploadCount}">データ件数:</div><div class="listCnt">0</div><div th:text="#{tenant.print.modal.count}">件</div>
+						</div>
+						
+						<table class="table m-2">
+							<thead class="sticky-top">
+								<tr>
+									<th th:text="#{tenant.tenantlist.tenantno}">テナント番号</th>
+									<th th:text="#{tenant.tenantlist.name}">テナント名称</th>
+									<th th:text="#{tenant.tenantlist.kana}">テナント名称カナ</th>
+							    </tr>
+							</thead>
+							<tbody id="printDataTbl">
+								<!--create Data-->
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>			
+		</div>
+					
+		
+	<!--Javascriptで表示するためのメッセージ-->	
+		<input type="hidden" name="message" id="message" th:value="${tenantForm.message}">
+		<input type="hidden" name="gatesetTabMessage" id="gatesetTabMessage" th:value="#{tenant.error.gatesetTab}">
+		<input type="hidden" name="tenantDataErrMessage" id="tenantDataErrMessage" th:value="#{tenant.error.tenantData}">
+		<input type="hidden" name="tenantDataErrEmptyTenantno" id="tenantDataErrEmptyTenantno" th:value="#{tenant.error.empty.tenantno}">
+		<input type="hidden" name="tenantDataErrInputTenantno" id="tenantDataErrInputTenantno" th:value="#{tenant.error.input.tenantno}">
+		<input type="hidden" name="tenantDataErrInputName" id="tenantDataErrInputName" th:value="#{tenant.error.input.name}">				
+		<input type="hidden" name="tenantDataErrInputKana" id="tenantDataErrInputKana" th:value="#{tenant.error.input.kana}">
+		<input type="hidden" name="tenantDataUpdateConfirm" id="tenantDataUpdateConfirm" th:value="#{tenant.regist.update.confirm}">
+		<input type="hidden" name="tenantDataDeleteCaution" id="tenantDataDeleteCaution" th:value="#{tenant.delete.caution}">
+		<input type="hidden" name="tenantDataDeleteConfirm" id="tenantDataDeleteConfirm" th:value="#{tenant.delete.confirm}">
+				
+		<input type="hidden" name="tenantDataDownloadNoData" id="tenantDataDownloadNoData" th:value="#{tenant.download.noData}">
+		<input type="hidden" name="tenantDataOutputDataNoData" id="tenantDataOutputDataNoData" th:value="#{tenant.outputData.noData}">
+		<input type="hidden" name="tenantDataPrintNoData" id="tenantDataPrintNoData" th:value="#{tenant.print.noData}">
+		<input type="hidden" name="tenantDataPrintConfirm" id="tenantDataPrintConfirm" th:value="#{tenant.print.confirm}">
+		<input type="hidden" name="tenantDataUploadCaution" id="tenantDataUploadCaution" th:value="#{tenant.upload.caution}">
+		<!--サーバーエラーメッセージ-->
+		<input type="hidden" name="serverFailMessage" id="serverFailMessage" th:value="#{tenant.server.fail}">
+		
+		<script type="text/javascript" th:src="@{/js/common.js}"></script>
+		<script type="text/javascript" th:src="@{/js/tenant/tenant.js}"></script>
+	</div>
+</body>
+</html>

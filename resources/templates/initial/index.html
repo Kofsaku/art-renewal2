@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	　　xmlns:th="http://www.thymeleaf.org"
+	  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	  layout:decorate="~{layout/layout}">
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" th:href="@{/css/common.css}" />
+	<title th:text="#{initial.title}">初期設定画面</title>
+</head>
+<body>
+	<div layout:fragment="content">
+		<div class="fs-3 ms-3 fw-bold" th:text="#{initial.title}">初期設定</div>	
+		<main class="p-3">	
+			<!-- タブのコンテナ -->
+			<ul class="nav nav-tabs">
+				<li class="nav-item">
+					<button class="nav-link active" type="button" id="InitialTab" data-bs-toggle="tab" data-bs-target="#initialInfo" th:text="#{initial.title}">
+						初期設定
+					</button>
+				</li>
+				<li class="nav-item">
+					<button class="nav-link" type="button" id="advancedsettingsTab" data-bs-toggle="tab" data-bs-target="#advancedsettings" th:text="#{initial.title.advancedsettings}">
+						詳細設定
+					</button>				
+				</li>
+			</ul>	
+			<!-- コンテンツのコンテナ -->
+			<div class="tab-content">
+				<!--タブ1 初期設定-->
+				<div id="initialInfo" class="tab-pane active" style="width:1260px;">
+					<form id="InitialForm" name="InitialForm" method="post">		
+						<div class="container mb-3">
+							<div class="row d-flex flex-row">
+								<div class="col-3">
+									<div class="border border-1 border-secondary m-2 p-2">
+										<p class="ms-3"　th:text="#{initial.initialInfo.eachCodeSize}">◆各コードサイズ設定</p>
+										<div class="row ms-4 mb-2">
+											<div class="col-auto" th:text="#{initial.initialInfo.codeSize}">個人コード</div>
+											<div class="col-auto">
+												<select id="codesize" name="codesize" disabled>
+													<option th:each="codesize, stat : ${initialForm.codesizeList}" th:value="${codesize}" th:text="${codesize}" th:selected="${codesize==initialForm.codesize}"></option>
+												</select>
+											</div>
+											<div class="col-auto" th:text="#{initial.initialInfo.codeSize.unit}">桁</div>
+										</div>	
+										<div class="row ms-4 mb-2">
+											<div class="col-auto"　th:text="#{initial.initialInfo.scodeSize}">管理番号</div>
+											<div class="col-auto">
+												<select id="scodesize" name="scodesize" disabled>
+													<option th:each="scodesize, stat : ${initialForm.scodesizeList}" th:value="${scodesize}" th:text="${scodesize}"th:selected="${scodesize==initialForm.scodesize}"></option>
+												</select>
+											</div>
+											<div class="col-auto" th:text="#{initial.initialInfo.codeSize.unit}">桁</div>
+										</div>
+										<div class="row ms-4 mb-2">
+											<div class="col-auto" th:text="#{initial.initialInfo.pcodeSize}">所属コード</div>
+											<div class="col-auto">
+												<select id="pcodesize" name="pcodesize" disabled>
+													<option th:each="pcodesize, stat : ${initialForm.pcodesizeList}" th:value="${pcodesize}" th:text="${pcodesize}" th:selected="${pcodesize==initialForm.pcodesize}"></option>
+												</select>
+											</div>
+											<div class="col-auto" th:text="#{initial.initialInfo.codeSize.unit}">桁</div>
+										</div>
+										<div class="row ms-4">
+											<div class="col-auto" th:text="#{initial.initialInfo.kcodeSize}">区分コード</div>
+											<div class="col-auto">
+												<select id="kcodesize" name="kcodesize" disabled>
+													<option th:each="kcodesize, stat : ${initialForm.kcodesizeList}" th:value="${kcodesize}" th:text="${kcodesize}" th:selected="${kcodesize==initialForm.kcodesize}"></option>
+												</select>
+											</div>
+											<div class="col-auto" th:text="#{initial.initialInfo.codeSize.unit}">桁</div>
+										</div>											
+									</div>	
+									<div  class="border border-1 border-secondary mt-3 ms-2 me-2 p-2">
+										<div class="row ms-2">
+											<div class="col-auto"><p　th:text="#{initial.initialInfo.holiday}">◆休日設定</p></div>
+											<div class="col-auto">
+												<button type="submit" class="btn btn-success" th:text="#{initial.holidayInitialization}" id="holidayInitialization">休日データ初期化</button>
+											</div>
+										</div>
+										
+										<div class="row m-4">
+											<div class="col-auto">
+												<input type="checkbox" id="holidaySun" name="holidaySun" value="1" th:checked="${initialForm.holidaySunflag == '1'}" disabled>
+												<label for="holidaySun" th:text="#{initial.holidaySun}">日曜日</label>
+											</div>
+											<div class="col-auto">
+												<input type="checkbox" id="holidayThu" name="holidayThu" value="1" th:checked="${initialForm.holidayThuflag == '1'}" disabled>
+												<label for="holidayThu" th:text="#{initial.holidayThu}">木曜日</label>
+											</div>											
+										</div>
+										<div class="row m-4">
+											<div class="col-auto">
+												<input type="checkbox" id="holidayMon" name="holidayMon" value="1" th:checked="${initialForm.holidayMonflag == '1'}" disabled>
+												<label for="holidayMon" th:text="#{initial.holidayMon}">月曜日</label>
+											</div>
+											<div class="col-auto">
+												<input type="checkbox" id="holidayFri" name="holidayFri" value="1" th:checked="${initialForm.holidayFriflag == '1'}" disabled>
+												<label for="holidayFri" th:text="#{initial.holidayFri}">金曜日</label>
+											</div>											
+										</div>	
+										<div class="row m-4">
+											<div class="col-auto">
+												<input type="checkbox" id="holidayTue" name="holidayTue" value="1" th:checked="${initialForm.holidayTueflag == '1'}" disabled>
+												<label for="holidayTue" th:text="#{initial.holidayTue}">火曜日</label>
+											</div>
+											<div class="col-auto">
+												<input type="checkbox" id="holidaySat" name="holidaySat" value="1" th:checked="${initialForm.holidaySatflag == '1'}" disabled>
+												<label for="holidaySat" th:text="#{initial.holidaySat}">土曜日</label>
+											</div>											
+										</div>	
+										<div class="row ms-4 mb-2">
+											<div class="col-auto">
+												<input type="checkbox" id="holidayWed" name="holidayWed" value="1" th:checked="${initialForm.holidayWedflag == '1'}" disabled>
+												<label for="holidayWed" th:text="#{initial.holidayWed}">水曜日</label>
+											</div>										
+										</div>											
+									</div>										
+								</div>
+								<div class="col-6">
+									<div class="row">
+										<div class="col border border-1 border-secondary m-2 p-2">
+											<p class="mb-1" th:text="#{initial.initialInfo.antimode}">◆アンチパス設定</p>
+											<div class="col-8 d-flex justify-content-evenly">
+												<div>
+													<input type="radio" name="antimode" id="antimodeAbsence" th:value="0" th:checked="${initialForm.antimode == 0}">
+													<label for="antimodeAbsence" th:text="#{initial.initialInfo.antimode.absence}">不在</label>
+												</div>
+												<div>
+													<input type="radio" name="antimode" id="antimodeNochange" th:value="1" th:checked="${initialForm.antimode == 1}">
+													<label for="antimodeNochange" th:text="#{initial.initialInfo.antimode.noChange}">変化なし</label>	
+												</div>										
+											</div>
+										</div>
+										<div class="col border border-1 border-secondary m-2 p-2">
+											<p class="mb-1" th:text="#{initial.initialInfo.globalantiflag}">◆グローバルアンチパス設定</p>
+											<div class="ms-3">
+												<input type="checkbox" id="globalantiflag" name="globalantiflag" value="1" th:checked="${initialForm.globalantiflag == 1}">
+												<label for="globalantiflag" th:text="#{initial.initialInfo.globalantiflag.checked}">グローバルアンチパスあり</label>
+											</div>
+										</div>
+									</div>	
+									<div class="row">
+										<div class="col border border-1 border-secondary m-2 p-2">
+											<label for="bioflag" th:text="#{initial.initialInfo.bioflag}">◆バイオリーダー</label>
+											<input type="checkbox" id="bioflag" name="bioflag" value="1" th:checked="${initialForm.bioflag == 1}" disabled>
+											<div class="row ms-3 mt-1">
+												<div class="col">
+													<label for="biosize" th:text="#{initial.initialInfo.biosize}">対応桁数</label>
+													<select id="biosize" name="biosize" disabled>
+														<option th:value="4" th:text="4" th:selected="${4==initialForm.biosize}"></option>
+														<option th:value="8" th:text="8" th:selected="${8==initialForm.biosize}"></option>
+													</select>
+												</div>
+												<div class="col" th:text="#{initial.initialInfo.biosize.unit}">
+													桁
+												</div>
+											</div>
+										</div>
+										<div class="col border border-1 border-secondary m-2 p-2">
+											<p class="mb-1" th:text="#{initial.initialInfo.cardpostupdownmode}">◆個人、所属フォーマット設定(通門コード)</p>
+											<div class="d-flex justify-content-evenly">
+												<div>
+													<input type="radio" name="cardpostupdownmode" id="cardpostupdownmodeNoComma" th:value="0" th:checked="${initialForm.cardpostupdownmode == 0}">
+													<label for="cardpostupdownmodeNoComma" th:text="#{initial.initialInfo.cardpostupdownmode.NoCommaSeparator}">カンマ区切りなし</label>
+												</div>
+												<div>
+													<input type="radio" name="cardpostupdownmode" id="cardpostupdownmodeComma" th:value="1" th:checked="${initialForm.cardpostupdownmode == 1}">
+													<label for="cardpostupdownmodeComma" th:text="#{initial.initialInfo.cardpostupdownmode.CommaDelimited}">カンマ区切りあり</label>	
+												</div>										
+											</div>											
+										</div>
+									</div>									
+									<div class="row">
+										<div class="col border border-1 border-secondary m-2 p-2">
+											<label for="upcntflag" th:text="#{initial.initialInfo.upcntflag}">◆発行回数あり</label>
+											<input type="checkbox" id="upcntflag" name="upcntflag" value="1" th:checked="${initialForm.upcntflag == 1}" disabled>
+											<div class="row ms-3 mt-1">
+												<div class="col">
+													<label for="upcntsize" th:text="#{initial.initialInfo.upcntsize}">桁数</label>
+													<select id="upcntsize" name="upcntsize" disabled>
+														<option th:value="4" th:text="1" th:selected="${1==initialForm.upcntsize}"></option>
+														<option th:value="8" th:text="2" th:selected="${2==initialForm.upcntsize}"></option>
+													</select>
+												</div>
+												<div class="col" th:text="#{initial.initialInfo.upcntsize.unit}">
+													桁
+												</div>
+											</div>
+										</div>
+										<div class="col m-2 p-2 d-flex align-items-center">
+											<div>
+												<input type="checkbox" id="filterflag" name="filterflag" value="1" th:checked="${initialForm.filterflag == 1}">
+												<label for="filterflag" th:text="#{initial.initialInfo.filterflag}">フィルター機能あり</label>
+											</div>	
+										</div>
+									</div>								
+									<div class="row">
+										<div class="col border border-1 border-secondary m-2 p-2">
+											<p class="mb-1" th:text="#{initial.initialInfo.pasoriread}">◆パソリログイン</p>
+											<div class="col-7 d-flex justify-content-around">
+												<div>
+													<input type="radio" name="pasorireadtype" id="pasorireadtypeEdy" th:value="1" th:checked="${initialForm.pasorireadtype == 1}">
+													<label for="pasorireadtypeEdy" th:text="#{initial.initialInfo.pasorireadtype.edy}">Edy</label>
+												</div>
+												<div>
+													<input type="radio" name="pasorireadtype" id="pasorireadtypePrivate" th:value="2" th:checked="${initialForm.pasorireadtype == 2}">
+													<label for="pasorireadtypePrivate" th:text="#{initial.initialInfo.pasorireadtype.pasorireadtypePrivate}">Art非公開</label>		
+												</div>
+												<div>
+													<input type="radio" name="pasorireadtype" id="pasorireadtypePublic" th:value="3" th:checked="${initialForm.pasorireadtype == 3}">
+													<label for="pasorireadtypePublic" th:text="#{initial.initialInfo.pasorireadtype.pasorireadtypePublic}">Art公開</label>		
+												</div>								
+											</div>
+											<div class="m-3">
+												<div class="row mt-2">
+													<div class="col-4 d-flex justify-content-end">
+														<label class="me-3" for="pasorireadstart1" th:text="#{initial.initialInfo.pasorireadstart1}">個人コード　読取1</label>
+														<select id="pasorireadstart1" name="pasorireadstart1">
+															<option value=""></option>
+															<option th:each="pasoriread, stat : ${initialForm.pasorireadList}" th:value="${pasoriread}" th:text="${pasoriread}" th:selected="${pasoriread==initialForm.pasorireadstart1}"></option>
+														</select>
+													</div>	
+													<div class="col-1">
+														～
+													</div>
+													<div class="col-2">
+														<select id="pasorireadend1" name="pasorireadend1">
+															<option value=""></option>
+															<option th:each="pasoriread, stat : ${initialForm.pasorireadList}" th:value="${pasoriread}" th:text="${pasoriread}" th:selected="${pasoriread==initialForm.pasorireadend1}"></option>
+														</select>
+													</div>
+													<div class="col-1" th:text="#{initial.initialInfo.pasorireadtype.unit}">
+														桁
+													</div>
+												</div>
+												<div class="row mt-2">
+													<div class="col-4 d-flex justify-content-end">
+														<label class="me-3" for="pasorireadstart2" th:text="#{initial.initialInfo.pasorireadstart2}">読取2</label>
+														<select id="pasorireadstart2" name="pasorireadstart2">
+															<option value=""></option>
+															<option th:each="pasoriread, stat : ${initialForm.pasorireadList}" th:value="${pasoriread}" th:text="${pasoriread}" th:selected="${pasoriread==initialForm.pasorireadstart2}"></option>
+														</select>
+													</div>	
+													<div class="col-1">
+														～
+													</div>
+													<div class="col-2">
+														<select id="pasorireadend2" name="pasorireadend2">
+															<option value=""></option>
+															<option th:each="pasoriread, stat : ${initialForm.pasorireadList}" th:value="${pasoriread}" th:text="${pasoriread}" th:selected="${pasoriread==initialForm.pasorireadend2}"></option>
+														</select>
+													</div>
+													<div class="col-1" th:text="#{initial.initialInfo.pasorireadtype.unit}">
+														桁
+													</div>
+												</div>
+												<div class="row mt-2">
+													<div class="col-4 d-flex justify-content-end">
+														<label class="me-3" for="pasorireadstart3" th:text="#{initial.initialInfo.pasorireadstart3}">読取3</label>
+														<select id="pasorireadstart3" name="pasorireadstart3">
+															<option value=""></option>
+															<option th:each="pasoriread, stat : ${initialForm.pasorireadList}" th:value="${pasoriread}" th:text="${pasoriread}" th:selected="${pasoriread==initialForm.pasorireadstart3}"></option>
+														</select>
+													</div>	
+													<div class="col-1">
+														～
+													</div>
+													<div class="col-2">
+														<select id="pasorireadend3" name="pasorireadend3">
+															<option value=""></option>
+															<option th:each="pasoriread, stat : ${initialForm.pasorireadList}" th:value="${pasoriread}" th:text="${pasoriread}" th:selected="${pasoriread==initialForm.pasorireadend3}"></option>
+														</select>
+													</div>
+													<div class="col-1" th:text="#{initial.initialInfo.pasorireadtype.unit}">
+														桁
+													</div>
+												</div>												
+											</div>
+										</div>
+									</div>								
+								</div>														
+							</div>		
+						</div>
+						<!--セキュリティ対応-->
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>		
+						<!--初期設定ボタンの押下-->
+						<input type="hidden" id="holidayInitializationFlg" name="holidayInitializationFlg" value="0">
+						<input type="hidden" id="initializationFlg" name="initializationFlg" value="0">
+					</form>				
+					<div class="ms-4">
+						<button type="submit" class="btn btn-success" th:text="#{initial.initialization}" id="initialization">初期化</button>
+						<button type="submit" class="btn btn-success" th:text="#{initial.regist}" id="regist">登録</button>
+					</div>		
+				</div>
+				<!--タブ2 詳細設定-->
+				<div id="advancedsettings" class="tab-pane" style="width:1380px;">	
+					<form id="advancedsettingsFrom" name="advancedsettingsFrom" method="post">
+						<div class="container mb-3">
+							<div class="row d-flex flex-row">
+								<div class="col-5">
+									<div class="row">
+										<div class="row">
+											<div class="col m-2 p-2  border border-1 border-secondary">
+												<div class="row">
+													<div>
+														<p class="ms-3" th:text="#{initial.advancedsettings.CommunicationError}">◆通信異常設定</p>
+													</div>
+												</div>
+												<div class="row">
+													<div class="col-4 text-end">
+														<label for="waittime" th:text="#{initial.advancedsettings.CommunicationError.waittime}">ウエイト:</label>
+														<input type="text" id="waittime" name="waittime" class="js-inputtype-integer text-end" style="width:72px" maxlength="3" inputmode="numeric" th:value="${initialForm.waittime}">
+													</div>
+													<div class="col-2">
+														<div th:text="#{initial.advancedsettings.CommunicationError.waittime.unit}">秒</div>
+													</div>
+													<div class="col-4 text-end">
+														<label for="retrycnt" th:text="#{initial.advancedsettings.CommunicationError.retrycnt}">リトライ:</label>
+														<input type="text" id="retrycnt" name="retrycnt" class="js-inputtype-integer text-end" style="width:72px" maxlength="3" inputmode="numeric" th:value="${initialForm.retrycnt}">
+													</div>
+													<div class="col-1 text-start">
+														<div th:text="#{initial.advancedsettings.CommunicationError.retrycnt.unit}">回</div>
+													</div>
+												</div>
+											</div>
+										</div>	
+										<div class="row">
+											<div class="col m-2 p-2 border border-1 border-secondary">
+												<div class="row">
+													<div>
+														<p class="ms-3" th:text="#{initial.advancedsettings.LANadapterConnection}">◆LANアダプター接続設定</p>
+													</div>
+												</div>
+												<div class="row">
+													<div class="col-4 text-end">
+														<label for="lanwaittime" th:text="#{initial.advancedsettings.LANadapterConnection.lanwaittime}">ウエイト:</label>
+														<input type="text" id="lanwaittime" name="lanwaittime" class="js-inputtype-integer text-end" style="width:72px" maxlength="3" inputmode="numeric" th:value="${initialForm.lanwaittime}">
+													</div>
+													<div class="col-2">
+														<div th:text="#{initial.advancedsettings.LANadapterConnection.lanwaittime.unit}">00ミリ秒</div>
+													</div>
+													<div class="col-4 text-end">
+														<label for="lanretrycnt" th:text="#{initial.advancedsettings.LANadapterConnection.lanretrycnt}">リトライ:</label>
+														<input type="text" id="lanretrycnt" name="lanretrycnt" class="js-inputtype-integer text-end" style="width:72px" maxlength="3" inputmode="numeric" th:value="${initialForm.lanretrycnt}">
+													</div>
+													<div class="col-1 text-start">
+														<div th:text="#{initial.advancedsettings.LANadapterConnection.lanretrycnt.unit}">回</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="row">
+											<div class="col m-2 p-2 border border-1 border-secondary">
+												<div class="row">
+													<div>
+														<p class="ms-3" th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence}">◆在室自動削除設定</p>
+													</div>
+												</div>
+												<div class="row">
+													<div class="col-2 text-end">
+														<p th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.zaiautodelflag}">自動削除</p>
+													</div>
+													<div class="col-2">
+														<input type="radio" id="zaiautodelflagNo" name="zaiautodelflag" th:value="0" th:checked="${initialForm.zaiautodelflag == 0}">
+														<label for="zaiautodelflagNo" th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.zaiautodelflag.No}">なし</label>
+													</div>												
+												</div>
+												<div class="row">	
+													<div class="col-2">
+													</div>
+													<div class="col-2">
+														<input type="radio" id="zaiautodelflagYes" name="zaiautodelflag" th:value="1" th:checked="${initialForm.zaiautodelflag == 1}">
+														<label for="zaiautodelflagYes" th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.zaiautodelflag.Yes}">あり</label>
+													</div>
+													<div class="col-4 text-end">
+														<label for="zaikeepterm" th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.zaikeepterm}">保存期間:</label>
+														<input type="text" id="zaikeepterm" name="zaikeepterm" class="js-inputtype-integer text-end" style="width:60px" maxlength="3" inputmode="numeric" th:value="${initialForm.zaikeepterm}">
+													</div>
+													<div class="col-1 text-start">
+														<div th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.zaikeepterm.unit}">日</div>
+													</div>
+												</div>
+												<div class="row">
+													<div class="col-4">
+													</div>													
+													<div class="col-4 text-end">
+														<label for="zaideltimeHour" th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.zaideltime}">削除時刻:</label>
+														<input type="text" id="zaideltimeHour" name="zaideltimeHour" class="js-inputtype-integer text-end" style="width:60px" maxlength="2" inputmode="numeric" th:value="${initialForm.zaideltimeHour}">
+													</div>
+													<div class="col-1">
+														<p th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.zaideltime.symbol}"></p>
+													</div>
+													<div class="col-2">
+														<input type="text" id="zaideltimeMinutes" name="zaideltimeMinutes" class="js-inputtype-integer text-end" style="width:60px" maxlength="2" inputmode="numeric" th:value="${initialForm.zaideltimeMinutes}">
+													</div>
+												</div>
+											</div>
+										</div>										
+										<div class="row">
+											<div class="col m-2 p-2">
+												<input type="checkbox" id="dispmonflag" name="dispmonflag" class="js-inputtype-integer" value="1" th:checked="${initialForm.dispmonflag == 1}">
+												<label for="dispmonflag" th:text="#{initial.advancedsettings.dispmonflag}">モニターの表示</label>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-6">
+									<div class="row">
+										<div class="row">
+											<div class="col m-2 p-2 border border-1 border-secondary">
+												<div class="row">
+													<div>
+														<p class="ms-3" th:text="#{initial.advancedsettings.RealTimeSettings}">◆リアルタイム設定</p>
+													</div>
+												</div>
+												<div class="row">
+													<div class="col-6 ms-1 text-end">
+														<label for="datamoncnt" th:text="#{initial.advancedsettings.RealTimeSettings.datamoncnt}">データモニター表示件数:</label>
+														<input type="text" class="js-inputtype-integer text-end" id="datamoncnt" name="datamoncnt" style="width:72px" maxlength="3" inputmode="numeric" th:value="${initialForm.datamoncnt}">
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="row">	
+											<div class="col m-2 p-2 border border-1 border-secondary">
+												<div class="row">
+													<div>
+														<p class="ms-3" th:text="#{initial.advancedsettings.AutomaticUpload}">◆自動アップロード設定</p>
+													</div>
+												</div>
+												<div class="row">
+													<div class="col-7 ms-3 border border-1 border-secondary">
+														<div>
+															<p class="ms-3" th:text="#{initial.advancedsettings.autoupflag}">自動アップロード</p>
+														</div>
+														<div class="row">
+															<div class="col ms-4">
+																<input type="radio" id="autoupflagNo" name="autoupflag" class="js-inputtype-integer" th:value="0" th:checked="${initialForm.autoupflag == 0}">
+																<label for="autoupflagNo" th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.autoupflag.no}">しなし</label>															
+															</div>
+															<div class="col">
+																<input type="radio" id="autoupflagTime" name="autoupflag" class="js-inputtype-integer" th:value="1" th:checked="${initialForm.autoupflag == 1}">
+																<label for="autoupflagTime" th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.autoupflag.time}">時刻指定</label>															
+															</div>
+															<div class="col">
+																<input type="radio" id="autoupflagRealTime" name="autoupflag"class="js-inputtype-integer"  th:value="2" th:checked="${initialForm.autoupflag == 2}">
+																<label for="autoupflagRealTime" th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.autoupflag.realTime}">リアルタイム</label>															
+															</div>
+														</div>
+													</div>
+													<div class="col-4 ms-3 border border-1 border-secondary">
+														<div>
+															<p class="ms-3"　th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.autosendflag}">自動送信</p>
+														</div>													
+														<div class="row">
+															<div class="col ms-3">
+																<input type="radio" id="autosendflagNo" name="autosendflag" th:value="0" th:checked="${initialForm.autosendflag == 0}">
+																<label for="autosendflagNo" th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.autosendflag.no}">しなし</label>															
+															</div>
+															<div class="col">
+																<input type="radio" id="autosendflagYes" name="autosendflag" th:value="0" th:checked="${initialForm.autosendflag == 1}">
+																<label for="autosendflagYes" th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.autosendflag.yes}">あり</label>															
+															</div>
+														</div>
+													</div>
+												</div>
+												<div class="d-flex">	
+													<div class="flex-fill mt-3">
+														<p class="ms-3"　th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.autouptime}">アップロード時刻：</p>
+													</div>
+													<div class="flex-fill mt-3">
+														<input type="text" class="text-end" id="autouptimeHour" name="autouptimeHour" style="width:60px" maxlength="2" inputmode="numeric" th:value="${initialForm.autouptimeHour}">
+													</div>
+													<div class="flex-fill mt-3">
+														<p th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.autouptime.symbol}">：</p>			
+													</div>
+													<div class="flex-fill mt-3">
+														<input type="text" class="text-end" id="autouptimeMinutes" name="autouptimeMinutes" style="width:60px" maxlength="2" inputmode="numeric" th:value="${initialForm.autouptimeMinutes}">	
+													</div>		
+													<div class="flex-fill mt-3">
+														<label for="autouprealtime" th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.autouprealtime}">リアルタイム読込み間隔：</label>	
+														<input type="text" class="text-end" id="autouprealtime" name="autouprealtime" style="width:60px" maxlength="2" inputmode="numeric" th:value="${initialForm.autouprealtime}">																											
+													</div>
+													<div class="flex-fill mt-3">
+														<p th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.autouprealtime.unit}">分</p>												
+													</div>			
+												</div>										
+												<div class="d-flex">
+													<div class="flex-fill ms-3">
+														<label for="autouppath" th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.autouppath}">データ格納場所：</label>
+														<input type="text" class="float-end" id="autouppath" name="autouppath" style="width:420px" maxlength="260" th:value="${initialForm.autouppath}">																									
+													</div>
+												</div>
+												<div class="d-flex">
+													<div class="flex-fill ms-3">
+														<label for="autoupfname" th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.autoupfname}">ファイル名称：</label>	
+														<input type="text" class="float-end" id="autoupfname" name="autoupfname" style="width:420px" maxlength="256" th:value="${initialForm.autoupfname}">																													
+													</div>
+												</div>
+												<div class="d-flex">
+													<div class="flex-fill ms-3">
+														<label for="autoupoutpath" th:text="#{initial.advancedsettings.AutomaticDeletionOfPresence.autoupoutpath}">消去データ格納場所：</label>	
+														<input type="text" class="float-end" id="autoupoutpath" name="autoupoutpath" style="width:420px" maxlength="260" th:value="${initialForm.autoupoutpath}">																													
+													</div>
+												</div>												
+											</div>	
+										</div>
+										<div class="row">
+											<div class="col m-2 p-2 border border-1 border-secondary">
+												<div class="row">
+													<div>
+														<p class="ms-3" th:text="#{initial.advancedsettings.recvout}">◆履歴データ出力設定</p>
+													</div>
+												</div>
+												<div  class="d-flex">
+													<div class="flex-fill ms-3">
+														<label for="recvoutpath" th:text="#{initial.advancedsettings.recvoutpath}">履歴データ出力場所:</label>
+														<input type="text" class="float-end" id="recvoutpath" name="recvoutpath" style="width:420px" maxlength="260" th:value="${initialForm.recvoutpath}">
+													</div>
+												</div>
+											</div>
+										</div>	
+									</div>	
+								</div>
+							</div>									
+							<!--色設定-->
+							<div class="container mb-3">
+								<div class="row d-flex flex-row border border-1 border-secondary" style="width:1166px">
+									<div class="col">
+										<div class="row">
+											<p class="m-3"　th:text="#{initial.advancedsettings.colorSettings}">◆色設定</p>
+										</div>
+										<div class="row mb-2">
+											<div class="col-6">
+												<div class="row ms-1 p-1 border border-1 border-secondary">
+													<div class="row">
+														<div class="col">
+															<p　th:text="#{initial.advancedsettings.colorSettings.gate}">ゲート</p>
+														</div>														
+													</div>
+													<div class="row">
+														<div class="col">
+															<label for="gatedclkcl" th:text="#{initial.advancedsettings.colorSettings.gate.gatedclkcl}">閉扉・施錠：</label>
+															<input type="color" class="float-end" id="gatedclkcl" name="gatedclkcl" style="width:250px;" th:value="${initialForm.gatedclkcl}">
+														</div>														
+													</div>																
+													<div class="row">
+														<div class="col">
+															<label for="gatedclkop" th:text="#{initial.advancedsettings.colorSettings.gate.gatedclkop}">閉扉・解錠：</label>
+															<input type="color" class="float-end" id="gatedclkop" name="gatedclkop" style="width:250px;" th:value="${initialForm.gatedclkop}">
+													</div>														
+													</div>
+													<div class="row">
+														<div class="col">
+															<label for="gateerror" th:text="#{initial.advancedsettings.colorSettings.gate.gateerror}">異常：</label>
+															<input type="color" class="float-end" id="gateerror" name="gateerror" style="width:250px;" th:value="${initialForm.gateerror}">
+														</div>														
+													</div>																
+													<div class="row">
+														<div class="col">
+															<label for="gatedopkcl" th:text="#{initial.advancedsettings.colorSettings.gate.gatedopkcl}">開扉・施錠：</label>
+															<input type="color" class="float-end" id="gatedopkcl" name="gatedopkcl" style="width:250px;" th:value="${initialForm.gatedopkcl}">
+														</div>														
+													</div>	
+													<div class="row">
+														<div class="col">
+															<label for="gatedopkop" th:text="#{initial.advancedsettings.colorSettings.gate.gatedopkop}">開扉・解錠：</label>
+															<input type="color" class="float-end" id="gatedopkop" name="gatedopkop" style="width:250px;" th:value="${initialForm.gatedopkop}">
+														</div>														
+													</div>	
+													<div class="row">
+														<div class="col">
+															<label for="gateguardset" th:text="#{initial.advancedsettings.colorSettings.gate.gateguardset}">警備セット：</label>
+															<input type="color" class="float-end" id="gateguardset" name="gateguardset" style="width:250px;" th:value="${initialForm.gateguardset}">
+														</div>														
+													</div>	
+													<div class="row mb-2">
+														<div class="col">
+															<label for="gateguarderror" th:text="#{initial.advancedsettings.colorSettings.gate.gateguarderror}">警備異常：</label>
+															<input type="color" class="float-end" id="gateguarderror" name="gateguarderror" style="width:250px;" th:value="${initialForm.gateguarderror}">
+														</div>														
+													</div>																
+												</div>
+											</div>
+											<div class="col-6">
+												<div class="row ms-1 p-1 border border-1 border-secondary">
+													<div class="row">
+														<div class="col">
+															<p　th:text="#{initial.advancedsettings.colorSettings.sensor}">センサー</p>
+														</div>														
+													</div>
+													<div class="row">
+														<div class="col">
+															<label for="sensornouse" th:text="#{initial.advancedsettings.colorSettings.sensor.sensornouse}">未使用：</label>
+															<input type="color" class="float-end" id="sensornouse" name="sensornouse" style="width:250px;" th:value="${initialForm.sensornouse}">
+														</div>														
+													</div>																
+													<div class="row">
+														<div class="col">
+															<label for="sensorguardset" th:text="#{initial.advancedsettings.colorSettings.sensor.sensorguardset}">ループ正常・警備セット：</label>
+															<input type="color" class="float-end" id="sensorguardset" name="sensorguardset" style="width:250px;" th:value="${initialForm.sensorguardset}">
+													</div>														
+													</div>
+													<div class="row">
+														<div class="col">
+															<label for="sensorguardfree" th:text="#{initial.advancedsettings.colorSettings.sensor.sensorguardfree}">ループ正常・警備解除：</label>
+															<input type="color" class="float-end" id="sensorguardfree" name="sensorguardfree" style="width:250px;" th:value="${initialForm.sensorguardfree}">
+														</div>														
+													</div>																
+													<div class="row">
+														<div class="col">
+															<label for="sensorerror" th:text="#{initial.advancedsettings.colorSettings.sensor.sensorerror}">異常：</label>
+															<input type="color" class="float-end" id="sensorerror" name="sensorerror" style="width:250px;" th:value="${initialForm.sensorerror}">
+														</div>														
+													</div>	
+													<div class="row">
+														<div class="col" style="height:89px;">
+															<label for="sensorlerrguardfree" th:text="#{initial.advancedsettings.colorSettings.sensor.sensorlerrguardfree}">ループ異常・警備解除：</label>
+															<input type="color" class="float-end" id="sensorlerrguardfree" name="sensorlerrguardfree" style="width:250px;" th:value="${initialForm.sensorlerrguardfree}">
+														</div>														
+													</div>														
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!--セキュリティ対応-->
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>	
+					</form>
+					
+					<div class="ms-4">
+						<button type="submit" class="btn btn-success advancedsettingsRegist" th:text="#{initial.regist}">登録</button>
+					</div>	
+					
+				</div>				
+			</div>
+		</main>
+
+		<!--Javascriptで表示するためのメッセージ-->
+		<input type="hidden" name="message" id="message" th:value="${initialForm.message}">
+		<input type="hidden" name="initialRegistConfirm" id="initialRegistConfirm" th:value="#{initial.regist.confirm}">
+		<input type="hidden" name="holidayInitializationConfirm" id="holidayInitializationConfirm" th:value="#{initial.holidayInitialization.confirm}">
+		<input type="hidden" name="initializationConfirm" id="initializationConfirm" th:value="#{initial.initialization.confirm}">
+		<input type="hidden" name="pasorireadstart1Error" id="pasorireadstart1Error" th:value="#{initial.error.input.pasorireadstart1}">
+		<input type="hidden" name="pasorireadend1Error" id="pasorireadend1Error" th:value="#{initial.error.input.pasorireadend1}">
+		<input type="hidden" name="pasorireadstart2Error" id="pasorireadstart2Error" th:value="#{initial.error.input.pasorireadstart2}">
+		<input type="hidden" name="pasorireadend2Error" id="pasorireadend2Error" th:value="#{initial.error.input.pasorireadend2}">
+		<input type="hidden" name="pasorireadstart3Error" id="pasorireadstart3Error" th:value="#{initial.error.input.pasorireadstart3}">
+		<input type="hidden" name="pasorireadend3Error" id="pasorireadend3Error" th:value="#{initial.error.input.pasorireadend3}">
+		<input type="hidden" name="pasorireadstartError" id="pasorireadstartError" th:value="#{initial.error.input.pasorireadstart}">
+		<input type="hidden" name="pasorireadendError" id="pasorireadendError" th:value="#{initial.error.input.pasorireadend}">
+		<input type="hidden" name="pasoriread1sizeRelationshipError" id="pasoriread1sizeRelationshipError" th:value="#{initial.error.input.sizeRelationship.pasoriread1}">
+		<input type="hidden" name="pasoriread2sizeRelationshipError" id="pasoriread2sizeRelationshipError" th:value="#{initial.error.input.sizeRelationship.pasoriread2}">
+		<input type="hidden" name="pasoriread3sizeRelationshipError" id="pasoriread3sizeRelationshipError" th:value="#{initial.error.input.sizeRelationship.pasoriread3}">
+		<input type="hidden" name="pasorireadduplicatesError" id="pasorireadduplicatesError" th:value="#{initial.error.input.duplicates.pasoriread}">
+		<input type="hidden" name="noDataError" id="noDataError" th:value="#{initial.error.noData}">
+		<input type="hidden" name="waittimeEmptyError" id="waittimeEmptyError" th:value="#{initial.advancedsettings.error.empty.waittime}">
+		<input type="hidden" name="waittimeRangeError" id="waittimeRangeError" th:value="#{initial.advancedsettings.error.inputRange.waittime}">
+		<input type="hidden" name="retrycntEmptyError" id="retrycntEmptyError" th:value="#{initial.advancedsettings.error.empty.retrycnt}">
+		<input type="hidden" name="retrycntRangeError" id="retrycntRangeError" th:value="#{initial.advancedsettings.error.inputRange.retrycnt}">
+		<input type="hidden" name="lanwaittimeEmptyError" id="lanwaittimeEmptyError" th:value="#{initial.advancedsettings.error.empty.lanwaittime}">
+		<input type="hidden" name="lanwaittimeRangeError" id="lanwaittimeRangeError" th:value="#{initial.advancedsettings.error.inputRange.lanwaittime}">
+		<input type="hidden" name="lanretrycntEmptyError" id="lanretrycntEmptyError" th:value="#{initial.advancedsettings.error.empty.lanretrycnt}">
+		<input type="hidden" name="lanretrycntRangeError" id="lanretrycntRangeError" th:value="#{initial.advancedsettings.error.inputRange.lanretrycnt}">
+		<input type="hidden" name="zaikeeptermEmptyError" id="zaikeeptermEmptyError" th:value="#{initial.advancedsettings.error.empty.zaikeepterm}">
+		<input type="hidden" name="zaikeeptermRangeError" id="zaikeeptermRangeError" th:value="#{initial.advancedsettings.error.inputRange.zaikeepterm}">
+		<input type="hidden" name="zaideltimeHourEmptyError" id="zaideltimeHourEmptyError" th:value="#{initial.advancedsettings.error.empty.zaideltimeHour}">
+		<input type="hidden" name="zaideltimeHourRangeError" id="zaideltimeHourRangeError" th:value="#{initial.advancedsettings.error.inputRange.zaideltimeHour}">
+		<input type="hidden" name="zaideltimeMinutesEmptyError" id="zaideltimeMinutesEmptyError" th:value="#{initial.advancedsettings.error.empty.zaideltimeMinutes}">
+		<input type="hidden" name="zaideltimeMinutesRangeError" id="zaideltimeMinutesRangeError" th:value="#{initial.advancedsettings.error.inputRange.zaideltimeMinutes}">
+		<input type="hidden" name="datamoncntEmptyError" id="datamoncntEmptyError" th:value="#{initial.advancedsettings.error.empty.datamoncnt}">
+		<input type="hidden" name="datamoncntRangeError" id="datamoncntRangeError" th:value="#{initial.advancedsettings.error.inputRange.datamoncnt}">
+		<input type="hidden" name="autouptimeHourEmptyError" id="autouptimeHourEmptyError" th:value="#{initial.advancedsettings.error.empty.autouptimeHour}">
+		<input type="hidden" name="autouptimeHourRangeError" id="autouptimeHourRangeError" th:value="#{initial.advancedsettings.error.inputRange.autouptimeHour}">
+		<input type="hidden" name="autouptimeMinutesEmptyError" id="autouptimeMinutesEmptyError" th:value="#{initial.advancedsettings.error.empty.autouptimeMinutes}">
+		<input type="hidden" name="autouptimeMinutesRangeError" id="autouptimeMinutesRangeError" th:value="#{initial.advancedsettings.error.inputRange.autouptimeMinutes}">
+		<input type="hidden" name="autouprealtimeEmptyError" id="autouprealtimeEmptyError" th:value="#{initial.advancedsettings.error.empty.autouprealtime}">
+		<input type="hidden" name="autouprealtimeRangeError" id="autouprealtimeRangeError" th:value="#{initial.advancedsettings.error.inputRange.autouprealtime}">
+		<input type="hidden" name="autouppathEmptyError" id="autouppathEmptyError" th:value="#{initial.advancedsettings.error.empty.autouppath}">
+		<input type="hidden" name="autoupfnameEmptyError" id="autoupfnameEmptyError" th:value="#{initial.advancedsettings.error.empty.autoupfname}">
+		<input type="hidden" name="autoupfnamePatternError" id="autoupfnamePatternError" th:value="#{initial.advancedsettings.error.pattern.autoupfname}">
+		<input type="hidden" name="autoupoutpathEmptyError" id="autoupoutpathEmptyError" th:value="#{initial.advancedsettings.error.empty.autoupoutpath}">	
+		<input type="hidden" name="recvoutpathEmptyError" id="recvoutpathEmptyError" th:value="#{initial.advancedsettings.error.empty.recvoutpath}">	
+		<script type="text/javascript" th:src="@{/js/initial/initial.js}"></script>
+	</div>
+</body>
+</html>

@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/resources/static/css/common.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <title>個人情報登録</title>
+    <style>
+        .content-wrapper {
+            padding-top: 50px;
+            background: #f8f9fa;
+        }
+        
+        .registration-container {
+            padding: 2px 10px;
+            max-width: none;
+            margin: 0;
+        }
+        
+        .page-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+            padding-bottom: 2px;
+            border-bottom: 2px solid #007bff;
+            display: inline-block;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            width: 100%;
+            max-width: none;
+        }
+        
+        .form-header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 20px 30px;
+        }
+        
+        .form-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .form-header .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .form-body {
+            padding: 4px 10px;
+        }
+        
+        .main-form-area {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 15px;
+            align-items: start;
+            width: 100%;
+        }
+        
+        .form-left {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-section {
+            background: white;
+            padding: 0;
+        }
+        
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 4px;
+            padding-bottom: 2px;
+            border-bottom: 1px solid #e9ecef;
+            position: relative;
+        }
+        
+        .section-title::before {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: #007bff;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 8px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 2px;
+            font-size: 0.8rem;
+        }
+        
+        .required {
+            color: #dc3545;
+            margin-left: 3px;
+        }
+        
+        .form-control {
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            background: #fff;
+            min-width: 200px;
+        }
+        
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+            outline: none;
+        }
+        
+        .form-control:hover {
+            border-color: #ced4da;
+        }
+        
+        .date-input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .date-input {
+            width: 70px;
+            text-align: center;
+            padding: 4px 6px;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        
+        .date-select {
+            width: 70px;
+            padding: 12px 8px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 1rem;
+            text-align: center;
+        }
+        
+        .date-separator {
+            font-weight: 500;
+            color: #495057;
+            font-size: 1rem;
+            margin: 0 2px;
+        }
+        
+        .btn-calendar {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+            margin-left: 4px;
+        }
+        
+        .btn-calendar:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+        
+        .date-inline-picker {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 100;
+            display: none;
+            width: 280px;
+        }
+        
+        .date-input-group {
+            position: relative;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .calendar-nav-btn {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .calendar-nav-btn:hover {
+            background: #e9ecef;
+        }
+        
+        .calendar-month-year {
+            font-weight: 600;
+            font-size: 14px;
+            color: #495057;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            text-align: center;
+        }
+        
+        .calendar-day-header {
+            padding: 6px 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6c757d;
+            background: #f8f9fa;
+        }
+        
+        .calendar-day {
+            padding: 8px 4px;
+            font-size: 13px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        
+        .calendar-day:hover {
+            background: #e3f2fd;
+        }
+        
+        .calendar-day.other-month {
+            color: #adb5bd;
+        }
+        
+        .calendar-day.selected {
+            background: #007bff;
+            color: white;
+        }
+        
+        .calendar-day.today {
+            border: 1px solid #007bff;
+            font-weight: 600;
+        }
+        
+        .calendar-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid #e9ecef;
+            justify-content: flex-end;
+        }
+        
+        .calendar-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .calendar-btn.today-btn {
+            background: #f8f9fa;
+            color: #495057;
+            border: 1px solid #dee2e6;
+        }
+        
+        .calendar-btn.close-btn {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+        }
+        
+        .checkbox-group:hover {
+            background: #e9ecef;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #007bff;
+        }
+        
+        .checkbox-group label {
+            margin: 0;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.75rem;
+            white-space: nowrap;
+        }
+        
+        .form-right {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: fit-content;
+        }
+        
+        .photo-section {
+            background: white;
+            border: 1px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        
+        .photo-section:hover {
+            border-color: #007bff;
+            background: #f8f9fa;
+        }
+        
+        .photo-preview {
+            width: 120px;
+            height: 90px;
+            border: 1px solid #dee2e6;
+            margin: 0 auto 6px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .no-image-icon {
+            font-size: 2rem;
+            color: #adb5bd;
+            margin-bottom: 2px;
+        }
+        
+        .no-image-text {
+            color: #6c757d;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .photo-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        
+        .btn-photo {
+            padding: 10px 18px;
+            font-size: 0.9rem;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .permissions-section {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            padding: 10px;
+            height: fit-content;
+        }
+        
+        .permissions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .permissions-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .permissions-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .permission-code {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .btn-permission {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        
+        .permissions-table-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+        }
+        
+        .permissions-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.7rem;
+            table-layout: fixed;
+        }
+        
+        .permissions-table th:nth-child(1),
+        .permissions-table td:nth-child(1) {
+            width: 20%;
+        }
+        
+        .permissions-table th:nth-child(2),
+        .permissions-table td:nth-child(2) {
+            width: 40%;
+        }
+        
+        .permissions-table th:nth-child(3),
+        .permissions-table td:nth-child(3) {
+            width: 20%;
+        }
+        
+        .permissions-table th:nth-child(4),
+        .permissions-table td:nth-child(4) {
+            width: 20%;
+        }
+        
+        .permissions-table thead {
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+        }
+        
+        .permissions-table th,
+        .permissions-table td {
+            padding: 3px 4px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+            line-height: 1.1;
+        }
+        
+        .permissions-table .form-control-sm {
+            font-size: 0.7rem;
+            padding: 2px 4px;
+            height: auto;
+            min-height: 24px;
+            border: none;
+            background: transparent;
+        }
+        
+        .permissions-table .form-control-sm:read-only {
+            background-color: transparent;
+            border: none;
+        }
+        
+        .permissions-table th {
+            font-weight: 600;
+            color: #495057;
+            background: #f8f9fa;
+        }
+        
+        .permissions-table tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .permissions-table tbody tr:hover {
+            background: #e9ecef;
+        }
+        
+        .action-section {
+            background: #f8f9fa;
+            padding: 6px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .btn-action {
+            padding: 5px 15px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            border: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            min-width: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .btn-save {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .btn-save:hover {
+            background: linear-gradient(135deg, #218838, #1aa085);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-cancel {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            color: white;
+        }
+        
+        .btn-cancel:hover {
+            background: linear-gradient(135deg, #5a6268, #495057);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(108, 117, 125, 0.3);
+        }
+        
+        .btn-clear {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: #333;
+        }
+        
+        .btn-clear:hover {
+            background: linear-gradient(135deg, #e0a800, #dc7609);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(255, 193, 7, 0.3);
+        }
+        
+        .form-control:read-only {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+        
+        /* Switch styling */
+        .form-switch .form-check-input {
+            width: 3em;
+            height: 1.5em;
+            cursor: pointer;
+        }
+
+        .alt-setting-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+            width: fit-content;
+        }
+
+        .alt-setting-title {
+            font-weight: bold;
+            font-size: 0.9rem;
+            position: relative;
+            padding-bottom: 2px;
+        }
+
+        .alt-setting-title::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -2px;
+            width: 80%;
+            height: 2px;
+            background-color: #0d6efd;
+        }
+
+        .form-switch {
+            padding-left: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-switch .form-check-input {
+            margin-left: 0;
+            margin-top: 0;
+        }
+
+        .display-name {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 2px;
+            min-height: 1.1em;
+        }
+
+        .input-with-button {
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-with-button .form-control {
+            flex: 1;
+        }
+
+        .btn-reference {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 0 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-reference:hover {
+            background-color: #5a6268;
+        }
+
+        .datetime-display-area {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 4px;
+            margin-bottom: 4px;
+            border: 1px solid #e9ecef;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .datetime-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .datetime-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        .datetime-value {
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .btn-action-small {
+            padding: 6px 15px;
+            font-size: 0.85rem;
+            min-width: 80px;
+        }
+
+        .authority-columns {
+            display: block;
+        }
+
+        @media (max-width: 1200px) {
+            .main-form-area {
+                grid-template-columns: 3fr 2fr;
+                gap: 25px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .main-form-area {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .btn-action {
+                width: auto;
+                min-width: 120px;
+            }
+            
+            .registration-container {
+                padding: 10px;
+            }
+            
+            .form-body {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <div class="bs-component" id="global-header">
+        <div class="fixed-top">
+            <nav class="sticky-top navbar navbar-expand-lg navbar-dark bg-success p-0">
+                <ul class="d-flex list-unstyled col-12 p-0" style="height:30px;">
+                    <li class="p-0 col-11">
+                        <div class="navbar-brand ms-3">
+                            Web版入退室管理システム
+                        </div>
+                    </li>
+                    <li class="p-0 col-1">
+                        <div class="border border-1 border-white m-1 g-center">
+                            <a class="text-white fs-5 text-decoration-none ms-2" href="/logout">
+                                ログアウト
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+
+    <!-- メインコンテンツ -->
+    <main class="content-wrapper">
+        <div class="registration-container">
+            <h2 class="page-title">個人情報登録</h2>
+            
+            <!-- フォームコンテナ -->
+            <div class="form-container">
+                <div class="form-body">
+                    <div class="main-form-area">
+                        <!-- 左側フォーム -->
+                        <div class="form-left">
+                            <!-- 必須項目セクション -->
+                            <div class="form-section">
+                                <h4 class="section-title">必須項目</h4>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label">個人コード<span class="required">*</span></label>
+                                        <input type="text" class="form-control" value="0030302" id="personCode" placeholder="個人コードを入力">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label">発行回数</label>
+                                        <input type="text" class="form-control" value="0" id="issueCount">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label">管理番号</label>
+                                        <input type="text" class="form-control" placeholder="管理番号を入力" id="managementNumber">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label">氏名</label>
+                                        <input type="text" class="form-control" placeholder="氏名を入力" id="name">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label">氏名(ﾌﾘｶﾞﾅ)</label>
+                                        <input type="text" class="form-control" placeholder="フリガナを入力" id="nameKana">
+                                    </div>
+                                    
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label">所属</label>
+                                        <div class="input-with-button">
+                                            <input type="text" class="form-control" placeholder="所属コード" id="department">
+                                            <button type="button" class="btn-reference" onclick="openDepartmentSelector()">参照</button>
+                                        </div>
+                                        <div class="display-name" id="departmentName">所属名称表示</div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label">区分</label>
+                                        <div class="input-with-button">
+                                            <input type="text" class="form-control" value="001" id="category">
+                                            <button type="button" class="btn-reference" onclick="openCategorySelector()">参照</button>
+                                        </div>
+                                        <div class="display-name" id="categoryName">区分名称表示</div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label">テンキー暗証番号</label>
+                                        <input type="text" class="form-control" value="0000" placeholder="テンキー暗証番号" id="tenkeyNumber">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 利用期間設定 -->
+                            <div class="form-section">
+                                <h4 class="section-title">利用期間設定</h4>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label">利用開始日</label>
+                                        <div class="date-input-group">
+                                            <input type="text" class="date-input" value="0000" maxlength="4" id="startYear" placeholder="年">
+                                            <span class="date-separator">年</span>
+                                            <input type="text" class="date-input" value="00" maxlength="2" id="startMonth" placeholder="月">
+                                            <span class="date-separator">月</span>
+                                            <input type="text" class="date-input" value="00" maxlength="2" id="startDay" placeholder="日">
+                                            <span class="date-separator">日</span>
+                                            <button type="button" class="btn-calendar" onclick="toggleInlineDatePicker('start')">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </button>
+                                            <div class="date-inline-picker" id="startDatePicker">
+                                                <div class="calendar-header">
+                                                    <button type="button" class="calendar-nav-btn" onclick="navigateMonth('start', -1)">‹</button>
+                                                    <span class="calendar-month-year" id="startMonthYear"></span>
+                                                    <button type="button" class="calendar-nav-btn" onclick="navigateMonth('start', 1)">›</button>
+                                                </div>
+                                                <div class="calendar-grid" id="startCalendarGrid"></div>
+                                                <div class="calendar-actions">
+                                                    <button type="button" class="calendar-btn today-btn" onclick="selectToday('start')">今日</button>
+                                                    <button type="button" class="calendar-btn close-btn" onclick="hideInlineDatePicker('start')">閉じる</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label">利用終了日</label>
+                                        <div class="date-input-group">
+                                            <input type="text" class="date-input" value="0000" maxlength="4" id="endYear" placeholder="年">
+                                            <span class="date-separator">年</span>
+                                            <input type="text" class="date-input" value="00" maxlength="2" id="endMonth" placeholder="月">
+                                            <span class="date-separator">月</span>
+                                            <input type="text" class="date-input" value="00" maxlength="2" id="endDay" placeholder="日">
+                                            <span class="date-separator">日</span>
+                                            <button type="button" class="btn-calendar" onclick="toggleInlineDatePicker('end')">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </button>
+                                            <div class="date-inline-picker" id="endDatePicker">
+                                                <div class="calendar-header">
+                                                    <button type="button" class="calendar-nav-btn" onclick="navigateMonth('end', -1)">‹</button>
+                                                    <span class="calendar-month-year" id="endMonthYear"></span>
+                                                    <button type="button" class="calendar-nav-btn" onclick="navigateMonth('end', 1)">›</button>
+                                                </div>
+                                                <div class="calendar-grid" id="endCalendarGrid"></div>
+                                                <div class="calendar-actions">
+                                                    <button type="button" class="calendar-btn today-btn" onclick="selectToday('end')">今日</button>
+                                                    <button type="button" class="calendar-btn close-btn" onclick="hideInlineDatePicker('end')">閉じる</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 代替設定 -->
+                            <div class="form-section">
+                                <div class="alt-setting-header">
+                                    <div class="alt-setting-title">代替設定</div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="altSettingSwitch">
+                                    </div>
+                                </div>
+                                <div class="form-grid" id="altSettingFields">
+                                    <div class="form-group">
+                                        <label class="form-label">代替コード</label>
+                                        <input type="text" class="form-control" placeholder="代替コードを入力" id="altCode" disabled>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label">代替コード利用終了日</label>
+                                        <div class="date-input-group">
+                                            <input type="text" class="date-input" value="0000" maxlength="4" id="altYear" placeholder="年" disabled>
+                                            <span class="date-separator">年</span>
+                                            <input type="text" class="date-input" value="00" maxlength="2" id="altMonth" placeholder="月" disabled>
+                                            <span class="date-separator">月</span>
+                                            <input type="text" class="date-input" value="00" maxlength="2" id="altDay" placeholder="日" disabled>
+                                            <span class="date-separator">日</span>
+                                            <button type="button" class="btn-calendar" id="altCalendarBtn" onclick="toggleInlineDatePicker('alt')" disabled>
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </button>
+                                            <div class="date-inline-picker" id="altDatePicker">
+                                                <div class="calendar-header">
+                                                    <button type="button" class="calendar-nav-btn" onclick="navigateMonth('alt', -1)">‹</button>
+                                                    <span class="calendar-month-year" id="altMonthYear"></span>
+                                                    <button type="button" class="calendar-nav-btn" onclick="navigateMonth('alt', 1)">›</button>
+                                                </div>
+                                                <div class="calendar-grid" id="altCalendarGrid"></div>
+                                                <div class="calendar-actions">
+                                                    <button type="button" class="calendar-btn today-btn" onclick="selectToday('alt')">今日</button>
+                                                    <button type="button" class="calendar-btn close-btn" onclick="hideInlineDatePicker('alt')">閉じる</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 生体INDEX設定 -->
+                            <div class="form-section">
+                                <h4 class="section-title">生体INDEX設定</h4>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label">バイオID</label>
+                                        <input type="text" class="form-control" placeholder="バイオIDを入力" id="bioID">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 通門モード -->
+                            <div class="form-section">
+                                <h4 class="section-title">通門モード</h4>
+                                
+                                <div class="form-grid" style="grid-template-columns: repeat(4, 1fr);">
+                                    <div class="checkbox-group">
+                                        <input type="checkbox" id="readProhibition" class="form-check-input" checked>
+                                        <label for="readProhibition" class="form-check-label">読取禁止</label>
+                                    </div>
+                                    
+                                    <div class="checkbox-group">
+                                        <input type="checkbox" id="antiPassback" class="form-check-input" checked>
+                                        <label for="antiPassback" class="form-check-label">アンチパス</label>
+                                    </div>
+                                    
+                                    <div class="checkbox-group">
+                                        <input type="checkbox" id="securityOpDisable" class="form-check-input">
+                                        <label for="securityOpDisable" class="form-check-label">警備セット操作不可</label>
+                                    </div>
+                                    
+                                    <div class="checkbox-group">
+                                        <input type="checkbox" id="monitoringCard" class="form-check-input">
+                                        <label for="monitoringCard" class="form-check-label">監視カード</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 右側エリア -->
+                        <div class="form-right">
+                            <!-- 顔写真 -->
+                            <div class="photo-section">
+                                <label class="form-label">顔写真</label>
+                                <div class="photo-preview">
+                                    <div class="no-image-content">
+                                        <i class="fas fa-user no-image-icon"></i>
+                                        <div class="no-image-text">NO IMAGE</div>
+                                    </div>
+                                </div>
+                                <div class="photo-buttons">
+                                    <button class="btn btn-outline-primary btn-photo">
+                                        <i class="fas fa-folder-open"></i> 参照
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-photo">
+                                        <i class="fas fa-trash"></i> 削除
+                                    </button>
+                                </div>
+                                <input type="file" id="photoUpload" accept="image/*" style="display: none;">
+                            </div>
+                            
+                            <!-- 通行権限 -->
+                            <div class="permissions-section">
+                                <div class="permissions-header" style="flex-direction: column; align-items: flex-start;">
+                                    <div class="permissions-title">●通行権限</div>
+                                    <div class="permissions-controls w-100 mt-2">
+                                        <div class="input-with-button">
+                                            <input type="text" class="form-control" value="001" id="authorityCode">
+                                            <button type="button" class="btn-reference">参照</button>
+                                        </div>
+                                    </div>
+                                    <div class="display-name" id="authorityName">名称：ツウコウ001</div>
+                                </div>
+                                <div class="permissions-table-container">
+                                    <table class="permissions-table">
+                                        <thead>
+                                            <tr>
+                                                <th>ゲートコード</th>
+                                                <th>ゲート名称</th>
+                                                <th>TC</th>
+                                                <th>DF</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0001" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="ゲート①" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0002" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="ゲート②" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0003" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="ゲート③" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0004" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="ゲート④" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0005" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="ゲート⑤" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0006" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="ゲート⑥" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0007" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="ゲート⑦" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0008" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="ゲート⑧" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0009" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="ゲート⑨" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0010" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="ゲート⑩" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0011" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="エレベーター①" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0012" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="エレベーター②" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0013" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="駐車場入口" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0014" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="駐車場出口" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0015" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="会議室A" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0016" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="会議室B" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0017" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="サーバールーム" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0018" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="金庫室" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0019" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="屋上扉" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="0020" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="非常口" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" value=""></td>
+                                                <td><input type="text" class="form-control form-control-sm" value="C" readonly></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- アクションセクション -->
+                <div class="action-section">
+                    <!-- 登録日時／更新日時 (Item 19) -->
+                    <div class="datetime-display-area">
+                        <div class="datetime-item">
+                            <span class="datetime-label">登録日時：</span>
+                            <span class="datetime-value" id="registrationDateTime">2025/12/19 10:00:00</span>
+                        </div>
+                        <div class="datetime-item">
+                            <span class="datetime-label">更新日時：</span>
+                            <span class="datetime-value" id="updateDateTime">2025/12/19 15:30:00</span>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn-action btn-save btn-action-small" id="sendBtn" onclick="sendData()">
+                             送信
+                        </button>
+                        <button class="btn-action btn-save btn-action-small" id="saveBtn" onclick="savePerson()">
+                             登録
+                        </button>
+                        <button class="btn-action btn-cancel btn-action-small" id="deleteBtn" onclick="deletePerson()">
+                             削除
+                        </button>
+                        <button class="btn-action btn-clear btn-action-small" id="eraseBtn" onclick="eraseData()">
+                             消去
+                        </button>
+                        <button class="btn-action btn-cancel btn-action-small" id="cancelBtn" onclick="cancelEdit()">
+                             キャンセル
+                        </button>
+                        <button class="btn-action btn-clear btn-action-small" id="clearBtn" onclick="clearForm()">
+                             クリア
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+
+    <!-- フッター -->
+    <div id="global-footer" class="mt-5">
+        <footer>
+            <p class="text-right"><small>© ART JAPAN CO., LTD. All Rights Reserved.</small></p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="/resources/static/js/jquery/3.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="/resources/static/js/common.js"></script>
+    <script type="text/javascript" src="/resources/static/js/personalRegistration.js"></script>
+    
+    <script>
+        let calendarData = {
+            start: { currentDate: new Date(), selectedDate: null },
+            end: { currentDate: new Date(), selectedDate: null },
+            alt: { currentDate: new Date(), selectedDate: null }
+        };
+        
+        const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+        const dayHeaders = ['日', '月', '火', '水', '木', '金', '土'];
+        
+        function toggleInlineDatePicker(type) {
+            // 他のピッカーを閉じる
+            const allPickers = document.querySelectorAll('.date-inline-picker');
+            allPickers.forEach(picker => {
+                if (picker.id !== type + 'DatePicker') {
+                    picker.style.display = 'none';
+                }
+            });
+            
+            const picker = document.getElementById(type + 'DatePicker');
+            
+            if (picker.style.display === 'block') {
+                picker.style.display = 'none';
+            } else {
+                // 現在の値を取得
+                let year, month, day;
+                if (type === 'start') {
+                    year = parseInt(document.getElementById('startYear').value);
+                    month = parseInt(document.getElementById('startMonth').value);
+                    day = parseInt(document.getElementById('startDay').value);
+                } else if (type === 'end') {
+                    year = parseInt(document.getElementById('endYear').value);
+                    month = parseInt(document.getElementById('endMonth').value);
+                    day = parseInt(document.getElementById('endDay').value);
+                } else if (type === 'alt') {
+                    year = parseInt(document.getElementById('altYear').value);
+                    month = parseInt(document.getElementById('altMonth').value);
+                    day = parseInt(document.getElementById('altDay').value);
+                }
+                
+                // 現在の日付を設定
+                if (year > 0 && year !== 0 && month && day) {
+                    calendarData[type].currentDate = new Date(year, month - 1, day);
+                    calendarData[type].selectedDate = new Date(year, month - 1, day);
+                } else {
+                    calendarData[type].currentDate = new Date();
+                    calendarData[type].selectedDate = null;
+                }
+                
+                renderCalendar(type);
+                picker.style.display = 'block';
+            }
+        }
+        
+        function renderCalendar(type) {
+            const currentDate = calendarData[type].currentDate;
+            const selectedDate = calendarData[type].selectedDate;
+            const today = new Date();
+            
+            // ヘッダーの月年表示
+            const monthYear = document.getElementById(type + 'MonthYear');
+            monthYear.textContent = `${currentDate.getFullYear()}年${monthNames[currentDate.getMonth()]}`;
+            
+            // カレンダーグリッドを作成
+            const grid = document.getElementById(type + 'CalendarGrid');
+            grid.innerHTML = '';
+            
+            // 曜日ヘッダー
+            dayHeaders.forEach(dayHeader => {
+                const dayHeaderEl = document.createElement('div');
+                dayHeaderEl.className = 'calendar-day-header';
+                dayHeaderEl.textContent = dayHeader;
+                grid.appendChild(dayHeaderEl);
+            });
+            
+            // 月の最初の日と最後の日
+            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            // カレンダーの日付を生成
+            for (let i = 0; i < 42; i++) {
+                const date = new Date(startDate);
+                date.setDate(startDate.getDate() + i);
+                
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-day';
+                dayEl.textContent = date.getDate();
+                
+                // 他の月の日付
+                if (date.getMonth() !== currentDate.getMonth()) {
+                    dayEl.classList.add('other-month');
+                }
+                
+                // 今日の日付
+                if (date.toDateString() === today.toDateString()) {
+                    dayEl.classList.add('today');
+                }
+                
+                // 選択された日付
+                if (selectedDate && date.toDateString() === selectedDate.toDateString()) {
+                    dayEl.classList.add('selected');
+                }
+                
+                // クリックイベント
+                dayEl.addEventListener('click', () => selectDate(type, date));
+                
+                grid.appendChild(dayEl);
+            }
+        }
+        
+        function selectDate(type, date) {
+            calendarData[type].selectedDate = date;
+            
+            // 年月日フィールドに反映
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            
+            if (type === 'start') {
+                document.getElementById('startYear').value = year;
+                document.getElementById('startMonth').value = month;
+                document.getElementById('startDay').value = day;
+            } else if (type === 'end') {
+                document.getElementById('endYear').value = year;
+                document.getElementById('endMonth').value = month;
+                document.getElementById('endDay').value = day;
+            } else if (type === 'alt') {
+                document.getElementById('altYear').value = year;
+                document.getElementById('altMonth').value = month;
+                document.getElementById('altDay').value = day;
+            }
+            
+            // カレンダーを再描画して選択状態を表示
+            renderCalendar(type);
+            
+            // カレンダーを閉じる
+            hideInlineDatePicker(type);
+        }
+        
+        function navigateMonth(type, direction) {
+            const currentDate = calendarData[type].currentDate;
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            renderCalendar(type);
+        }
+        
+        function selectToday(type) {
+            const today = new Date();
+            selectDate(type, today);
+        }
+        
+        function hideInlineDatePicker(type) {
+            const picker = document.getElementById(type + 'DatePicker');
+            picker.style.display = 'none';
+        }
+        
+        // 代替設定のスイッチ制御
+        document.getElementById('altSettingSwitch').addEventListener('change', function() {
+            const altCode = document.getElementById('altCode');
+            const altYear = document.getElementById('altYear');
+            const altMonth = document.getElementById('altMonth');
+            const altDay = document.getElementById('altDay');
+            const altCalendarBtn = document.getElementById('altCalendarBtn');
+            
+            if (this.checked) {
+                // スイッチがONの時、入力を有効にする
+                altCode.disabled = false;
+                altYear.disabled = false;
+                altMonth.disabled = false;
+                altDay.disabled = false;
+                altCalendarBtn.disabled = false;
+            } else {
+                // スイッチがOFFの時、入力を無効にする
+                altCode.disabled = true;
+                altYear.disabled = true;
+                altMonth.disabled = true;
+                altDay.disabled = true;
+                altCalendarBtn.disabled = true;
+            }
+        });
+        
+        // ページ外クリックで全てのピッカーを閉じる
+        document.addEventListener('click', function(e) {
+            const isCalendarButton = e.target.closest('.btn-calendar');
+            const isDatePicker = e.target.closest('.date-inline-picker');
+            
+            if (!isCalendarButton && !isDatePicker) {
+                const allPickers = document.querySelectorAll('.date-inline-picker');
+                allPickers.forEach(picker => {
+                    picker.style.display = 'none';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

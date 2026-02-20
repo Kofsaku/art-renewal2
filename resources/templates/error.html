@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/layout}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{error.title}">エラー</title>
+</head>
+<body>
+
+    <div layout:fragment="content">
+    
+		<section class="g-contents" style="width: 50% !important;">
+			<!--/* エラーコンテンツ */-->
+			
+			<div class="g-error-message m-30">
+				<div class="g-error-message__text">
+					<h1 class="g-error-title" th:text="#{error.title}"></h1>
+					<p class="g-fw-bold" th:text="${message}"></p>
+				</div>
+			</div>
+			
+			<div style="width: 50%; margin:0 auto;">
+				<th:block>
+					<a class="g-btn" th:href="@{'/login'}">ログイン画面に戻る</a>
+				</th:block>
+			</div>
+			
+			<!--/* /エラーコンテンツ */-->
+		</section>
+		
+	</div>
+	
+</body>
+</html>
