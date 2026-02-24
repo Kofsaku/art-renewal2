@@ -146,22 +146,42 @@
         .dot-error   { background: #dc3545; }
         .date-cell   { display: flex; align-items: center; }
 
-        /* ---- フィルタートリガー ---- */
-        .excel-filter-trigger {
+        /* ---- ソートトリガー ---- */
+        .sort-trigger {
             position: absolute;
             top: 50%; right: 4px;
             transform: translateY(-50%);
             width: 14px; height: 14px;
             cursor: pointer;
             display: flex; align-items: center; justify-content: center;
+            opacity: 0.5;
+            transition: opacity 0.15s;
         }
-        .excel-filter-trigger::after {
+        .sort-trigger:hover { opacity: 1; }
+        .sort-trigger::after {
+            content: '▲\A▼';
+            white-space: pre;
+            font-size: 6px;
+            line-height: 1;
+            color: rgba(255,255,255,0.7);
+            text-align: center;
+        }
+        .data-table th.sort-asc .sort-trigger { opacity: 1; }
+        .data-table th.sort-asc .sort-trigger::after {
+            content: '▲\A▼';
+            color: #fff;
+        }
+        .data-table th.sort-asc .sort-trigger::after {
+            content: '▲';
+            font-size: 9px;
+            color: #fff;
+        }
+        .data-table th.sort-desc .sort-trigger { opacity: 1; }
+        .data-table th.sort-desc .sort-trigger::after {
             content: '▼';
             font-size: 9px;
-            color: rgba(255,255,255,0.8);
+            color: #fff;
         }
-        .data-table th.filtered { background: #1565c0; }
-        .data-table th.filtered .excel-filter-trigger::after { color: #fff; }
 
         /* ---- フッター凡例 ---- */
         .dm-legend {
@@ -255,14 +275,14 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th data-column="occurredDate">発生日付<div class="excel-filter-trigger"></div></th>
-                                <th data-column="personalCode">個人コード<div class="excel-filter-trigger"></div></th>
-                                <th data-column="name">氏名<div class="excel-filter-trigger"></div></th>
-                                <th data-column="departmentCode">所属コード<div class="excel-filter-trigger"></div></th>
-                                <th data-column="departmentName">所属名称<div class="excel-filter-trigger"></div></th>
-                                <th data-column="gateNumber">ゲート番号<div class="excel-filter-trigger"></div></th>
-                                <th data-column="gateName">ゲート名称<div class="excel-filter-trigger"></div></th>
-                                <th data-column="historyDetails">履歴詳細<div class="excel-filter-trigger"></div></th>
+                                <th data-column="occurredDate">発生日付<div class="sort-trigger"></div></th>
+                                <th data-column="personalCode">個人コード<div class="sort-trigger"></div></th>
+                                <th data-column="name">氏名<div class="sort-trigger"></div></th>
+                                <th data-column="departmentCode">所属コード<div class="sort-trigger"></div></th>
+                                <th data-column="departmentName">所属名称<div class="sort-trigger"></div></th>
+                                <th data-column="gateNumber">ゲート番号<div class="sort-trigger"></div></th>
+                                <th data-column="gateName">ゲート名称<div class="sort-trigger"></div></th>
+                                <th data-column="historyDetails">履歴詳細<div class="sort-trigger"></div></th>
                             </tr>
                         </thead>
                         <tbody id="dataTableBody">
@@ -307,6 +327,9 @@
 
     <script th:inline="javascript">
     (function () {
+        var sortState = { column: null, direction: 'asc' };
+        var columnKeys = ['date', 'code', 'name', 'deptCode', 'dept', 'gate', 'gateName', 'detail'];
+
         // デモデータ生成
         var demoData = [
             { type: 'normal',  date: '2026/01/27 09:44:50', code: '000680', name: '個人678', deptCode: '002', dept: '所属002', gate: '0004', gateName: 'XA0004',      detail: '退室' },
@@ -351,6 +374,32 @@
             if (el) el.textContent = data.length;
         }
 
+        function sortData(data) {
+            if (!sortState.column) return data;
+            var key = sortState.column;
+            var dir = sortState.direction === 'asc' ? 1 : -1;
+            return data.slice().sort(function (a, b) {
+                var av = (a[key] || '').toString().toLowerCase();
+                var bv = (b[key] || '').toString().toLowerCase();
+                if (av < bv) return -1 * dir;
+                if (av > bv) return 1 * dir;
+                return 0;
+            });
+        }
+
+        function updateSortHeaders() {
+            document.querySelectorAll('.data-table th').forEach(function (th) {
+                th.classList.remove('sort-asc', 'sort-desc');
+            });
+            if (sortState.column) {
+                var idx = columnKeys.indexOf(sortState.column);
+                if (idx >= 0) {
+                    var th = document.querySelectorAll('.data-table th')[idx];
+                    if (th) th.classList.add('sort-' + sortState.direction);
+                }
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             renderTable(demoData);
 
@@ -369,9 +418,32 @@
             if (resetBtn) {
                 resetBtn.addEventListener('click', function () {
                     if (typeSelect) typeSelect.value = 'all';
+                    sortState.column = null;
+                    updateSortHeaders();
                     renderTable(demoData);
                 });
             }
+
+            // ソートトリガー
+            document.querySelectorAll('.data-table th').forEach(function (th, index) {
+                var trigger = th.querySelector('.sort-trigger');
+                if (trigger) {
+                    trigger.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var key = columnKeys[index];
+                        if (sortState.column === key) {
+                            sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+                        } else {
+                            sortState.column = key;
+                            sortState.direction = 'asc';
+                        }
+                        updateSortHeaders();
+                        var v = typeSelect ? typeSelect.value : 'all';
+                        var filtered = v === 'all' ? demoData.slice() : demoData.filter(function (r) { return r.type === v; });
+                        renderTable(sortData(filtered));
+                    });
+                }
+            });
 
             // 自動更新：一時無効化
         });
