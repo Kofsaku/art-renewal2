@@ -146,41 +146,119 @@
         .dot-error   { background: #dc3545; }
         .date-cell   { display: flex; align-items: center; }
 
-        /* ---- ソートトリガー ---- */
-        .sort-trigger {
+        /* ---- Excelフィルター ---- */
+        .excel-filter-trigger {
             position: absolute;
             top: 50%; right: 4px;
             transform: translateY(-50%);
-            width: 14px; height: 14px;
+            width: 16px; height: 16px;
             cursor: pointer;
             display: flex; align-items: center; justify-content: center;
             opacity: 0.5;
             transition: opacity 0.15s;
         }
-        .sort-trigger:hover { opacity: 1; }
-        .sort-trigger::after {
-            content: '▲\A▼';
-            white-space: pre;
-            font-size: 6px;
-            line-height: 1;
-            color: rgba(255,255,255,0.7);
+        .excel-filter-trigger:hover { opacity: 1; }
+        .excel-filter-trigger::after {
+            content: '\f0b0';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 9px;
+            color: rgba(255,255,255,0.8);
+        }
+        .excel-filter-trigger.active { opacity: 1; }
+        .excel-filter-trigger.active::after {
+            color: #ffc107;
+        }
+        .excel-filter-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            min-width: 220px;
+            max-width: 300px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 100;
+            color: #333;
+            font-weight: 400;
+            font-size: 0.82rem;
+        }
+        .excel-filter-menu.show { display: block; }
+        /* 右端列のオーバーフロー対策 */
+        .data-table th:nth-last-child(-n+2) .excel-filter-menu {
+            left: auto;
+            right: 0;
+        }
+        .excel-filter-header {
+            padding: 8px 10px 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #555;
+            border-bottom: 1px solid #eee;
+        }
+        .excel-search-section {
+            padding: 6px 10px;
+        }
+        .excel-search-box {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 5px 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            outline: none;
+        }
+        .excel-search-box:focus { border-color: #80bdff; }
+        .excel-filter-actions {
+            display: flex;
+            gap: 4px;
+            padding: 4px 10px 6px;
+            border-bottom: 1px solid #eee;
+        }
+        .excel-action-btn {
+            flex: 1;
+            padding: 4px 0;
+            background: #f0f4f8;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            cursor: pointer;
             text-align: center;
+            transition: background 0.15s;
         }
-        .data-table th.sort-asc .sort-trigger { opacity: 1; }
-        .data-table th.sort-asc .sort-trigger::after {
-            content: '▲\A▼';
+        .excel-action-btn:hover { background: #e2e6ea; }
+        .excel-action-btn.ok-btn {
+            background: #007bff;
             color: #fff;
+            border-color: #007bff;
         }
-        .data-table th.sort-asc .sort-trigger::after {
-            content: '▲';
-            font-size: 9px;
-            color: #fff;
+        .excel-action-btn.ok-btn:hover { background: #0069d9; }
+        .excel-filter-list {
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 4px 0;
         }
-        .data-table th.sort-desc .sort-trigger { opacity: 1; }
-        .data-table th.sort-desc .sort-trigger::after {
-            content: '▼';
-            font-size: 9px;
-            color: #fff;
+        .excel-filter-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 10px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.1s;
+        }
+        .excel-filter-item:hover { background: #f0f4f8; }
+        .excel-filter-item input[type="checkbox"] {
+            margin: 0;
+            cursor: pointer;
+        }
+        .excel-filter-item label {
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* ---- フッター凡例 ---- */
@@ -275,14 +353,14 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th data-column="occurredDate">発生日付<div class="sort-trigger"></div></th>
-                                <th data-column="personalCode">個人コード<div class="sort-trigger"></div></th>
-                                <th data-column="name">氏名<div class="sort-trigger"></div></th>
-                                <th data-column="departmentCode">所属コード<div class="sort-trigger"></div></th>
-                                <th data-column="departmentName">所属名称<div class="sort-trigger"></div></th>
-                                <th data-column="gateNumber">ゲート番号<div class="sort-trigger"></div></th>
-                                <th data-column="gateName">ゲート名称<div class="sort-trigger"></div></th>
-                                <th data-column="historyDetails">履歴詳細<div class="sort-trigger"></div></th>
+                                <th data-column="occurredDate">発生日付<div class="excel-filter-trigger" onclick="showDmFilter(event, 'occurredDate')"></div><div class="excel-filter-menu" id="excel-filter-occurredDate"></div></th>
+                                <th data-column="personalCode">個人コード<div class="excel-filter-trigger" onclick="showDmFilter(event, 'personalCode')"></div><div class="excel-filter-menu" id="excel-filter-personalCode"></div></th>
+                                <th data-column="name">氏名<div class="excel-filter-trigger" onclick="showDmFilter(event, 'name')"></div><div class="excel-filter-menu" id="excel-filter-name"></div></th>
+                                <th data-column="departmentCode">所属コード<div class="excel-filter-trigger" onclick="showDmFilter(event, 'departmentCode')"></div><div class="excel-filter-menu" id="excel-filter-departmentCode"></div></th>
+                                <th data-column="departmentName">所属名称<div class="excel-filter-trigger" onclick="showDmFilter(event, 'departmentName')"></div><div class="excel-filter-menu" id="excel-filter-departmentName"></div></th>
+                                <th data-column="gateNumber">ゲート番号<div class="excel-filter-trigger" onclick="showDmFilter(event, 'gateNumber')"></div><div class="excel-filter-menu" id="excel-filter-gateNumber"></div></th>
+                                <th data-column="gateName">ゲート名称<div class="excel-filter-trigger" onclick="showDmFilter(event, 'gateName')"></div><div class="excel-filter-menu" id="excel-filter-gateName"></div></th>
+                                <th data-column="historyDetails">履歴詳細<div class="excel-filter-trigger" onclick="showDmFilter(event, 'historyDetails')"></div><div class="excel-filter-menu" id="excel-filter-historyDetails"></div></th>
                             </tr>
                         </thead>
                         <tbody id="dataTableBody">
@@ -327,10 +405,32 @@
 
     <script th:inline="javascript">
     (function () {
-        var sortState = { column: null, direction: 'asc' };
-        var columnKeys = ['date', 'code', 'name', 'deptCode', 'dept', 'gate', 'gateName', 'detail'];
+        // data-column属性 → デモデータキーのマッピング
+        var columnAttrToKey = {
+            occurredDate: 'date',
+            personalCode: 'code',
+            name: 'name',
+            departmentCode: 'deptCode',
+            departmentName: 'dept',
+            gateNumber: 'gate',
+            gateName: 'gateName',
+            historyDetails: 'detail'
+        };
+        var columnDisplayNames = {
+            occurredDate: '発生日付',
+            personalCode: '個人コード',
+            name: '氏名',
+            departmentCode: '所属コード',
+            departmentName: '所属名称',
+            gateNumber: 'ゲート番号',
+            gateName: 'ゲート名称',
+            historyDetails: '履歴詳細'
+        };
 
-        // デモデータ生成
+        // Excelフィルター状態: { colAttr: Set of selected values } (未設定=全選択)
+        var excelFilters = {};
+
+        // デモデータ
         var demoData = [
             { type: 'normal',  date: '2026/01/27 09:44:50', code: '000680', name: '個人678', deptCode: '002', dept: '所属002', gate: '0004', gateName: 'XA0004',      detail: '退室' },
             { type: 'warning', date: '2026/01/27 09:44:47', code: '',       name: '',       deptCode: '',    dept: '',       gate: '0003', gateName: 'H=03 A=68',    detail: 'カードリーダー警告' },
@@ -352,6 +452,10 @@
             { type: 'error',   date: '2026/01/27 08:45:59', code: '',       name: '',       deptCode: '',    dept: '',       gate: '0002', gateName: 'H=02 A=4',     detail: '通信異常発生' },
         ];
 
+        function escapeHtml(str) {
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
         function renderTable(data) {
             var tbody = document.getElementById('dataTableBody');
             if (!tbody) return;
@@ -360,45 +464,203 @@
                 var tr = document.createElement('tr');
                 tr.className = row.type === 'warning' ? 'row-warning' : row.type === 'error' ? 'row-error' : '';
                 tr.innerHTML =
-                    '<td><div class="date-cell"><span class="status-dot dot-' + row.type + '"></span>' + row.date + '</div></td>' +
-                    '<td>' + row.code + '</td>' +
-                    '<td>' + row.name + '</td>' +
-                    '<td>' + row.deptCode + '</td>' +
-                    '<td>' + row.dept + '</td>' +
-                    '<td>' + row.gate + '</td>' +
-                    '<td>' + row.gateName + '</td>' +
-                    '<td>' + row.detail + '</td>';
+                    '<td><div class="date-cell"><span class="status-dot dot-' + escapeHtml(row.type) + '"></span>' + escapeHtml(row.date) + '</div></td>' +
+                    '<td>' + escapeHtml(row.code) + '</td>' +
+                    '<td>' + escapeHtml(row.name) + '</td>' +
+                    '<td>' + escapeHtml(row.deptCode) + '</td>' +
+                    '<td>' + escapeHtml(row.dept) + '</td>' +
+                    '<td>' + escapeHtml(row.gate) + '</td>' +
+                    '<td>' + escapeHtml(row.gateName) + '</td>' +
+                    '<td>' + escapeHtml(row.detail) + '</td>';
                 tbody.appendChild(tr);
             });
             var el = document.getElementById('recordCount');
             if (el) el.textContent = data.length;
         }
 
-        function sortData(data) {
-            if (!sortState.column) return data;
-            var key = sortState.column;
-            var dir = sortState.direction === 'asc' ? 1 : -1;
-            return data.slice().sort(function (a, b) {
-                var av = (a[key] || '').toString().toLowerCase();
-                var bv = (b[key] || '').toString().toLowerCase();
-                if (av < bv) return -1 * dir;
-                if (av > bv) return 1 * dir;
-                return 0;
+        // ---- フィルターロジック ----
+
+        // 他列フィルター＋データ種別を適用済みのデータからユニーク値を取得
+        // excludeCol: 現在開いている列は除外して絞り込む
+        function getFilteredBase(excludeCol) {
+            var typeSelect = document.getElementById('dataType');
+            var typeVal = typeSelect ? typeSelect.value : 'all';
+            return demoData.filter(function (row) {
+                if (typeVal !== 'all' && row.type !== typeVal) return false;
+                for (var colAttr in excelFilters) {
+                    if (colAttr === excludeCol) continue;
+                    if (excelFilters.hasOwnProperty(colAttr)) {
+                        var key = columnAttrToKey[colAttr];
+                        var val = (row[key] || '').toString();
+                        if (!excelFilters[colAttr].has(val)) return false;
+                    }
+                }
+                return true;
             });
         }
 
-        function updateSortHeaders() {
-            document.querySelectorAll('.data-table th').forEach(function (th) {
-                th.classList.remove('sort-asc', 'sort-desc');
+        function getUniqueValues(colAttr) {
+            var key = columnAttrToKey[colAttr];
+            var baseData = getFilteredBase(colAttr);
+            var seen = {};
+            var values = [];
+            baseData.forEach(function (row) {
+                var v = (row[key] || '').toString();
+                if (!seen[v]) { seen[v] = true; values.push(v); }
             });
-            if (sortState.column) {
-                var idx = columnKeys.indexOf(sortState.column);
-                if (idx >= 0) {
-                    var th = document.querySelectorAll('.data-table th')[idx];
-                    if (th) th.classList.add('sort-' + sortState.direction);
-                }
-            }
+            values.sort();
+            return values;
         }
+
+        function hideDmFilters() {
+            document.querySelectorAll('.excel-filter-menu.show').forEach(function (m) {
+                m.classList.remove('show');
+            });
+        }
+
+        function showDmFilter(event, colAttr) {
+            event.stopPropagation();
+            var menuId = 'excel-filter-' + colAttr;
+            var menu = document.getElementById(menuId);
+            if (!menu) return;
+
+            var wasOpen = menu.classList.contains('show');
+            hideDmFilters();
+            if (wasOpen) return;
+
+            var allValues = getUniqueValues(colAttr);
+            var selected = excelFilters[colAttr] || null; // null = 全選択
+
+            var html = '';
+            html += '<div class="excel-filter-header">' + escapeHtml(columnDisplayNames[colAttr] || colAttr) + ' のフィルター</div>';
+            html += '<div class="excel-search-section"><input type="text" class="excel-search-box" placeholder="検索..." oninput="filterDmOptions(\'' + colAttr + '\', this.value)"></div>';
+            html += '<div class="excel-filter-actions">';
+            html += '<button class="excel-action-btn" onclick="selectAllDmFilter(\'' + colAttr + '\')">すべて選択</button>';
+            html += '<button class="excel-action-btn" onclick="clearAllDmFilter(\'' + colAttr + '\')">すべてクリア</button>';
+            html += '<button class="excel-action-btn ok-btn" onclick="applyDmFilter(\'' + colAttr + '\')">OK</button>';
+            html += '</div>';
+            html += '<div class="excel-filter-list" id="excel-list-' + colAttr + '">';
+            allValues.forEach(function (val) {
+                var checked = !selected || selected.has(val) ? 'checked' : '';
+                var displayVal = val === '' ? '(空白)' : escapeHtml(val);
+                html += '<div class="excel-filter-item" data-value="' + escapeHtml(val) + '" onclick="toggleDmOption(event, this)">';
+                html += '<input type="checkbox" ' + checked + '>';
+                html += '<label>' + displayVal + '</label>';
+                html += '</div>';
+            });
+            html += '</div>';
+
+            menu.innerHTML = html;
+            menu.classList.add('show');
+        }
+
+        function toggleDmOption(e, itemEl) {
+            // チェックボックス直接クリック時はネイティブ動作に任せる
+            if (e.target.tagName === 'INPUT') return;
+            var cb = itemEl.querySelector('input[type="checkbox"]');
+            if (cb) cb.checked = !cb.checked;
+        }
+
+        function selectAllDmFilter(colAttr) {
+            var list = document.getElementById('excel-list-' + colAttr);
+            if (!list) return;
+            list.querySelectorAll('.excel-filter-item').forEach(function (item) {
+                if (item.style.display !== 'none') {
+                    var cb = item.querySelector('input[type="checkbox"]');
+                    if (cb) cb.checked = true;
+                }
+            });
+        }
+
+        function clearAllDmFilter(colAttr) {
+            var list = document.getElementById('excel-list-' + colAttr);
+            if (!list) return;
+            list.querySelectorAll('.excel-filter-item').forEach(function (item) {
+                if (item.style.display !== 'none') {
+                    var cb = item.querySelector('input[type="checkbox"]');
+                    if (cb) cb.checked = false;
+                }
+            });
+        }
+
+        function filterDmOptions(colAttr, searchText) {
+            var list = document.getElementById('excel-list-' + colAttr);
+            if (!list) return;
+            var lower = searchText.toLowerCase();
+            list.querySelectorAll('.excel-filter-item').forEach(function (item) {
+                var val = (item.getAttribute('data-value') || '').toLowerCase();
+                var display = val === '' ? '(空白)' : val;
+                item.style.display = (lower === '' || display.indexOf(lower) >= 0) ? '' : 'none';
+            });
+        }
+
+        function applyDmFilter(colAttr) {
+            var list = document.getElementById('excel-list-' + colAttr);
+            if (!list) return;
+
+            var allValues = getUniqueValues(colAttr);
+            var selectedSet = new Set();
+            list.querySelectorAll('.excel-filter-item').forEach(function (item) {
+                var cb = item.querySelector('input[type="checkbox"]');
+                if (cb && cb.checked) {
+                    selectedSet.add(item.getAttribute('data-value'));
+                }
+            });
+
+            // 全て選択されている場合はフィルター解除
+            if (selectedSet.size === allValues.length) {
+                delete excelFilters[colAttr];
+            } else {
+                excelFilters[colAttr] = selectedSet;
+            }
+
+            hideDmFilters();
+            applyAllFilters();
+            updateFilterTriggerStates();
+        }
+
+        function applyAllFilters() {
+            var typeSelect = document.getElementById('dataType');
+            var typeVal = typeSelect ? typeSelect.value : 'all';
+
+            var filtered = demoData.filter(function (row) {
+                // データ種別フィルター
+                if (typeVal !== 'all' && row.type !== typeVal) return false;
+                // Excelカラムフィルター
+                for (var colAttr in excelFilters) {
+                    if (excelFilters.hasOwnProperty(colAttr)) {
+                        var key = columnAttrToKey[colAttr];
+                        var val = (row[key] || '').toString();
+                        if (!excelFilters[colAttr].has(val)) return false;
+                    }
+                }
+                return true;
+            });
+
+            renderTable(filtered);
+        }
+
+        function updateFilterTriggerStates() {
+            document.querySelectorAll('.excel-filter-trigger').forEach(function (trigger) {
+                var th = trigger.closest('th');
+                if (!th) return;
+                var colAttr = th.getAttribute('data-column');
+                if (excelFilters[colAttr]) {
+                    trigger.classList.add('active');
+                } else {
+                    trigger.classList.remove('active');
+                }
+            });
+        }
+
+        // グローバル公開（onclick用）
+        window.showDmFilter = showDmFilter;
+        window.hideDmFilters = hideDmFilters;
+        window.toggleDmOption = toggleDmOption;
+        window.selectAllDmFilter = selectAllDmFilter;
+        window.clearAllDmFilter = clearAllDmFilter;
+        window.filterDmOptions = filterDmOptions;
+        window.applyDmFilter = applyDmFilter;
 
         document.addEventListener('DOMContentLoaded', function () {
             renderTable(demoData);
@@ -407,9 +669,7 @@
             var typeSelect = document.getElementById('dataType');
             if (typeSelect) {
                 typeSelect.addEventListener('change', function () {
-                    var v = this.value;
-                    var filtered = v === 'all' ? demoData : demoData.filter(function (r) { return r.type === v; });
-                    renderTable(filtered);
+                    applyAllFilters();
                 });
             }
 
@@ -418,34 +678,18 @@
             if (resetBtn) {
                 resetBtn.addEventListener('click', function () {
                     if (typeSelect) typeSelect.value = 'all';
-                    sortState.column = null;
-                    updateSortHeaders();
-                    renderTable(demoData);
+                    excelFilters = {};
+                    updateFilterTriggerStates();
+                    applyAllFilters();
                 });
             }
 
-            // ソートトリガー
-            document.querySelectorAll('.data-table th').forEach(function (th, index) {
-                var trigger = th.querySelector('.sort-trigger');
-                if (trigger) {
-                    trigger.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        var key = columnKeys[index];
-                        if (sortState.column === key) {
-                            sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
-                        } else {
-                            sortState.column = key;
-                            sortState.direction = 'asc';
-                        }
-                        updateSortHeaders();
-                        var v = typeSelect ? typeSelect.value : 'all';
-                        var filtered = v === 'all' ? demoData.slice() : demoData.filter(function (r) { return r.type === v; });
-                        renderTable(sortData(filtered));
-                    });
+            // 外側クリックでフィルターメニューを閉じる
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.excel-filter-menu') && !e.target.closest('.excel-filter-trigger')) {
+                    hideDmFilters();
                 }
             });
-
-            // 自動更新：一時無効化
         });
     })();
     </script>
