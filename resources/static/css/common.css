@@ -136,4 +136,200 @@ background-color: rgb(219, 255, 255)!important;
     color: #ED1C24; }
     .g-error-message .g-error-message__link:hover {
       text-decoration: none;}
-	  
+
+
+/* ===================================================================
+   TRIDENT 新共通レイアウト (2026)
+   =================================================================== */
+
+:root {
+    --td-header-height: 48px;
+    --td-header-bg: #d6d8db;
+    --td-content-bg: #dce8f5;
+    --td-min-width: 1024px;
+    --td-accent: #1565c0;
+    --td-accent-hover: #1976d2;
+    --td-card-bg: #ffffff;
+    --td-border: #90b4d8;
+}
+
+body.td-body {
+    font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--td-content-bg);
+    margin: 0;
+    padding: 0;
+    min-width: var(--td-min-width);
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ---- ヘッダー ---- */
+.td-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--td-header-height);
+    background: var(--td-header-bg);
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    gap: 6px;
+    z-index: 1000;
+    min-width: var(--td-min-width);
+    color: #212529;
+}
+
+.td-hamburger {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: #212529;
+    font-size: 1.25rem;
+    cursor: pointer;
+    border-radius: 50%;
+    text-decoration: none !important;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+.td-hamburger:hover {
+    background: rgba(0,0,0,0.1);
+    color: #212529;
+}
+
+/* ページ固有コントロールエリア（各ページで上書き） */
+.td-header-controls {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+/* ページアイコンボタン */
+.td-page-btn {
+    height: 32px;
+    padding: 0 14px;
+    background: var(--td-accent);
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+    transition: background 0.2s;
+}
+.td-page-btn:hover { background: var(--td-accent-hover); }
+
+/* 表示切替ボタン群 */
+.td-layout-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #212529;
+    font-size: 0.85rem;
+}
+.td-layout-btn {
+    height: 28px;
+    padding: 0 10px;
+    background: #ffffff;
+    color: #212529;
+    border: 1px solid rgba(0,0,0,0.2);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s, color 0.2s;
+}
+.td-layout-btn:hover { background: #f0f0f0; }
+.td-layout-btn.active {
+    background: var(--td-accent);
+    border-color: var(--td-accent);
+    color: #ffffff;
+}
+
+/* ゲートボタン一覧ドロップダウンボタン */
+.td-gate-list-btn {
+    height: 32px;
+    padding: 0 14px;
+    background: #0d4f6b;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+.td-gate-list-btn:hover { background: #0a3d54; }
+.td-gate-list-btn::after { margin-left: 6px; }
+
+/* ゲートグループドロップダウン内のステータスドット */
+.gate-group-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.gate-group-normal  { background: #28a745; }
+.gate-group-warning { background: #ffc107; }
+.gate-group-error   { background: #dc3545; }
+.gate-group-offline { background: #6c757d; }
+
+/* システムロゴ */
+.td-logo {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #212529;
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 0 8px;
+}
+
+/* 設定ボタン */
+.td-settings-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.2);
+    color: #212529;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+.td-settings-btn:hover { background: #f0f0f0; }
+
+/* ---- メインコンテンツ ---- */
+.td-main {
+    margin-top: var(--td-header-height);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--td-content-bg);
+    min-width: var(--td-min-width);
+}
+
+/* ---- フッター ---- */
+.td-footer {
+    background: #f0f4f8;
+    border-top: 1px solid #c0d0e0;
+    padding: 5px 20px;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #556;
+    min-width: var(--td-min-width);
+}

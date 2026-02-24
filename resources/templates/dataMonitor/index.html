@@ -8,319 +8,374 @@
     <meta charset="UTF-8">
     <title>データモニター</title>
     <style>
-        .data-monitor-container {
-            padding: 20px;
+        /* ---- ページ背景上書き ---- */
+        .td-main {
+            background: var(--td-header-bg);
         }
-        .filter-section {
-            margin-bottom: 20px;
+
+        /* ---- レイアウト ---- */
+        .dm-outer {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            padding: 12px;
+            box-sizing: border-box;
+            background: var(--td-header-bg);
+        }
+        .dm-inner {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            border: 2px solid var(--td-border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        /* ---- ツールバー ---- */
+        .dm-toolbar {
+            flex-shrink: 0;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            padding: 6px 10px;
+            background: #f0f4f8;
+            border-bottom: 1px solid var(--td-border);
+            flex-wrap: wrap;
         }
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
+        .dm-count {
+            padding: 3px 10px;
+            background: #fff;
+            border: 2px solid #dc3545;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #dc3545;
+            white-space: nowrap;
         }
-        .data-table th,
-        .data-table td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
+        .dm-select-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.85rem;
         }
-        .data-table th {
-            background-color: #6c757d;
-            color: white;
-            font-weight: bold;
-        }
-        .data-table tbody tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
-        .status-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 5px;
-        }
-        .status-normal { background-color: #28a745; }
-        .status-warning { background-color: #ffc107; }
-        .status-error { background-color: #dc3545; }
-        .row-normal {
-            background-color: #ffffff !important;
-        }
-        .row-warning {
-            background-color: #fff3cd !important;
-        }
-        .row-error {
-            background-color: #f8d7da !important;
-        }
-        .row-info {
-            background-color: #d1ecf1 !important;
-        }
-        .status-info { background-color: #17a2b8; }
-        
-        .auto-scroll-controls {
-            position: fixed;
-            top: 150px;
-            right: 20px;
-            z-index: 1000;
-        }
-        
-        /* Excel-like filter styling */
-        .data-table th {
-            position: relative;
-            padding-right: 25px;
-        }
-        
-        .excel-filter-trigger {
-            position: absolute;
-            top: 50%;
-            right: 8px;
-            transform: translateY(-50%);
-            width: 12px;
-            height: 12px;
+        .dm-select {
+            height: 28px;
+            padding: 0 6px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.82rem;
+            background: #fff;
             cursor: pointer;
+        }
+        .dm-data-type-group {
             display: flex;
             align-items: center;
-            justify-content: center;
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
-            transition: all 0.2s ease;
-        }
-        
-        .excel-filter-trigger:hover {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-50%) scale(1.1);
-        }
-        
-        .excel-filter-trigger::after {
-            content: '▼';
-            font-size: 10px;
-            color: white;
-            font-weight: bold;
-        }
-        
-        .excel-filter-trigger.active::after {
-            content: '▲';
-            color: #1976d2;
-        }
-        
-        .excel-filter-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: white;
-            border: 2px solid #e7e7e7;
-            border-radius: 0;
-            padding: 0;
-            z-index: 1000;
-            min-width: 280px;
-            max-width: 350px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .excel-filter-menu.show {
-            display: block;
-        }
-        
-        .excel-filter-header {
-            background: linear-gradient(180deg, #f7f7f7 0%, #e7e7e7 100%);
-            border-bottom: 1px solid #d0d0d0;
-            padding: 8px 12px;
-            font-size: 0.85em;
+            gap: 4px;
+            font-size: 0.85rem;
             font-weight: 600;
             color: #333;
         }
-        
-        .excel-search-section {
-            padding: 10px 12px;
-            border-bottom: 1px solid #e7e7e7;
-            background: #fafafa;
-        }
-        
-        .excel-search-box {
-            width: 100%;
-            padding: 6px 10px;
-            border: 1px solid #b7b7b7;
-            border-radius: 0;
-            font-size: 0.85em;
-            background: white;
-        }
-        
-        .excel-search-box:focus {
-            outline: none;
-            border-color: #4472c4;
-            box-shadow: 0 0 3px rgba(68, 114, 196, 0.3);
-        }
-        
-        .excel-filter-actions {
-            padding: 8px 12px;
-            background: #f7f7f7;
-            border-bottom: 1px solid #e7e7e7;
-            display: flex;
-            gap: 8px;
-        }
-        
-        .excel-action-btn {
-            padding: 4px 12px;
-            border: 1px solid #b7b7b7;
-            background: white;
-            font-size: 0.8em;
+        .dm-spacer { flex: 1; }
+        .dm-btn {
+            height: 28px;
+            padding: 0 10px;
+            background: #fff;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.8rem;
             cursor: pointer;
-            border-radius: 0;
-            transition: all 0.1s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: background 0.15s;
         }
-        
-        .excel-action-btn:hover {
-            background: #e7e7e7;
-        }
-        
-        .excel-action-btn.primary {
-            background: #4472c4;
-            color: white;
-            border-color: #4472c4;
-        }
-        
-        .excel-action-btn.primary:hover {
-            background: #365a9b;
-        }
-        
-        .excel-filter-list {
-            max-height: 200px;
+        .dm-btn:hover { background: #e9ecef; }
+
+        /* ---- テーブルコンテナ ---- */
+        .dm-table-container {
+            flex: 1;
             overflow-y: auto;
-            background: white;
+            overflow-x: auto;
         }
-        
-        .excel-filter-item {
+
+        /* ---- テーブル ---- */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+            table-layout: auto;
+        }
+        .data-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .data-table th {
+            background: #5a6268;
+            color: #fff;
+            font-weight: 600;
+            padding: 6px 8px 6px 8px;
+            border: 1px solid #495057;
+            white-space: nowrap;
+            position: relative;
+            padding-right: 22px;
+        }
+        .data-table td {
+            padding: 4px 8px;
+            border: 1px solid #dee2e6;
+            white-space: nowrap;
+        }
+        .data-table tbody tr { background: #fff; }
+        .data-table tbody tr.row-warning { background: #fff8e1; }
+        .data-table tbody tr.row-error   { background: #fdecea; }
+        .data-table tbody tr:hover { filter: brightness(0.96); }
+
+        /* ステータスドット */
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+            flex-shrink: 0;
+        }
+        .dot-normal  { background: #28a745; }
+        .dot-warning { background: #e07b00; }
+        .dot-error   { background: #dc3545; }
+        .date-cell   { display: flex; align-items: center; }
+
+        /* ---- フィルタートリガー ---- */
+        .excel-filter-trigger {
+            position: absolute;
+            top: 50%; right: 4px;
+            transform: translateY(-50%);
+            width: 14px; height: 14px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .excel-filter-trigger::after {
+            content: '▼';
+            font-size: 9px;
+            color: rgba(255,255,255,0.8);
+        }
+        .data-table th.filtered { background: #1565c0; }
+        .data-table th.filtered .excel-filter-trigger::after { color: #fff; }
+
+        /* ---- フッター凡例 ---- */
+        .dm-legend {
+            flex-shrink: 0;
+            background: #f8f9fa;
+            border-top: 1px solid var(--td-border);
+            padding: 5px 14px;
             display: flex;
             align-items: center;
-            padding: 4px 12px;
-            border-bottom: 1px solid #f0f0f0;
-            cursor: pointer;
-            font-size: 0.85em;
-            transition: background-color 0.1s ease;
+            justify-content: center;
+            gap: 16px;
+            font-size: 0.78rem;
+            color: #555;
+            flex-wrap: wrap;
         }
-        
-        .excel-filter-item:hover {
-            background: #e7f3ff;
+        .dm-legend-item {
+            display: flex; align-items: center; gap: 4px;
         }
-        
-        .excel-filter-item input[type="checkbox"] {
-            margin-right: 8px;
-            cursor: pointer;
-        }
-        
-        .excel-filter-item.select-all {
-            background: #f7f7f7;
-            font-weight: 600;
-            border-bottom: 2px solid #d0d0d0;
-        }
-        
-        .data-table th.filtered {
-            background: linear-gradient(135deg, #1976d2, #1565c0);
-            color: white;
-        }
-        
-        .filter-status-display {
+
+        /* ---- ヘッダー自動更新コントロール ---- */
+        .dm-auto-update {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 8px 15px;
-            background: #fff3cd;
-            border: 2px solid #856404;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            font-size: 0.9em;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            gap: 6px;
+            font-size: 0.85rem;
+            color: #212529;
         }
-        
-        .filter-active-badge {
+        .dm-start-btn {
+            height: 28px;
+            padding: 0 14px;
+            background: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.82rem;
             font-weight: 600;
-            color: #856404;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
         }
-        
-        .filter-details {
-            font-size: 0.8em;
-            color: #666;
-        }
+        .dm-start-btn:hover { background: #218838; }
+        .dm-start-btn.running { background: #dc3545; }
+        .dm-start-btn.running:hover { background: #c82333; }
     </style>
 </head>
 
 <body>
+    <!-- ヘッダー固有コントロール -->
+    <div layout:fragment="header-controls" class="td-header-controls">
+    </div>
+
+    <!-- メインコンテンツ -->
     <div layout:fragment="content">
-        <div class="data-monitor-container position-relative">
-            <h2>データモニター</h2>
-            
-            <!-- 自動スクロール制御 -->
-            <div class="auto-scroll-controls">
-                <button id="toggleAutoScroll" class="btn btn-warning">停止</button>
+        <div class="dm-outer">
+            <div class="dm-inner">
+                <!-- ツールバー -->
+                <div class="dm-toolbar">
+                    <span class="dm-count">現条件: <span id="recordCount">0</span>件</span>
+
+                    <div class="dm-select-group">
+                        <span>表示件数:</span>
+                        <select class="dm-select" id="pageSize">
+                            <option value="50">50件</option>
+                            <option value="100">100件</option>
+                            <option value="200">200件</option>
+                        </select>
+                    </div>
+
+                    <div class="dm-data-type-group">
+                        <span>◆ データ種別:</span>
+                        <select class="dm-select" id="dataType">
+                            <option value="all">全データ表示</option>
+                            <option value="normal">正常のみ</option>
+                            <option value="warning">警告のみ</option>
+                            <option value="error">異常のみ</option>
+                        </select>
+                    </div>
+
+                    <div class="dm-spacer"></div>
+
+                    <button class="dm-btn" id="filterReset">
+                        <i class="fas fa-times-circle"></i>フィルターリセット
+                    </button>
+                    <button class="dm-btn" id="columnManager">
+                        <i class="fas fa-columns"></i>列表示管理
+                    </button>
+                </div>
+
+                <!-- テーブル -->
+                <div class="dm-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th data-column="occurredDate">発生日付<div class="excel-filter-trigger"></div></th>
+                                <th data-column="personalCode">個人コード<div class="excel-filter-trigger"></div></th>
+                                <th data-column="name">氏名<div class="excel-filter-trigger"></div></th>
+                                <th data-column="departmentCode">所属コード<div class="excel-filter-trigger"></div></th>
+                                <th data-column="departmentName">所属名称<div class="excel-filter-trigger"></div></th>
+                                <th data-column="gateNumber">ゲート番号<div class="excel-filter-trigger"></div></th>
+                                <th data-column="gateName">ゲート名称<div class="excel-filter-trigger"></div></th>
+                                <th data-column="historyDetails">履歴詳細<div class="excel-filter-trigger"></div></th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                            <!-- Thymeleafサーバーデータ -->
+                            <tr th:each="data : ${historyDataList}" th:classappend="'row-' + ${data.statusClass}">
+                                <td>
+                                    <div class="date-cell">
+                                        <span class="status-dot" th:classappend="'dot-' + ${data.statusClass}"></span>
+                                        <span th:text="${data.occurredDate}">2026/01/27 09:44:50</span>
+                                    </div>
+                                </td>
+                                <td th:text="${data.personalCode}"></td>
+                                <td th:text="${data.name}"></td>
+                                <td th:text="${data.departmentCode}"></td>
+                                <td th:text="${data.departmentName}"></td>
+                                <td th:text="${data.gateNumber}"></td>
+                                <td th:text="${data.gateName}"></td>
+                                <td th:text="${data.historyDetails}"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
             </div>
-
-            <!-- 履歴データヘッダー -->
-            <h5>◆ 履歴データ</h5>
-
-            <!-- データテーブル -->
-            <table class="data-table">
-                <thead>
-                    <tr id="tableHeaders">
-                        <th data-column="occurredDate">発生日付
-                            <div class="excel-filter-trigger" onclick="showDataFilter(event, 'occurredDate')"></div>
-                            <div class="excel-filter-menu" id="filter-occurredDate"></div>
-                        </th>
-                        <th data-column="personalCode">個人コード
-                            <div class="excel-filter-trigger" onclick="showDataFilter(event, 'personalCode')"></div>
-                            <div class="excel-filter-menu" id="filter-personalCode"></div>
-                        </th>
-                        <th data-column="name">氏名
-                            <div class="excel-filter-trigger" onclick="showDataFilter(event, 'name')"></div>
-                            <div class="excel-filter-menu" id="filter-name"></div>
-                        </th>
-                        <th data-column="departmentCode">所属コード
-                            <div class="excel-filter-trigger" onclick="showDataFilter(event, 'departmentCode')"></div>
-                            <div class="excel-filter-menu" id="filter-departmentCode"></div>
-                        </th>
-                        <th data-column="departmentName">所属名称
-                            <div class="excel-filter-trigger" onclick="showDataFilter(event, 'departmentName')"></div>
-                            <div class="excel-filter-menu" id="filter-departmentName"></div>
-                        </th>
-                        <th data-column="gateNumber">ゲート番号
-                            <div class="excel-filter-trigger" onclick="showDataFilter(event, 'gateNumber')"></div>
-                            <div class="excel-filter-menu" id="filter-gateNumber"></div>
-                        </th>
-                        <th data-column="gateName">ゲート名称
-                            <div class="excel-filter-trigger" onclick="showDataFilter(event, 'gateName')"></div>
-                            <div class="excel-filter-menu" id="filter-gateName"></div>
-                        </th>
-                        <th data-column="historyDetails">履歴詳細
-                            <div class="excel-filter-trigger" onclick="showDataFilter(event, 'historyDetails')"></div>
-                            <div class="excel-filter-menu" id="filter-historyDetails"></div>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody id="dataTableBody">
-                    <!-- Thymeleafテンプレート（サーバー側データ用） -->
-                    <tr th:each="data, iterStat : ${historyDataList}" th:classappend="'row-' + ${data.statusClass}">
-                        <td>
-                            <span class="status-indicator" th:classappend="'status-' + ${data.statusClass}"></span>
-                            <span th:text="${data.occurredDate}">2025/6/27 12:23:45</span>
-                        </td>
-                        <td th:text="${data.personalCode}">000001</td>
-                        <td th:text="${data.name}">個人001</td>
-                        <td th:text="${data.departmentCode}">001</td>
-                        <td th:text="${data.departmentName}">所属001</td>
-                        <td th:text="${data.gateNumber}">0001</td>
-                        <td th:text="${data.gateName}">XA0001</td>
-                        <td th:text="${data.historyDetails}">入室</td>
-                    </tr>
-                    <!-- JavaScriptで動的に生成される部分（リアルタイム更新用） -->
-                </tbody>
-            </table>
-
         </div>
     </div>
-    <script type="text/javascript" th:src="@{/resources/static/js/dataMonitor.js}"></script>
+
+    <!-- 凡例（コピーライト直上） -->
+    <div layout:fragment="page-legend">
+        <div class="dm-legend">
+            <div class="dm-legend-item">
+                <span class="status-dot dot-normal"></span><span>正常</span>
+            </div>
+            <div class="dm-legend-item">
+                <span class="status-dot dot-warning"></span><span>警告</span>
+            </div>
+            <div class="dm-legend-item">
+                <span class="status-dot dot-error"></span><span>異常</span>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+    (function () {
+        // デモデータ生成
+        var demoData = [
+            { type: 'normal',  date: '2026/01/27 09:44:50', code: '000680', name: '個人678', deptCode: '002', dept: '所属002', gate: '0004', gateName: 'XA0004',      detail: '退室' },
+            { type: 'warning', date: '2026/01/27 09:44:47', code: '',       name: '',       deptCode: '',    dept: '',       gate: '0003', gateName: 'H=03 A=68',    detail: 'カードリーダー警告' },
+            { type: 'normal',  date: '2026/01/27 09:44:44', code: '000341', name: '個人567', deptCode: '004', dept: '管理部', gate: '0003', gateName: 'XA0003',      detail: '入室' },
+            { type: 'normal',  date: '2026/01/27 09:44:41', code: '000502', name: '個人888', deptCode: '003', dept: '所属003', gate: '0003', gateName: 'XA0003',     detail: '退室' },
+            { type: 'warning', date: '2026/01/27 09:44:38', code: '',       name: '',       deptCode: '',    dept: '',       gate: '0003', gateName: 'H=03 A=42',    detail: '通信異常復旧' },
+            { type: 'normal',  date: '2026/01/27 09:44:35', code: '000709', name: '個人724', deptCode: '001', dept: '所属001', gate: '0002', gateName: 'XA0002',     detail: '入室' },
+            { type: 'normal',  date: '2026/01/27 09:44:32', code: '000982', name: '個人993', deptCode: '004', dept: '管理部', gate: '0003', gateName: 'XA0003',      detail: '入室' },
+            { type: 'warning', date: '2026/01/27 09:44:29', code: '',       name: '',       deptCode: '',    dept: '',       gate: '0002', gateName: 'H=02 A=83',    detail: '通信異常復旧' },
+            { type: 'normal',  date: '2026/01/27 09:44:26', code: '000601', name: '個人144', deptCode: '002', dept: '所属002', gate: '0002', gateName: 'XA0002',     detail: '退室' },
+            { type: 'normal',  date: '2026/01/27 09:44:23', code: '000878', name: '個人446', deptCode: '002', dept: '所属002', gate: '0003', gateName: 'XA0003',     detail: '退室' },
+            { type: 'normal',  date: '2026/01/27 09:44:20', code: '000994', name: '個人530', deptCode: '005', dept: '開発部', gate: '0003', gateName: 'XA0003',      detail: '退室' },
+            { type: 'normal',  date: '2026/01/27 09:44:17', code: '000408', name: '個人744', deptCode: '005', dept: '開発部', gate: '0002', gateName: 'XA0002',      detail: '入室' },
+            { type: 'normal',  date: '2026/01/27 09:44:14', code: '000872', name: '個人193', deptCode: '003', dept: '所属003', gate: '0001', gateName: 'XA0001',     detail: '退室' },
+            { type: 'normal',  date: '2026/01/27 09:44:11', code: '000698', name: '個人363', deptCode: '004', dept: '管理部', gate: '0001', gateName: 'XA0001',      detail: '入室' },
+            { type: 'normal',  date: '2026/01/27 09:44:08', code: '000681', name: '個人332', deptCode: '004', dept: '管理部', gate: '0001', gateName: 'XA0001',      detail: '退室' },
+            { type: 'normal',  date: '2026/01/27 09:44:05', code: '000811', name: '個人085', deptCode: '001', dept: '所属001', gate: '0001', gateName: 'XA0001',     detail: '入室' },
+            { type: 'error',   date: '2026/01/27 09:44:02', code: '',       name: '',       deptCode: '',    dept: '',       gate: '0001', gateName: 'H=01 A=99',    detail: 'ドア開放異常' },
+            { type: 'error',   date: '2026/01/27 08:45:59', code: '',       name: '',       deptCode: '',    dept: '',       gate: '0002', gateName: 'H=02 A=4',     detail: '通信異常発生' },
+        ];
+
+        function renderTable(data) {
+            var tbody = document.getElementById('dataTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            data.forEach(function (row) {
+                var tr = document.createElement('tr');
+                tr.className = row.type === 'warning' ? 'row-warning' : row.type === 'error' ? 'row-error' : '';
+                tr.innerHTML =
+                    '<td><div class="date-cell"><span class="status-dot dot-' + row.type + '"></span>' + row.date + '</div></td>' +
+                    '<td>' + row.code + '</td>' +
+                    '<td>' + row.name + '</td>' +
+                    '<td>' + row.deptCode + '</td>' +
+                    '<td>' + row.dept + '</td>' +
+                    '<td>' + row.gate + '</td>' +
+                    '<td>' + row.gateName + '</td>' +
+                    '<td>' + row.detail + '</td>';
+                tbody.appendChild(tr);
+            });
+            var el = document.getElementById('recordCount');
+            if (el) el.textContent = data.length;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            renderTable(demoData);
+
+            // データ種別フィルター
+            var typeSelect = document.getElementById('dataType');
+            if (typeSelect) {
+                typeSelect.addEventListener('change', function () {
+                    var v = this.value;
+                    var filtered = v === 'all' ? demoData : demoData.filter(function (r) { return r.type === v; });
+                    renderTable(filtered);
+                });
+            }
+
+            // フィルターリセット
+            var resetBtn = document.getElementById('filterReset');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function () {
+                    if (typeSelect) typeSelect.value = 'all';
+                    renderTable(demoData);
+                });
+            }
+
+            // 自動更新：一時無効化
+        });
+    })();
+    </script>
 </body>
 </html>

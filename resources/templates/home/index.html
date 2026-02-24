@@ -1,17 +1,179 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
-	　　xmlns:th="http://www.thymeleaf.org"
+	  xmlns:th="http://www.thymeleaf.org"
 	  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	  layout:decorate="~{layout/layout}"
-	  >
+	  layout:decorate="~{layout/layout}">
 
 <head>
 	<meta charset="UTF-8">
-	<title>ホーム画面</title>
+	<title>ホーム</title>
+	<style>
+		.home-wrapper {
+			display: flex;
+			align-items: flex-start;
+			justify-content: center;
+			padding: 28px 20px;
+			min-height: calc(100vh - 48px - 34px);
+		}
+		.menu-board {
+			background: #c4d8ee;
+			border: 1px solid #a0bcda;
+			border-radius: 12px;
+			padding: 28px 24px;
+			width: 100%;
+			max-width: 980px;
+		}
+		.menu-grid {
+			display: grid;
+			grid-template-columns: repeat(6, 1fr);
+			gap: 14px;
+		}
+		.menu-item {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 6px;
+		}
+		.menu-item-link {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 4px;
+			text-decoration: none;
+			cursor: pointer;
+		}
+		.menu-icon {
+			width: 80px;
+			height: 80px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 2.8rem;
+			color: #1e4a8a;
+			transition: transform 0.15s;
+		}
+		.menu-item-link:hover .menu-icon { transform: scale(1.08); }
+		.menu-label {
+			font-size: 0.82rem;
+			font-weight: 600;
+			color: #1a3a5c;
+			text-align: center;
+			line-height: 1.3;
+		}
+		.menu-desc-btn {
+			background: #2d4a7a;
+			color: #ffffff;
+			border: none;
+			border-radius: 6px;
+			padding: 5px 8px;
+			font-size: 0.75rem;
+			cursor: pointer;
+			width: 100%;
+			font-family: inherit;
+			transition: background 0.2s;
+		}
+		.menu-desc-btn:hover { background: #1a3a5c; }
+		.menu-desc-btn.danger { background: #c0392b; }
+		.menu-desc-btn.danger:hover { background: #96281b; }
+		.menu-icon.danger { color: #c0392b; }
+	</style>
 </head>
+
 <body>
 	<div layout:fragment="content">
-		<div style="height:500px"></div>
+		<div class="home-wrapper">
+			<div class="menu-board">
+				<div class="menu-grid">
+
+					<!-- Row 1 -->
+					<div class="menu-item">
+						<a th:href="@{/personalRegistration}" class="menu-item-link">
+							<div class="menu-icon"><i class="fas fa-id-card"></i></div>
+							<div class="menu-label">カード登録</div>
+						</a>
+						<button class="menu-desc-btn">個人情報の登録</button>
+					</div>
+
+					<div class="menu-item">
+						<a th:href="@{/gateRegistration}" class="menu-item-link">
+							<div class="menu-icon"><i class="fas fa-door-open"></i></div>
+							<div class="menu-label">ゲート設定</div>
+						</a>
+						<button class="menu-desc-btn">ゲートの設定</button>
+					</div>
+
+					<div class="menu-item">
+						<a th:href="@{/historyReport}" class="menu-item-link">
+							<div class="menu-icon"><i class="fas fa-clipboard-list"></i></div>
+							<div class="menu-label">履歴</div>
+						</a>
+						<button class="menu-desc-btn">入退室履歴の確認</button>
+					</div>
+
+					<div class="menu-item">
+						<a th:href="@{/personalList}" class="menu-item-link">
+							<div class="menu-icon"><i class="fas fa-users"></i></div>
+							<div class="menu-label">在室確認</div>
+						</a>
+						<button class="menu-desc-btn">在室状況の確認</button>
+					</div>
+
+					<div class="menu-item">
+						<a th:href="@{/statusMonitor}" class="menu-item-link">
+							<div class="menu-icon"><i class="fas fa-desktop"></i></div>
+							<div class="menu-label">ステータスモニタ</div>
+						</a>
+						<button class="menu-desc-btn">ゲート状態の監視</button>
+					</div>
+
+					<div class="menu-item">
+						<a th:href="@{/dataMonitor}" class="menu-item-link">
+							<div class="menu-icon"><i class="fas fa-tv"></i></div>
+							<div class="menu-label">データモニタ</div>
+						</a>
+						<button class="menu-desc-btn">データ監視</button>
+					</div>
+
+					<!-- Row 2 -->
+					<div class="menu-item">
+						<a th:href="@{/mapMonitor}" class="menu-item-link">
+							<div class="menu-icon"><i class="fas fa-map-marked-alt"></i></div>
+							<div class="menu-label">マップ</div>
+						</a>
+						<button class="menu-desc-btn">マップ表示</button>
+					</div>
+
+					<div class="menu-item">
+						<a th:href="@{/initial}" class="menu-item-link">
+							<div class="menu-icon"><i class="fas fa-cogs"></i></div>
+							<div class="menu-label">システム設定</div>
+						</a>
+						<button class="menu-desc-btn">システム設定</button>
+					</div>
+
+					<div class="menu-item">
+						<a href="#" class="menu-item-link">
+							<div class="menu-icon danger"><i class="fas fa-stop-circle"></i></div>
+							<div class="menu-label" style="color:#c0392b;">ブザー停止</div>
+						</a>
+						<button class="menu-desc-btn danger">ブザー緊急停止</button>
+					</div>
+
+					<div class="menu-item">
+						<a th:href="@{/logout}" class="menu-item-link">
+							<div class="menu-icon danger"><i class="fas fa-power-off"></i></div>
+							<div class="menu-label">終了</div>
+						</a>
+						<button class="menu-desc-btn danger">ログアウト</button>
+					</div>
+
+					<!-- 予備セル -->
+					<div class="menu-item"></div>
+					<div class="menu-item"></div>
+
+				</div>
+			</div>
+		</div>
 	</div>
 </body>
 </html>

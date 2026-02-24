@@ -26,7 +26,7 @@ class DataMonitor {
         this.setupEventListeners();
         this.loadInitialData();
         this.renderTable();
-        this.startAutoRefresh();
+        // this.startAutoRefresh(); // 一時無効化
     }
 
     setupEventListeners() {

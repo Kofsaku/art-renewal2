@@ -29,7 +29,7 @@ class StatusMonitor {
 
     setupEventListeners() {
         // レイアウト切替ボタン
-        document.querySelectorAll('.layout-btn').forEach(btn => {
+        document.querySelectorAll('.td-layout-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const layout = parseInt(e.target.dataset.layout);
                 this.switchLayout(layout);
@@ -72,7 +72,7 @@ class StatusMonitor {
                     name: gateName,
                     status: 'normal', // 初期値、後で更新
                     lastUpdated: new Date(),
-                    online: Math.random() > 0.05,
+                    online: Math.random() > 0.3, // TODO: 確認用に30%オフライン（本番は0.05に戻す）
                     location: this.getLocationName(i),
                     icons: icons
                 });
@@ -149,13 +149,18 @@ class StatusMonitor {
         this.currentLayout = layout;
         
         // ボタンのアクティブ状態更新
-        document.querySelectorAll('.layout-btn').forEach(btn => {
+        document.querySelectorAll('.td-layout-btn').forEach(btn => {
             btn.classList.toggle('active', parseInt(btn.dataset.layout) === layout);
         });
 
         // レイアウト変更時にゲートグループを再生成
         this.generateGateGroups();
         this.renderGateButtons();
+
+        // ドロップダウンも更新
+        if (typeof renderGateGroupDropdown === 'function') {
+            renderGateGroupDropdown();
+        }
         
         this.updateGridLayout();
         this.renderGates();
@@ -166,45 +171,27 @@ class StatusMonitor {
         const container = document.querySelector('.gate-grid-container');
         if (!grid || !container) return;
 
-        // コンテナの実際の幅を取得（完全に安全な計算）
-        const containerWidth = container.clientWidth;
-        const gapSize = 6;
-        const cardPadding = 16; // カード内のpadding
-        const minCardContentWidth = 140; // カード内容の最小幅
-        const minCardWidth = minCardContentWidth + cardPadding;
-        
-        // 完全に安全な列数計算（レイアウトに応じて調整）
-        let maxCols = this.currentLayout === 64 ? 8 : 5;
-        const totalGapWidth = gapSize * (maxCols - 1);
-        const safetyMargin = this.currentLayout === 64 ? 10 : 20; // 64件時は余裕を少なく、全体的に余裕を減らす
-        const availableWidthForCards = containerWidth - totalGapWidth - safetyMargin;
-        let cols = Math.floor(availableWidthForCards / minCardWidth);
-        
-        // レイアウトに応じた制限
-        if (this.currentLayout === 16) {
-            cols = Math.min(cols, 4);
-            cols = Math.max(cols, 2);
-        } else if (this.currentLayout === 32) {
-            cols = Math.min(cols, 5); // 確実に表示するため5列制限
-            cols = Math.max(cols, 3);
-        } else { // 64件
-            cols = Math.min(cols, 8); // 64件は8列まで許可
-            cols = Math.max(cols, 6);
-        }
-        
-        const rows = Math.ceil(this.currentLayout / cols);
-        const actualCardWidth = Math.floor((containerWidth - (cols-1) * gapSize) / cols);
-
-        grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-        grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
-        
-        // 64件表示用のCSSクラスを適用
-        if (this.currentLayout === 64) {
+        const is64 = this.currentLayout === 64;
+        if (is64) {
             grid.classList.add('layout-64');
         } else {
             grid.classList.remove('layout-64');
         }
-        
+
+        // カード最小幅: gate-info(80) + margin(10) + icon-grid + padding
+        const minCardWidth = is64 ? 194 : 246;
+        const gap = is64 ? 5 : 6;
+        const containerWidth = container.clientWidth - 24; // padding 12px×2
+
+        let cols = Math.max(1, Math.floor((containerWidth + gap) / (minCardWidth + gap)));
+
+        // 上限のみ設定（下限は1で横スクロールを防ぐ）
+        if (this.currentLayout === 16)      cols = Math.min(cols, 4);
+        else if (this.currentLayout === 32) cols = Math.min(cols, 5);
+        else                                cols = Math.min(cols, 8);
+
+        grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        grid.style.gridTemplateRows = '';
     }
 
     updateStatusFilters() {
@@ -348,6 +335,7 @@ class StatusMonitor {
 
         // アイコンの③④状態に基づいてフレーム色を決定
         const frameStatus = this.determineFrameStatus(gate);
+        card.classList.add('status-' + frameStatus);
         card.style.borderColor = this.getStatusColor(frameStatus);
 
         // アイコングリッドを生成 (ゲートのオンライン状態を渡す)
@@ -356,7 +344,7 @@ class StatusMonitor {
         card.innerHTML = `
             <div class="gate-info">
                 <div class="gate-number">${gate.number}/${gate.name}</div>
-                <div class="gate-status-indicator status-${frameStatus}"></div>
+                <div class="gate-status-indicator indicator-${frameStatus}"></div>
             </div>
             ${iconGridHtml}
         `;
@@ -455,7 +443,7 @@ class StatusMonitor {
     getStatusColor(status) {
         const colors = {
             'normal': '#28a745',
-            'warning': '#ffc107', 
+            'warning': '#e07b00',
             'error': '#dc3545',
             'offline': '#6c757d'
         };
