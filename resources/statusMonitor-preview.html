@@ -204,15 +204,32 @@
 
 <body class="td-body">
 
+	<!-- サイドメニュー -->
+	<div class="td-overlay" id="menuOverlay"></div>
+	<nav class="td-sidemenu" id="sideMenu">
+		<div class="td-sidemenu-header">
+			<span class="td-sidemenu-title">メニュー</span>
+			<button class="td-sidemenu-close" id="menuClose"><i class="fas fa-times"></i></button>
+		</div>
+		<ul class="td-sidemenu-list">
+			<li><a href="/resources/dataMonitor-preview.html"><i class="fas fa-table"></i>データモニター</a></li>
+			<li><a href="/resources/statusMonitor-preview.html"><i class="fas fa-th-large"></i>ステータスモニター</a></li>
+			<li><a href="/resources/mapMonitor-preview.html"><i class="fas fa-map"></i>マップモニター</a></li>
+			<li><a href="/resources/personalList-preview.html"><i class="fas fa-users"></i>個人情報一覧</a></li>
+			<li><a href="/resources/personalRegistration-preview.html"><i class="fas fa-user-plus"></i>個人情報登録</a></li>
+			<li><a href="/resources/historyReport-preview.html"><i class="fas fa-file-alt"></i>履歴レポート</a></li>
+		</ul>
+	</nav>
+
 	<!-- ヘッダー -->
 	<header class="td-header">
-		<!-- ハンバーガー（ホーム画面へ） -->
-		<a href="/index.html" class="td-hamburger" title="メニュー">
+		<!-- ハンバーガー -->
+		<button class="td-hamburger" id="menuOpen" title="メニュー">
 			<i class="fas fa-bars"></i>
-		</a>
+		</button>
 
 		<!-- システムロゴ（TODO: 正式ロゴ画像に差し替え） -->
-		<span class="td-logo">ステークホルダー</span>
+		<span class="td-logo">プレースホルダー</span>
 
 		<!-- ページ固有コントロール（各ページで上書き） -->
 		<div class="td-header-controls">
@@ -303,6 +320,19 @@
 	</footer>
 
 	
+	<script>
+	(function(){
+		const overlay = document.getElementById('menuOverlay');
+		const menu    = document.getElementById('sideMenu');
+		const open    = document.getElementById('menuOpen');
+		const close   = document.getElementById('menuClose');
+		function show(){ menu.classList.add('open'); overlay.classList.add('open'); }
+		function hide(){ menu.classList.remove('open'); overlay.classList.remove('open'); }
+		open.addEventListener('click', show);
+		close.addEventListener('click', hide);
+		overlay.addEventListener('click', hide);
+	})();
+	</script>
 <script type="text/javascript" src="/resources/static/js/statusMonitor.js"></script>
 <script>
         document.addEventListener('DOMContentLoaded', function () {
