@@ -303,12 +303,52 @@
         .dm-start-btn:hover { background: #218838; }
         .dm-start-btn.running { background: #dc3545; }
         .dm-start-btn.running:hover { background: #c82333; }
+
+        /* ---- 列表示管理ドロップダウン ---- */
+        .column-manager-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 4px;
+            min-width: 180px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 100;
+            padding: 6px 0;
+            font-size: 0.82rem;
+        }
+        .column-manager-menu.show { display: block; }
+        .column-manager-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 12px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.1s;
+        }
+        .column-manager-item:hover { background: #f0f4f8; }
+        .column-manager-item input[type="checkbox"] {
+            margin: 0;
+            cursor: pointer;
+        }
+        .column-manager-item label {
+            cursor: pointer;
+            white-space: nowrap;
+        }
     </style>
 </head>
 
 <body>
     <!-- ヘッダー固有コントロール -->
     <div layout:fragment="header-controls" class="td-header-controls">
+        <div class="dm-auto-update">
+            <span>自動更新</span>
+            <button class="dm-start-btn" id="autoUpdateBtn">開始</button>
+        </div>
     </div>
 
     <!-- メインコンテンツ -->
@@ -343,9 +383,14 @@
                     <button class="dm-btn" id="filterReset">
                         <i class="fas fa-times-circle"></i>フィルターリセット
                     </button>
-                    <button class="dm-btn" id="columnManager">
-                        <i class="fas fa-columns"></i>列表示管理
-                    </button>
+                    <div style="position: relative;">
+                        <button class="dm-btn" id="columnManager">
+                            <i class="fas fa-columns"></i>列表示管理
+                        </button>
+                        <div class="column-manager-menu" id="columnManagerMenu">
+                            <!-- JSで生成 -->
+                        </div>
+                    </div>
                 </div>
 
                 <!-- テーブル -->
@@ -662,8 +707,153 @@
         window.filterDmOptions = filterDmOptions;
         window.applyDmFilter = applyDmFilter;
 
+        // ---- 自動更新 ----
+        var autoUpdateTimer = null;
+
+        function toggleAutoUpdate() {
+            var btn = document.getElementById('autoUpdateBtn');
+            if (!btn) return;
+            if (autoUpdateTimer) {
+                clearInterval(autoUpdateTimer);
+                autoUpdateTimer = null;
+                btn.textContent = '開始';
+                btn.classList.remove('running');
+            } else {
+                btn.textContent = '停止';
+                btn.classList.add('running');
+                autoUpdateTimer = setInterval(function () {
+                    addNewDemoRow();
+                }, 3000);
+            }
+        }
+
+        function addNewDemoRow() {
+            var types = [
+                { type: 'normal', details: ['入室', '退室'], prob: 0.7 },
+                { type: 'warning', details: ['通信異常復旧', 'カードリーダー警告', 'バッテリー低下'], prob: 0.2 },
+                { type: 'error', details: ['通信異常発生', 'ドア開放異常', 'セキュリティ違反'], prob: 0.1 }
+            ];
+            var gates = [
+                { num: '0001', name: 'XA0001' },
+                { num: '0002', name: 'XA0002' },
+                { num: '0003', name: 'XA0003' },
+                { num: '0004', name: 'XA0004' }
+            ];
+            var depts = ['所属001', '所属002', '所属003', '管理部', '開発部'];
+            var deptCodes = ['001', '002', '003', '004', '005'];
+
+            var rand = Math.random(), cumulative = 0, sel = types[0];
+            for (var i = 0; i < types.length; i++) {
+                cumulative += types[i].prob;
+                if (rand <= cumulative) { sel = types[i]; break; }
+            }
+
+            var gate = gates[Math.floor(Math.random() * gates.length)];
+            var detail = sel.details[Math.floor(Math.random() * sel.details.length)];
+            var di = Math.floor(Math.random() * depts.length);
+            var now = new Date();
+            var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+            var dateStr = now.getFullYear() + '/' + pad(now.getMonth() + 1) + '/' + pad(now.getDate()) + ' ' +
+                          pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+
+            var row = {
+                type: sel.type,
+                date: dateStr,
+                code: sel.type === 'normal' ? String(Math.floor(Math.random() * 999) + 1).padStart(6, '0') : '',
+                name: sel.type === 'normal' ? '個人' + String(Math.floor(Math.random() * 999) + 1).padStart(3, '0') : '',
+                deptCode: sel.type === 'normal' ? deptCodes[di] : '',
+                dept: sel.type === 'normal' ? depts[di] : '',
+                gate: gate.num,
+                gateName: sel.type === 'normal' ? gate.name : 'H=' + gate.num.substring(2) + ' A=' + (Math.floor(Math.random() * 99) + 1),
+                detail: detail
+            };
+
+            demoData.unshift(row);
+            if (demoData.length > 500) demoData = demoData.slice(0, 500);
+            applyAllFilters();
+        }
+
+        // ---- 列表示管理 ----
+        var columnVisibility = {};
+        var allColumns = ['occurredDate', 'personalCode', 'name', 'departmentCode', 'departmentName', 'gateNumber', 'gateName', 'historyDetails'];
+        allColumns.forEach(function (col) { columnVisibility[col] = true; });
+
+        function buildColumnManagerMenu() {
+            var menu = document.getElementById('columnManagerMenu');
+            if (!menu) return;
+            menu.innerHTML = '';
+            allColumns.forEach(function (col) {
+                var item = document.createElement('div');
+                item.className = 'column-manager-item';
+                var cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.checked = columnVisibility[col];
+                cb.setAttribute('data-col', col);
+                cb.addEventListener('change', function () {
+                    columnVisibility[col] = this.checked;
+                    applyColumnVisibility();
+                });
+                var lbl = document.createElement('label');
+                lbl.textContent = columnDisplayNames[col] || col;
+                lbl.addEventListener('click', function () { cb.click(); });
+                item.appendChild(cb);
+                item.appendChild(lbl);
+                menu.appendChild(item);
+            });
+        }
+
+        function applyColumnVisibility() {
+            // ヘッダー
+            document.querySelectorAll('.data-table th[data-column]').forEach(function (th) {
+                var col = th.getAttribute('data-column');
+                th.style.display = columnVisibility[col] ? '' : 'none';
+            });
+            // ボディ行
+            document.querySelectorAll('.data-table tbody tr').forEach(function (tr) {
+                var tds = tr.querySelectorAll('td');
+                allColumns.forEach(function (col, idx) {
+                    if (tds[idx]) {
+                        tds[idx].style.display = columnVisibility[col] ? '' : 'none';
+                    }
+                });
+            });
+        }
+
+        function toggleColumnManagerMenu() {
+            var menu = document.getElementById('columnManagerMenu');
+            if (!menu) return;
+            if (menu.classList.contains('show')) {
+                menu.classList.remove('show');
+            } else {
+                buildColumnManagerMenu();
+                menu.classList.add('show');
+            }
+        }
+
+        // renderTable をラップして列非表示を反映
+        var originalRenderTable = renderTable;
+        renderTable = function (data) {
+            originalRenderTable(data);
+            applyColumnVisibility();
+        };
+
         document.addEventListener('DOMContentLoaded', function () {
             renderTable(demoData);
+
+            // 自動更新ボタン
+            var autoBtn = document.getElementById('autoUpdateBtn');
+            if (autoBtn) {
+                autoBtn.addEventListener('click', toggleAutoUpdate);
+            }
+
+            // 列表示管理ボタン
+            var colMgrBtn = document.getElementById('columnManager');
+            if (colMgrBtn) {
+                colMgrBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    toggleColumnManagerMenu();
+                });
+            }
 
             // データ種別フィルター
             var typeSelect = document.getElementById('dataType');
@@ -684,10 +874,14 @@
                 });
             }
 
-            // 外側クリックでフィルターメニューを閉じる
+            // 外側クリックでメニューを閉じる
             document.addEventListener('click', function (e) {
                 if (!e.target.closest('.excel-filter-menu') && !e.target.closest('.excel-filter-trigger')) {
                     hideDmFilters();
+                }
+                if (!e.target.closest('#columnManager') && !e.target.closest('.column-manager-menu')) {
+                    var menu = document.getElementById('columnManagerMenu');
+                    if (menu) menu.classList.remove('show');
                 }
             });
         });
