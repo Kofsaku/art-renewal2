@@ -182,7 +182,7 @@ class StatusMonitor {
         const layoutConfig = {
             16: { minCardWidth: 210, gap: 5, maxCols: 4, minRowH: 60, maxRowH: 200 },
             32: { minCardWidth: 175, gap: 4, maxCols: 5, minRowH: 44, maxRowH: 140 },
-            64: { minCardWidth: 135, gap: 3, maxCols: 8, minRowH: 32, maxRowH: 90 }
+            64: { minCardWidth: 135, gap: 3, maxCols: 8, minRowH: 32, maxRowH: 130 }
         };
         const config = layoutConfig[this.currentLayout] || layoutConfig[32];
         const containerPad = 12; // padding 6px×2
