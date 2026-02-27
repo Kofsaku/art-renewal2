@@ -85,7 +85,7 @@ class StatusMonitor {
         }
     }
 
-    generateIconStatuses(isOffline = false) {
+    generateIconStatuses() {
         // 4つのアイコンの状態を生成：①開閉、②施解錠、③異常、④警備
         const iconTypes = ['door', 'lock', 'alarm', 'security'];
         return iconTypes.map((type, index) => {
@@ -195,22 +195,11 @@ class StatusMonitor {
     }
 
     updateStatusFilters() {
-        
         this.statusFilters = [];
-        const checkboxes = document.querySelectorAll('.status-filter-checkbox:checked');
-        
-        checkboxes.forEach(checkbox => {
+        document.querySelectorAll('.status-filter-checkbox:checked').forEach(checkbox => {
             this.statusFilters.push(checkbox.value);
         });
-        
-        
-        // ゲートのステータス分布を確認
-        const statusCounts = {};
-        this.gates.slice(0, this.currentLayout).forEach(gate => {
-            const status = gate.online ? gate.status : 'offline';
-            statusCounts[status] = (statusCounts[status] || 0) + 1;
-        });
-        
+
         this.renderGates();
         this.renderGateButtons(); // ボタン一覧も更新
     }
@@ -237,20 +226,10 @@ class StatusMonitor {
 
 
         // ステータスフィルターを適用
-        const beforeFilterCount = displayGates.length;
-        
-        const filteredGates = [];
-        displayGates.forEach((gate, index) => {
+        displayGates = displayGates.filter(gate => {
             const gateStatus = gate.online ? gate.status : 'offline';
-            const shouldInclude = this.statusFilters.includes(gateStatus);
-            
-            
-            if (shouldInclude) {
-                filteredGates.push(gate);
-            }
+            return this.statusFilters.includes(gateStatus);
         });
-        
-        displayGates = filteredGates;
 
         displayGates.forEach(gate => {
             const gateCard = this.createGateCard(gate);
@@ -339,20 +318,20 @@ class StatusMonitor {
         card.style.borderColor = this.getStatusColor(frameStatus);
 
         // アイコングリッドを生成 (ゲートのオンライン状態を渡す)
-        const iconGridHtml = this.createIconGrid(gate.icons, gate.online);
+        const iconGridHtml = this.createIconGrid(gate.icons);
 
         card.innerHTML = `
             <div class="gate-info">
-                <div class="gate-number">${gate.number}/${gate.name}</div>
+                <div class="gate-number">${this.escapeHtml(gate.number)}/${this.escapeHtml(gate.name)}</div>
                 <div class="gate-status-indicator indicator-${frameStatus}"></div>
             </div>
             ${iconGridHtml}
         `;
 
-        // クリックで遠隔操作画面を表示 (Mapモニター合わせ)
+        // 左クリックで遠隔操作モーダルを表示
         card.addEventListener('click', (e) => {
-            if (e.button === 0) { // 左クリック
-                this.showRemoteControl(gate.number);
+            if (e.button === 0) {
+                this.showRemoteControl(gate);
             }
         });
         
@@ -372,7 +351,7 @@ class StatusMonitor {
             'オフィス西', '資料室', '倉庫', '駐車場', '屋上',
             '地下', '休憩室', '応接室', 'ラボ入口', '工場入口'
         ];
-        return gateNames[id % gateNames.length] || `ゲート${id}`;
+        return gateNames[(id - 1) % gateNames.length] || `ゲート${id}`;
     }
 
     getLocationName(id) {
@@ -381,7 +360,7 @@ class StatusMonitor {
             'オフィス1F', 'オフィス2F', 'オフィス3F', '資料室', '倉庫',
             '駐車場', '屋上', '地下室', '休憩室', '応接室'
         ];
-        return locations[id % locations.length] || `エリア${id}`;
+        return locations[(id - 1) % locations.length] || `エリア${id}`;
     }
 
     determineFrameStatus(gate) {
@@ -408,7 +387,7 @@ class StatusMonitor {
         return 'normal';
     }
 
-    createIconGrid(icons, online) {
+    createIconGrid(icons) {
         let iconHtml = '<div class="icon-grid">';
         icons.forEach(icon => {
             // オフライン時でもアイコンはそのまま表示（ユーザー要望：ランダム）
@@ -455,33 +434,11 @@ class StatusMonitor {
 
 
 
-    handleResize() {
-        // レスポンシブ対応: 画面サイズに応じて自動調整
-        const screenWidth = window.innerWidth;
-        const screenHeight = window.innerHeight;
-        
-        // 画面サイズに応じた推奨表示数を計算
-        let recommendedLayout = 32;
-        
-        if (screenWidth >= 1920 && screenHeight >= 1080) {
-            recommendedLayout = 64;
-        } else if (screenWidth >= 1400) {
-            recommendedLayout = 32;
-        } else if (screenWidth < 992) {
-            recommendedLayout = 16;
-        }
-
-        // 現在のレイアウトが画面サイズに適さない場合は自動調整
-        if (this.currentLayout > recommendedLayout) {
-            this.switchLayout(recommendedLayout);
-        }
-
-        this.updateGridLayout();
-    }
-
     // 外部からアクセス可能なメソッド
     refreshData() {
         this.generateGateData();
+        this.generateGateGroups();
+        this.renderGateButtons();
         this.renderGates();
     }
 
@@ -489,106 +446,40 @@ class StatusMonitor {
         this.refreshInterval = interval;
     }
 
-    showGateOperations(gateNumber) {
-        // ゲートカード全体をクリックした時に履歴/遠隔操作選択ポップアップを表示
-        this.showGateSelectionModal(gateNumber);
+    getStatusText(gate) {
+        if (!gate.online) return 'オフライン';
+        const map = { normal: '正常', warning: '警告', error: '異常', offline: 'オフライン' };
+        return map[gate.status] || '不明';
     }
 
-    showGateSelectionModal(gateNumber) {
-        // 既存のポップアップがあれば削除
-        const existingPopup = document.getElementById('gateSelectionPopup');
-        if (existingPopup) {
-            existingPopup.remove();
-        }
-
-        // ポップアップを作成
-        const popup = document.createElement('div');
-        popup.id = 'gateSelectionPopup';
-        popup.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            border: 2px solid #007bff;
-            border-radius: 8px;
-            padding: 20px;
-            z-index: 9999;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-            min-width: 300px;
-        `;
-
-        popup.innerHTML = `
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h5 style="margin: 0; color: #007bff;">${gateNumber}</h5>
-                <p style="margin: 5px 0 0 0; color: #666;">※枠内クリック<br>※複数選択不可</p>
-            </div>
-            <div style="display: flex; gap: 20px; justify-content: center;">
-                <div style="text-align: center;">
-                    <div style="border: 2px solid #17a2b8; border-radius: 8px; padding: 15px; cursor: pointer; background: #f8f9fa;" 
-                         onclick="statusMonitor.showHistoryOptions('${gateNumber}')">
-                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                            <span style="color: #17a2b8; font-size: 1.5em; margin-right: 8px;">✓</span>
-                            <span style="color: #17a2b8; font-size: 1.5em;">✗</span>
-                        </div>
-                        <strong>履歴操作</strong>
-                    </div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="border: 2px solid #6f42c1; border-radius: 8px; padding: 15px; cursor: pointer; background: #f8f9fa;" 
-                         onclick="statusMonitor.showRemoteOptions('${gateNumber}')">
-                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                            <span style="color: #6f42c1; font-size: 1.5em; margin-right: 8px;">✓</span>
-                            <span style="color: #6f42c1; font-size: 1.5em;">✗</span>
-                        </div>
-                        <strong>遠隔操作</strong>
-                    </div>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 15px;">
-                <button onclick="statusMonitor.closeGateSelectionModal()" 
-                        style="padding: 5px 15px; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; cursor: pointer;">
-                    閉じる
-                </button>
-            </div>
-        `;
-
-        // オーバーレイを作成
-        const overlay = document.createElement('div');
-        overlay.id = 'gateSelectionOverlay';
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 9998;
-        `;
-        overlay.onclick = () => this.closeGateSelectionModal();
-
-        document.body.appendChild(overlay);
-        document.body.appendChild(popup);
+    formatDateTime(date) {
+        if (!date) return '-';
+        const d = new Date(date);
+        return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`;
     }
 
-    showHistoryOptions(gateNumber) {
-        this.closeGateSelectionModal();
-        alert(`${gateNumber}の履歴表示機能（未実装）`);
+    escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
     }
 
-    showRemoteOptions(gateNumber) {
-        this.closeGateSelectionModal();
-        this.showRemoteControl(gateNumber);
+    getGateDisplayName(gate) {
+        return `ゲート${gate.name}(${gate.number})`;
     }
 
-    showRemoteControl(gateNumber) {
-        this.currentGateId = gateNumber;
-        this.showRemoteControlModal(gateNumber);
+    showRemoteControl(gate) {
+        this.currentGateId = gate.number;
+        this.showRemoteControlModal(gate);
     }
 
-    showRemoteControlModal(gateNumber) {
+    showRemoteControlModal(gate) {
         const existingModal = document.getElementById('remoteControlModal');
         if (existingModal) existingModal.remove();
+
+        const safeDisplayName = this.escapeHtml(this.getGateDisplayName(gate));
+        const statusText = this.escapeHtml(this.getStatusText(gate));
+        const lastUpdated = this.escapeHtml(this.formatDateTime(gate.lastUpdated));
 
         const modal = document.createElement('div');
         modal.className = 'modal fade';
@@ -597,60 +488,74 @@ class StatusMonitor {
         modal.setAttribute('aria-hidden', 'true');
 
         modal.innerHTML = `
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">ゲート詳細 - ゲート${gateNumber}</h5>
+                    <div class="modal-header py-2">
+                        <h6 class="modal-title mb-0">遠隔操作 - ${safeDisplayName}</h6>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="row mb-3">
-                            <div class="col-12">
-                                <h6>遠隔操作 <span class="text-muted" style="font-size: 0.8em;">※複数選択不可</span></h6>
-                                <div class="form-check mb-2">
+                        <div class="row g-3">
+                            <div class="col-5">
+                                <div class="mb-3">
+                                    <div class="fw-bold small mb-1">現在状態</div>
+                                    <div>${statusText}</div>
+                                </div>
+                                <div>
+                                    <div class="fw-bold small mb-1">最終更新</div>
+                                    <div class="small">${lastUpdated}</div>
+                                </div>
+                            </div>
+                            <div class="col-7">
+                                <div class="fw-bold small mb-2">遠隔操作 <span class="text-muted" style="font-size: 0.85em;">※複数選択不可</span></div>
+                                <div class="form-check mb-1">
                                     <input class="form-check-input" type="radio" name="remoteOperation" value="continuous_unlock" id="op1">
-                                    <label class="form-check-label" for="op1">連続解錠</label>
+                                    <label class="form-check-label small" for="op1">連続解錠</label>
                                 </div>
-                                <div class="form-check mb-2">
+                                <div class="form-check mb-1">
                                     <input class="form-check-input" type="radio" name="remoteOperation" value="unlock" id="op2">
-                                    <label class="form-check-label" for="op2">解錠</label>
+                                    <label class="form-check-label small" for="op2">解錠</label>
                                 </div>
-                                <div class="form-check mb-2">
+                                <div class="form-check mb-1">
                                     <input class="form-check-input" type="radio" name="remoteOperation" value="lock" id="op3">
-                                    <label class="form-check-label" for="op3">施錠</label>
+                                    <label class="form-check-label small" for="op3">施錠</label>
                                 </div>
-                                <div class="form-check mb-2">
+                                <div class="form-check mb-1">
                                     <input class="form-check-input" type="radio" name="remoteOperation" value="security_set" id="op4">
-                                    <label class="form-check-label" for="op4">警備セット</label>
+                                    <label class="form-check-label small" for="op4">警備セット</label>
                                 </div>
-                                <div class="form-check mb-2">
+                                <div class="form-check mb-1">
                                     <input class="form-check-input" type="radio" name="remoteOperation" value="security_release" id="op5">
-                                    <label class="form-check-label" for="op5">警備セット解除</label>
+                                    <label class="form-check-label small" for="op5">警備セット解除</label>
                                 </div>
                             </div>
                         </div>
-                        <div class="text-end">
-                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">キャンセル</button>
-                            <button type="button" class="btn btn-primary" onclick="statusMonitor.executeRemoteOperation('${gateNumber}')">実行</button>
-                        </div>
+                    </div>
+                    <div class="modal-footer py-2">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">キャンセル</button>
+                        <button type="button" class="btn btn-primary btn-sm" id="executeRemoteBtn">実行</button>
                     </div>
                 </div>
             </div>
         `;
 
         document.body.appendChild(modal);
+        modal.querySelector('#executeRemoteBtn').addEventListener('click', () => {
+            this.executeRemoteOperation(gate.number);
+        });
         const bootstrapModal = new bootstrap.Modal(modal);
         bootstrapModal.show();
         modal.addEventListener('hidden.bs.modal', function () { modal.remove(); });
     }
 
     showHistorySettingsModal(gateInfo) {
-        // もし引数がIDなどの場合はオブジェクトを探す
         let gate = typeof gateInfo === 'object' ? gateInfo : this.gates.find(g => g.number === gateInfo || g.id === gateInfo);
         if (!gate) return;
 
         const existingModal = document.getElementById('historySettingsModal');
         if (existingModal) existingModal.remove();
+
+        const safeDisplayName = this.escapeHtml(this.getGateDisplayName(gate));
 
         const modal = document.createElement('div');
         modal.className = 'modal fade';
@@ -659,21 +564,21 @@ class StatusMonitor {
         modal.setAttribute('aria-hidden', 'true');
 
         modal.innerHTML = `
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            <i class="fas fa-history text-info me-2"></i>履歴表示設定 - ゲート${gate.number}
-                        </h5>
+                    <div class="modal-header py-2">
+                        <h6 class="modal-title mb-0">
+                            <i class="fas fa-history text-info me-2"></i>履歴表示設定 - ${safeDisplayName}
+                        </h6>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div class="alert alert-info py-2 mb-3" style="font-size: 0.9em;">
-                            <i class="fas fa-door-open me-2"></i>ゲート${gate.number}(${gate.number})の履歴を表示します
+                            ${safeDisplayName}の報告書を抽出します。
                         </div>
                         <div class="row g-3">
                             <div class="col-6">
-                                <h6 class="border-bottom pb-1 mb-2" style="font-size: 0.9em;"><i class="fas fa-calendar-alt me-1"></i>期間</h6>
+                                <div class="fw-bold small border-bottom pb-1 mb-2"><i class="fas fa-calendar-alt me-1"></i>期間</div>
                                 <div class="form-check small">
                                     <input class="form-check-input" type="radio" name="histPeriod" id="p1" checked>
                                     <label class="form-check-label" for="p1">当日</label>
@@ -688,7 +593,7 @@ class StatusMonitor {
                                 </div>
                             </div>
                             <div class="col-6">
-                                <h6 class="border-bottom pb-1 mb-2" style="font-size: 0.9em;"><i class="fas fa-filter me-1"></i>履歴種類</h6>
+                                <div class="fw-bold small border-bottom pb-1 mb-2"><i class="fas fa-filter me-1"></i>履歴種類</div>
                                 <div class="form-check small">
                                     <input class="form-check-input" type="checkbox" id="t1" checked>
                                     <label class="form-check-label" for="t1">全て</label>
@@ -703,14 +608,14 @@ class StatusMonitor {
                                 </div>
                                 <div class="form-check small">
                                     <input class="form-check-input" type="checkbox" id="t4">
-                                    <label class="form-check-label" for="t4">重エラー復旧</label>
+                                    <label class="form-check-label" for="t4">重エラー〜復旧</label>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
+                    <div class="modal-footer py-2">
                         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">キャンセル</button>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="alert('報告書画面へ遷移します')">
+                        <button type="button" class="btn btn-primary btn-sm" id="navigateReportBtn">
                             <i class="fas fa-arrow-right me-1"></i>報告書画面へ遷移
                         </button>
                     </div>
@@ -719,6 +624,9 @@ class StatusMonitor {
         `;
 
         document.body.appendChild(modal);
+        modal.querySelector('#navigateReportBtn').addEventListener('click', () => {
+            alert('報告書画面へ遷移します');
+        });
         const bootstrapModal = new bootstrap.Modal(modal);
         bootstrapModal.show();
         modal.addEventListener('hidden.bs.modal', function () { modal.remove(); });
@@ -730,10 +638,10 @@ class StatusMonitor {
             alert('操作を選択してください。');
             return;
         }
-        
+
         const operationName = selectedRadio.nextElementSibling.textContent;
-        alert(`${gateNumber}に${operationName}を実行します`);
-        
+        alert(`ゲート${gateNumber}に「${operationName}」を実行します`);
+
         const modal = bootstrap.Modal.getInstance(document.getElementById('remoteControlModal'));
         if (modal) modal.hide();
     }
@@ -758,10 +666,10 @@ class StatusMonitor {
             const randomIndex = Math.floor(Math.random() * this.gates.length);
             const gate = this.gates[randomIndex];
             if (Math.random() < 0.2) {
+                gate.online = Math.random() > 0.05;
                 gate.icons = this.generateIconStatuses();
                 gate.status = this.determineFrameStatus(gate);
                 gate.lastUpdated = new Date();
-                gate.online = Math.random() > 0.05;
             }
         }
         this.gateGroups.forEach(group => group.status = this.getGroupStatus(group.range));
