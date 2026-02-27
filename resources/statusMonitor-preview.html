@@ -21,23 +21,22 @@
 	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <title>ステータスモニター</title>
 <style>
-        /* ---- ゲートカード ---- */
+        /* ---- ゲートカード（ベース = 32件表示） ---- */
         .gate-card {
             border: 2px solid var(--td-border);
-            border-radius: 8px;
-            padding: 8px;
+            border-radius: 6px;
+            padding: 4px 6px;
             background: var(--td-card-bg);
             display: flex;
             flex-direction: row;
-            align-items: center;
+            align-items: stretch;
             position: relative;
-            transition: all 0.3s ease;
-            height: 80px;
+            transition: all 0.2s ease;
             cursor: pointer;
         }
         .gate-card:hover {
             transform: scale(1.02);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
         }
         .gate-card.status-normal  { border-color: #28a745; }
         .gate-card.status-warning { border-color: #e07b00; }
@@ -50,7 +49,7 @@
             position: absolute;
             inset: 0;
             background: rgba(140, 145, 150, 0.55);
-            border-radius: 6px;
+            border-radius: 4px;
             pointer-events: none;
         }
 
@@ -58,21 +57,22 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-width: 80px;
-            margin-right: 10px;
+            justify-content: center;
+            min-width: 68px;
+            margin-right: 6px;
         }
         .gate-number {
             font-weight: bold;
-            font-size: 0.75em;
-            margin-bottom: 3px;
+            font-size: 0.72em;
+            margin-bottom: 2px;
             color: #495057;
             line-height: 1.2;
             text-align: center;
             word-break: break-all;
         }
         .gate-status-indicator {
-            width: 14px;
-            height: 14px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
             border: 1px solid rgba(0,0,0,0.15);
         }
@@ -84,10 +84,8 @@
         .icon-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 4px;
-            width: 140px;
-            height: 32px;
-            margin-right: auto;
+            gap: 2px;
+            flex: 1;
             border: 1px solid #dee2e6;
             background: white;
         }
@@ -120,27 +118,32 @@
         /* ---- グリッドレイアウト ---- */
         .gate-grid {
             display: grid;
-            gap: 6px;
+            gap: 4px;
             width: 100%;
-            grid-auto-rows: 80px;
             box-sizing: border-box;
         }
-        .gate-grid.layout-64 {
-            grid-auto-rows: 72px;
-            gap: 5px;
-        }
-        .gate-grid.layout-64 .gate-card    { height: 72px; padding: 7px; }
-        .gate-grid.layout-64 .gate-number  { font-size: 0.72em; }
-        .gate-grid.layout-64 .gate-status-indicator { width: 11px; height: 11px; }
-        .gate-grid.layout-64 .icon-grid    { width: 90px; height: 24px; }
-        .gate-grid.layout-64 .status-icon  { min-height: 24px; }
+
+        /* 16件表示: ゆったり */
+        .gate-grid.layout-16 { gap: 5px; }
+        .gate-grid.layout-16 .gate-card    { padding: 5px 8px; }
+        .gate-grid.layout-16 .gate-info    { min-width: 76px; margin-right: 8px; }
+        .gate-grid.layout-16 .gate-number  { font-size: 0.78em; }
+        .gate-grid.layout-16 .gate-status-indicator { width: 13px; height: 13px; }
+
+        /* 64件表示: コンパクト */
+        .gate-grid.layout-64 { gap: 3px; }
+        .gate-grid.layout-64 .gate-card    { padding: 3px 4px; }
+        .gate-grid.layout-64 .gate-info    { min-width: 54px; margin-right: 4px; }
+        .gate-grid.layout-64 .gate-number  { font-size: 0.65em; }
+        .gate-grid.layout-64 .gate-status-indicator { width: 9px; height: 9px; }
+        .gate-grid.layout-64 .icon-grid    { gap: 1px; }
 
         /* ---- コンテンツラッパー ---- */
         .sm-outer {
             display: flex;
             flex-direction: column;
             flex: 1;
-            padding: 12px;
+            padding: 4px;
             box-sizing: border-box;
             background: var(--td-header-bg);
         }
@@ -151,13 +154,13 @@
             flex-direction: column;
             background: #e0ecf8;
             border: 1px solid var(--td-border);
-            border-radius: 10px;
+            border-radius: 8px;
             overflow: hidden;
         }
         .gate-grid-container {
             flex: 1;
             overflow-y: auto;
-            padding: 12px;
+            padding: 6px;
         }
 
         /* ---- 凡例フッター ---- */

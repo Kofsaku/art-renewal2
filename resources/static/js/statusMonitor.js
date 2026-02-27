@@ -25,6 +25,8 @@ class StatusMonitor {
         this.renderGates();
         this.startAutoRefresh();
         this.handleResize();
+        // 初回描画後にコンテナ高さ確定してから再計算
+        requestAnimationFrame(() => this.updateGridLayout());
     }
 
     setupEventListeners() {
@@ -171,27 +173,39 @@ class StatusMonitor {
         const container = document.querySelector('.gate-grid-container');
         if (!grid || !container) return;
 
-        const is64 = this.currentLayout === 64;
-        if (is64) {
-            grid.classList.add('layout-64');
+        // レイアウトクラスを切替
+        grid.classList.remove('layout-16', 'layout-64');
+        if (this.currentLayout === 16) grid.classList.add('layout-16');
+        else if (this.currentLayout === 64) grid.classList.add('layout-64');
+
+        // レイアウト別パラメータ
+        const layoutConfig = {
+            16: { minCardWidth: 210, gap: 5, maxCols: 4, minRowH: 60, maxRowH: 200 },
+            32: { minCardWidth: 175, gap: 4, maxCols: 5, minRowH: 44, maxRowH: 140 },
+            64: { minCardWidth: 135, gap: 3, maxCols: 8, minRowH: 32, maxRowH: 90 }
+        };
+        const config = layoutConfig[this.currentLayout] || layoutConfig[32];
+        const containerPad = 12; // padding 6px×2
+        const containerWidth = container.clientWidth - containerPad;
+
+        let cols = Math.max(1, Math.floor((containerWidth + config.gap) / (config.minCardWidth + config.gap)));
+        cols = Math.min(cols, config.maxCols);
+
+        // 表示カード数からビューポート高さに合わせて行高さを動的計算
+        const rows = Math.ceil(this.currentLayout / cols);
+        const availableHeight = container.clientHeight - containerPad;
+
+        let rowHeight;
+        if (availableHeight > 0) {
+            rowHeight = Math.floor((availableHeight - (rows - 1) * config.gap) / rows);
+            rowHeight = Math.max(config.minRowH, Math.min(config.maxRowH, rowHeight));
         } else {
-            grid.classList.remove('layout-64');
+            // 初回描画時など高さ未確定の場合はフォールバック
+            rowHeight = config.minRowH;
         }
 
-        // カード最小幅: gate-info(80) + margin(10) + icon-grid + padding
-        const minCardWidth = is64 ? 194 : 246;
-        const gap = is64 ? 5 : 6;
-        const containerWidth = container.clientWidth - 24; // padding 12px×2
-
-        let cols = Math.max(1, Math.floor((containerWidth + gap) / (minCardWidth + gap)));
-
-        // 上限のみ設定（下限は1で横スクロールを防ぐ）
-        if (this.currentLayout === 16)      cols = Math.min(cols, 4);
-        else if (this.currentLayout === 32) cols = Math.min(cols, 5);
-        else                                cols = Math.min(cols, 8);
-
         grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-        grid.style.gridTemplateRows = '';
+        grid.style.gridAutoRows = rowHeight + 'px';
     }
 
     updateStatusFilters() {
