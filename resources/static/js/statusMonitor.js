@@ -336,8 +336,8 @@ class StatusMonitor {
 
         card.innerHTML = `
             <div class="gate-info">
-                <div class="gate-number">${this.escapeHtml(gate.number)}/${this.escapeHtml(gate.name)}</div>
                 <div class="gate-status-indicator indicator-${frameStatus}"></div>
+                <div class="gate-number">${this.escapeHtml(gate.number)} : ${this.escapeHtml(gate.name)}</div>
             </div>
             ${iconGridHtml}
         `;

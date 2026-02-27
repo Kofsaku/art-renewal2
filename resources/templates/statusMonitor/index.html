@@ -15,8 +15,7 @@
             padding: 4px 6px;
             background: var(--td-card-bg);
             display: flex;
-            flex-direction: row;
-            align-items: stretch;
+            flex-direction: column;
             position: relative;
             transition: all 0.2s ease;
             cursor: pointer;
@@ -42,26 +41,26 @@
 
         .gate-info {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
-            justify-content: center;
-            min-width: 68px;
-            margin-right: 6px;
+            gap: 5px;
+            margin-bottom: 3px;
         }
         .gate-number {
             font-weight: bold;
-            font-size: 0.72em;
-            margin-bottom: 2px;
+            font-size: 1.0em;
             color: #495057;
             line-height: 1.2;
-            text-align: center;
-            word-break: break-all;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .gate-status-indicator {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             border: 1px solid rgba(0,0,0,0.15);
+            flex-shrink: 0;
         }
         .indicator-normal  { background: #28a745; }
         .indicator-warning { background: #e07b00; }
@@ -75,8 +74,6 @@
             flex: 1;
             border: 1px solid #dee2e6;
             background: white;
-            align-self: center;
-            height: 48px;
         }
         .status-icon {
             width: 100%;
@@ -114,19 +111,17 @@
 
         /* 16件表示: ゆったり */
         .gate-grid.layout-16 { gap: 5px; }
-        .gate-grid.layout-16 .gate-card    { padding: 5px 8px; }
-        .gate-grid.layout-16 .gate-info    { min-width: 76px; margin-right: 8px; }
-        .gate-grid.layout-16 .gate-number  { font-size: 0.78em; }
-        .gate-grid.layout-16 .gate-status-indicator { width: 13px; height: 13px; }
-        .gate-grid.layout-16 .icon-grid    { height: 60px; }
+        .gate-grid.layout-16 .gate-card    { padding: 6px 8px; }
+        .gate-grid.layout-16 .gate-number  { font-size: 1.1em; }
+        .gate-grid.layout-16 .gate-status-indicator { width: 12px; height: 12px; }
 
         /* 64件表示: コンパクト */
         .gate-grid.layout-64 { gap: 3px; }
         .gate-grid.layout-64 .gate-card    { padding: 3px 4px; }
-        .gate-grid.layout-64 .gate-info    { min-width: 54px; margin-right: 4px; }
-        .gate-grid.layout-64 .gate-number  { font-size: 0.65em; }
-        .gate-grid.layout-64 .gate-status-indicator { width: 9px; height: 9px; }
-        .gate-grid.layout-64 .icon-grid    { gap: 1px; height: 32px; }
+        .gate-grid.layout-64 .gate-info    { gap: 3px; margin-bottom: 2px; }
+        .gate-grid.layout-64 .gate-number  { font-size: 0.88em; }
+        .gate-grid.layout-64 .gate-status-indicator { width: 8px; height: 8px; }
+        .gate-grid.layout-64 .icon-grid    { gap: 1px; }
 
         /* ---- コンテンツラッパー ---- */
         .sm-outer {
