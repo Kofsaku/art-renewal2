@@ -594,15 +594,15 @@ class StatusMonitor {
                             <div class="col-6">
                                 <div class="fw-bold small border-bottom pb-1 mb-2"><i class="fas fa-calendar-alt me-1"></i>期間</div>
                                 <div class="form-check small">
-                                    <input class="form-check-input" type="radio" name="histPeriod" id="p1" checked>
+                                    <input class="form-check-input" type="radio" name="histPeriod" id="p1" value="1day" checked>
                                     <label class="form-check-label" for="p1">当日</label>
                                 </div>
                                 <div class="form-check small">
-                                    <input class="form-check-input" type="radio" name="histPeriod" id="p2">
+                                    <input class="form-check-input" type="radio" name="histPeriod" id="p2" value="2day">
                                     <label class="form-check-label" for="p2">前日～</label>
                                 </div>
                                 <div class="form-check small">
-                                    <input class="form-check-input" type="radio" name="histPeriod" id="p3">
+                                    <input class="form-check-input" type="radio" name="histPeriod" id="p3" value="1week">
                                     <label class="form-check-label" for="p3">1週間前～</label>
                                 </div>
                             </div>
@@ -639,7 +639,32 @@ class StatusMonitor {
 
         document.body.appendChild(modal);
         modal.querySelector('#navigateReportBtn').addEventListener('click', () => {
-            alert('報告書画面へ遷移します');
+            // モーダルから選択値を読み取り
+            var periodRadio = modal.querySelector('input[name="histPeriod"]:checked');
+            var period = periodRadio ? periodRadio.value : '1day';
+            var t1 = modal.querySelector('#t1'); // 全て
+            var t2 = modal.querySelector('#t2'); // 軽エラー
+            var t3 = modal.querySelector('#t3'); // 重エラー
+            var t4 = modal.querySelector('#t4'); // 重エラー〜復旧
+
+            // データ種別を判定
+            var dataType = 'all';
+            if (t1 && t1.checked) {
+                dataType = 'all';
+            } else if (t2 && t2.checked) {
+                dataType = 'warning';
+            } else if (t3 && t3.checked) {
+                dataType = 'error';
+            } else if (t4 && t4.checked) {
+                dataType = 'recovery';
+            }
+
+            // URLパラメータで報告書画面に遷移
+            var params = new URLSearchParams();
+            params.set('gate', gate.number);
+            params.set('period', period);
+            params.set('dataType', dataType);
+            window.location.href = '/historyReport?' + params.toString();
         });
         const bootstrapModal = new bootstrap.Modal(modal);
         bootstrapModal.show();

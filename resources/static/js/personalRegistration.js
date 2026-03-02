@@ -1,61 +1,72 @@
 /**
- * 個人登録/編集画面のJavaScript
- * Personal Registration/Edit Screen JavaScript
+ * 個人登録/編集画面 JavaScript
  */
-
-// 個人登録管理クラス
 class PersonalRegistration {
     constructor() {
         this.currentData = {};
         this.isEditMode = false;
+        this.calendarData = {
+            start: { currentDate: new Date(), selectedDate: null },
+            end:   { currentDate: new Date(), selectedDate: null },
+            alt:   { currentDate: new Date(), selectedDate: null }
+        };
+        this.monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+        this.dayHeaders = ['日','月','火','水','木','金','土'];
         this.init();
     }
 
     init() {
         this.bindEvents();
+        this.initGateTable();
         this.initializeForm();
     }
 
     bindEvents() {
-        // フォーム送信イベント (Item 20)
-        $('#sendBtn').on('click', () => this.sendData());
-        $('#saveBtn').on('click', () => this.savePerson());
-        $('#deleteBtn').on('click', () => this.deletePerson());
-        $('#eraseBtn').on('click', () => this.eraseData());
-        $('#cancelBtn').on('click', () => this.cancelEdit());
-        $('#clearBtn').on('click', () => this.clearForm());
+        // ヘッダーボタン
+        document.getElementById('sendBtn').addEventListener('click', () => this.sendData());
+        document.getElementById('saveBtn').addEventListener('click', () => this.savePerson());
+        document.getElementById('deleteBtn').addEventListener('click', () => this.deletePerson());
+        document.getElementById('eraseBtn').addEventListener('click', () => this.eraseData());
+        document.getElementById('cancelBtn').addEventListener('click', () => this.cancelEdit());
+        document.getElementById('clearBtn').addEventListener('click', () => this.clearForm());
 
-        // 検索ボタンイベント
-        $('.btn-reference').on('click', (e) => this.handleReferenceClick(e));
+        // 写真
+        document.getElementById('photoRefBtn').addEventListener('click', () => {
+            document.getElementById('photoUpload').click();
+        });
+        document.getElementById('photoUpload').addEventListener('change', (e) => this.handlePhotoUpload(e));
+        document.getElementById('photoDeleteBtn').addEventListener('click', () => this.deletePhoto());
 
-        // 写真関連イベント
-        $('#photoUpload').on('change', (e) => this.handlePhotoUpload(e));
-        $('#photoDelete').on('click', () => this.deletePhoto());
+        // カレンダーボタン
+        document.querySelectorAll('.pr-date-cal-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleCalendar(btn.dataset.calendar);
+            });
+        });
 
-        // フォーム入力イベント
-        $('#personCode').on('input', () => this.validatePersonCode());
-        $('#personCode').on('blur', () => this.autoFillFromPersonCode());
-        $('input[required]').on('input', () => this.validateForm());
+        // カレンダー外クリックで閉じる
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.pr-date-picker') && !e.target.closest('.pr-date-cal-btn')) {
+                document.querySelectorAll('.pr-date-picker').forEach(p => p.style.display = 'none');
+            }
+        });
 
-        // 日付入力の文字数制御と数字のみ許可
-        $('.date-input').on('input', (e) => this.handleDateInput(e));
+        // 日付入力を数字のみに制限
+        document.querySelectorAll('.pr-date-group input[type="text"]').forEach(input => {
+            input.addEventListener('input', () => {
+                input.value = input.value.replace(/\D/g, '').substring(0, parseInt(input.maxLength) || 4);
+            });
+        });
 
-        // 代替設定スイッチ (Item 17)
-        $('#altSettingSwitch').on('change', (e) => this.toggleAltSettings(e.target.checked));
-
-        // チェックボックス制御
-        $('#bioAuth').on('change', () => this.toggleBioFields());
-        $('#antiPassback').on('change', () => this.toggleAntiPassback());
-
-        // Enterキー押下時の自動入力処理
+        // Enterキーで次フィールドへ
         this.setupEnterKeyHandlers();
     }
 
     initializeForm() {
-        // URLパラメータから編集モードかどうかを判定
         const urlParams = new URLSearchParams(window.location.search);
         const personId = urlParams.get('id');
-        
+
         if (personId) {
             this.isEditMode = true;
             this.loadPersonData(personId);
@@ -63,597 +74,387 @@ class PersonalRegistration {
             this.isEditMode = false;
             this.setDefaultValues();
         }
-
-        this.updateFormTitle();
-        this.validateForm();
-        this.setupDatePickers(); // No.12
-    }
-    
-    // No.12: Date picker setup
-    setupDatePickers() {
-        // Set current date as default
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        const todayString = `${year}-${month}-${day}`;
-        
-        const startDateInput = document.getElementById('startDate');
-        const endDateInput = document.getElementById('endDate');
-        
-        if (startDateInput && !startDateInput.value) {
-            startDateInput.value = todayString;
-        }
-        
-        // Set end date to one year from now if not set
-        if (endDateInput && !endDateInput.value) {
-            const nextYear = new Date();
-            nextYear.setFullYear(nextYear.getFullYear() + 1);
-            const nextYearString = `${nextYear.getFullYear()}-${String(nextYear.getMonth() + 1).padStart(2, '0')}-${String(nextYear.getDate()).padStart(2, '0')}`;
-            endDateInput.value = nextYearString;
-        }
-    }
-    
-    // No.11: Auto-fill management number and name from person code
-    autoFillFromPersonCode() {
-        const personCode = $('#personCode').val().trim();
-        const managementNumber = $('#managementNumber');
-        const name = $('#name');
-        
-        // Only auto-fill if person code has a value and the target fields are empty
-        if (personCode && personCode !== '') {
-            if (managementNumber && managementNumber.val().trim() === '') {
-                managementNumber.val(personCode);
-            }
-            
-            if (name && name.val().trim() === '') {
-                name.val(personCode);
-            }
-        }
     }
 
     setDefaultValues() {
-        // デフォルト値の設定
-        $('#personCode').val('');
-        $('#issueCount').val('0');
-        
-        // 現在日付を設定
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = (now.getMonth() + 1).toString().padStart(2, '0');
-        const day = now.getDate().toString().padStart(2, '0');
-        
-        // 利用開始日を今日に設定
-        $('.date-inputs').first().find('input').val(year);
-        $('.date-inputs').first().find('select').eq(0).val(month);
-        $('.date-inputs').first().find('select').eq(1).val(day);
+        document.getElementById('personCode').value = '';
+        document.getElementById('issueCount').value = '0';
+        document.getElementById('tenkeyNumber').value = '0000';
     }
 
-    updateFormTitle() {
-        const title = this.isEditMode ? '個人情報編集' : '個人情報新規登録';
-        $('.section-header').text(title);
+    // ゲートテーブル初期化
+    initGateTable() {
+        const gates = [
+            { code: '0001', name: 'ゲート①',       tc: '', df: 'C' },
+            { code: '0002', name: 'ゲート②',       tc: '', df: 'C' },
+            { code: '0003', name: 'ゲート③',       tc: '', df: 'C' },
+            { code: '0004', name: 'ゲート④',       tc: '', df: 'C' },
+            { code: '0005', name: 'ゲート⑤',       tc: '', df: 'C' },
+            { code: '0006', name: 'ゲート⑥',       tc: '', df: 'C' },
+            { code: '0007', name: 'ゲート⑦',       tc: '', df: 'C' },
+            { code: '0008', name: 'ゲート⑧',       tc: '', df: 'C' },
+            { code: '0009', name: 'ゲート⑨',       tc: '', df: 'C' },
+            { code: '0010', name: 'ゲート⑩',       tc: '', df: 'C' },
+            { code: '0011', name: 'エレベーター①', tc: '', df: 'C' },
+            { code: '0012', name: 'エレベーター②', tc: '', df: 'C' },
+            { code: '0013', name: '駐車場入口',     tc: '', df: 'C' },
+            { code: '0014', name: '駐車場出口',     tc: '', df: 'C' },
+            { code: '0015', name: '会議室A',        tc: '', df: 'C' },
+            { code: '0016', name: '会議室B',        tc: '', df: 'C' },
+            { code: '0017', name: 'サーバールーム', tc: '', df: 'C' },
+            { code: '0018', name: '金庫室',         tc: '', df: 'C' },
+            { code: '0019', name: '屋上扉',         tc: '', df: 'C' },
+            { code: '0020', name: '非常口',         tc: '', df: 'C' }
+        ];
+
+        const tbody = document.getElementById('gateTableBody');
+        const fragment = document.createDocumentFragment();
+        gates.forEach(g => {
+            const tr = document.createElement('tr');
+            const fields = [
+                { value: g.code, readonly: true },
+                { value: g.name, readonly: true },
+                { value: g.tc,   readonly: false },
+                { value: g.df,   readonly: true }
+            ];
+            fields.forEach(f => {
+                const td = document.createElement('td');
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = f.value;
+                if (f.readonly) input.readOnly = true;
+                td.appendChild(input);
+                tr.appendChild(td);
+            });
+            fragment.appendChild(tr);
+        });
+        tbody.appendChild(fragment);
+    }
+
+    // ---- カレンダー ----
+    toggleCalendar(type) {
+        // 他のカレンダーを閉じる
+        document.querySelectorAll('.pr-date-picker').forEach(p => {
+            if (p.id !== type + 'DatePicker') p.style.display = 'none';
+        });
+
+        const picker = document.getElementById(type + 'DatePicker');
+        if (picker.style.display === 'block') {
+            picker.style.display = 'none';
+            return;
+        }
+
+        // 現在の入力値からカレンダー初期位置を設定
+        const year  = parseInt(document.getElementById(type + 'Year').value)  || 0;
+        const month = parseInt(document.getElementById(type + 'Month').value) || 0;
+        const day   = parseInt(document.getElementById(type + 'Day').value)   || 0;
+
+        if (year > 0 && month > 0 && day > 0) {
+            this.calendarData[type].currentDate  = new Date(year, month - 1, day);
+            this.calendarData[type].selectedDate = new Date(year, month - 1, day);
+        } else {
+            this.calendarData[type].currentDate  = new Date();
+            this.calendarData[type].selectedDate = null;
+        }
+
+        this.renderCalendar(type);
+        picker.style.display = 'block';
+    }
+
+    renderCalendar(type) {
+        const cur      = this.calendarData[type].currentDate;
+        const selected = this.calendarData[type].selectedDate;
+        const today    = new Date();
+        const picker   = document.getElementById(type + 'DatePicker');
+
+        picker.innerHTML = `
+            <div class="pr-cal-header">
+                <button type="button" class="pr-cal-nav" data-dir="-1">&#8249;</button>
+                <span class="pr-cal-title">${cur.getFullYear()}年${this.monthNames[cur.getMonth()]}</span>
+                <button type="button" class="pr-cal-nav" data-dir="1">&#8250;</button>
+            </div>
+            <div class="pr-cal-grid" id="${type}CalGrid"></div>
+            <div class="pr-cal-actions">
+                <button type="button" class="pr-cal-btn pr-cal-btn-today">今日</button>
+                <button type="button" class="pr-cal-btn pr-cal-btn-close">閉じる</button>
+            </div>
+        `;
+
+        // ナビゲーション
+        picker.querySelectorAll('.pr-cal-nav').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.navigateMonth(type, parseInt(btn.dataset.dir));
+            });
+        });
+
+        // 今日ボタン
+        picker.querySelector('.pr-cal-btn-today').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.selectDate(type, new Date());
+        });
+
+        // 閉じるボタン
+        picker.querySelector('.pr-cal-btn-close').addEventListener('click', (e) => {
+            e.stopPropagation();
+            picker.style.display = 'none';
+        });
+
+        // カレンダーグリッド
+        const grid = document.getElementById(type + 'CalGrid');
+        this.dayHeaders.forEach(dh => {
+            const el = document.createElement('div');
+            el.className = 'pr-cal-day-header';
+            el.textContent = dh;
+            grid.appendChild(el);
+        });
+
+        const firstDay  = new Date(cur.getFullYear(), cur.getMonth(), 1);
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+        for (let i = 0; i < 42; i++) {
+            const date = new Date(startDate);
+            date.setDate(startDate.getDate() + i);
+
+            const dayEl = document.createElement('div');
+            dayEl.className = 'pr-cal-day';
+            dayEl.textContent = date.getDate();
+
+            if (date.getMonth() !== cur.getMonth()) dayEl.classList.add('other-month');
+            if (date.toDateString() === today.toDateString()) dayEl.classList.add('today');
+            if (selected && date.toDateString() === selected.toDateString()) dayEl.classList.add('selected');
+
+            const d = new Date(date);
+            dayEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.selectDate(type, d);
+            });
+            grid.appendChild(dayEl);
+        }
+    }
+
+    selectDate(type, date) {
+        this.calendarData[type].selectedDate = date;
+
+        document.getElementById(type + 'Year').value  = date.getFullYear();
+        document.getElementById(type + 'Month').value = String(date.getMonth() + 1).padStart(2, '0');
+        document.getElementById(type + 'Day').value   = String(date.getDate()).padStart(2, '0');
+
+        document.getElementById(type + 'DatePicker').style.display = 'none';
+    }
+
+    navigateMonth(type, direction) {
+        const cur = this.calendarData[type].currentDate;
+        cur.setMonth(cur.getMonth() + direction);
+        this.renderCalendar(type);
+    }
+
+    // ---- 写真 ----
+    handlePhotoUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            alert('画像ファイルを選択してください');
+            e.target.value = '';
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            alert('ファイルサイズは5MB以下にしてください');
+            e.target.value = '';
+            return;
+        }
+        const frame = document.getElementById('photoFrame');
+        frame.innerHTML = '';
+        const img = document.createElement('img');
+        img.alt = '顔写真';
+        img.src = URL.createObjectURL(file);
+        img.onload = () => URL.revokeObjectURL(img.src);
+        frame.appendChild(img);
+    }
+
+    deletePhoto() {
+        document.getElementById('photoFrame').innerHTML = `
+            <div class="pr-no-image">
+                <i class="fas fa-user"></i>
+                <div>NO IMAGE</div>
+            </div>
+        `;
+        document.getElementById('photoUpload').value = '';
+    }
+
+    // ---- データ操作 ----
+    sendData() {
+        alert('データを送信しました');
+    }
+
+    savePerson() {
+        const action = this.isEditMode ? '更新' : '登録';
+        if (!confirm(`個人情報を${action}しますか？`)) return;
+
+        const formData = this.collectFormData();
+        alert(`個人情報が${action}されました`);
+
+        if (!this.isEditMode) {
+            window.location.href = '/personalList';
+        } else {
+            this.currentData = formData;
+        }
+    }
+
+    deletePerson() {
+        if (confirm('この個人情報を削除しますか？')) {
+            alert('削除しました');
+            window.location.href = '/personalList';
+        }
+    }
+
+    eraseData() {
+        if (confirm('入力内容を消去しますか？')) {
+            document.querySelectorAll('.pr-col-left input[type="text"], .pr-col-left input[type="password"]').forEach(el => el.value = '');
+            document.querySelectorAll('.pr-col-left textarea').forEach(el => el.value = '');
+            this.setDefaultValues();
+        }
+    }
+
+    cancelEdit() {
+        if (this.hasUnsavedChanges()) {
+            if (!confirm('変更内容が失われますが、よろしいですか？')) return;
+        }
+        window.location.href = '/personalList';
+    }
+
+    clearForm() {
+        if (!confirm('入力内容をクリアしますか？')) return;
+
+        document.querySelectorAll('.pr-col-left input[type="text"], .pr-col-left input[type="password"]').forEach(el => el.value = '');
+        document.querySelectorAll('.pr-col-left input[type="checkbox"]').forEach(el => el.checked = false);
+        document.querySelectorAll('.pr-col-left textarea').forEach(el => el.value = '');
+        this.deletePhoto();
+        this.setDefaultValues();
+    }
+
+    collectFormData() {
+        return {
+            personCode:       document.getElementById('personCode').value.trim(),
+            issueCount:       document.getElementById('issueCount').value.trim(),
+            tenkeyNumber:     document.getElementById('tenkeyNumber').value.trim(),
+            managementNumber: document.getElementById('managementNumber').value.trim(),
+            name:             document.getElementById('name').value.trim(),
+            nameKana:         document.getElementById('nameKana').value.trim(),
+            department:       document.getElementById('department').value.trim(),
+            category:         document.getElementById('category').value.trim(),
+            gateMode:         document.getElementById('gateMode').checked,
+            antiPassback:     document.getElementById('antiPassback').checked,
+            securityOpDisable:document.getElementById('securityOpDisable').checked,
+            monitoringCard:   document.getElementById('monitoringCard').checked,
+            startDate:        { year: document.getElementById('startYear').value, month: document.getElementById('startMonth').value, day: document.getElementById('startDay').value },
+            endDate:          { year: document.getElementById('endYear').value,   month: document.getElementById('endMonth').value,   day: document.getElementById('endDay').value },
+            bioIndex:         document.getElementById('bioIndex').value.trim(),
+            altCode:          document.getElementById('altCode').value.trim(),
+            altEndDate:       { year: document.getElementById('altYear').value,   month: document.getElementById('altMonth').value,   day: document.getElementById('altDay').value },
+            bioId:            document.getElementById('bioId').value.trim(),
+            remarks:          document.getElementById('remarks').value.trim(),
+            gateDefaultCode:  document.getElementById('gateDefaultCode').value.trim()
+        };
+    }
+
+    populateForm(data) {
+        const set = (id, val) => {
+            if (val !== undefined) document.getElementById(id).value = val;
+        };
+
+        set('personCode',       data.personCode);
+        set('issueCount',       data.issueCount);
+        set('tenkeyNumber',     data.tenkeyNumber);
+        set('managementNumber', data.managementNumber);
+        set('name',             data.name);
+        set('nameKana',         data.nameKana);
+        set('department',       data.department);
+        set('category',         data.category);
+
+        document.getElementById('gateMode').checked         = !!data.gateMode;
+        document.getElementById('antiPassback').checked      = !!data.antiPassback;
+        document.getElementById('securityOpDisable').checked = !!data.securityOpDisable;
+        document.getElementById('monitoringCard').checked    = !!data.monitoringCard;
+
+        if (data.startDate) {
+            set('startYear',  data.startDate.year);
+            set('startMonth', data.startDate.month);
+            set('startDay',   data.startDate.day);
+        }
+        if (data.endDate) {
+            set('endYear',  data.endDate.year);
+            set('endMonth', data.endDate.month);
+            set('endDay',   data.endDate.day);
+        }
+        if (data.altEndDate) {
+            set('altYear',  data.altEndDate.year);
+            set('altMonth', data.altEndDate.month);
+            set('altDay',   data.altEndDate.day);
+        }
+
+        set('bioIndex',        data.bioIndex);
+        set('altCode',         data.altCode);
+        set('bioId',           data.bioId);
+        set('remarks',         data.remarks);
+        set('gateDefaultCode', data.gateDefaultCode);
     }
 
     loadPersonData(personId) {
-        // サンプルデータを読み込み（実際のAPIからデータを取得）
         const sampleData = {
             personCode: '0030302',
             issueCount: '1',
+            tenkeyNumber: '0000',
             managementNumber: 'MGT001',
             name: '山田太郎',
             nameKana: 'ヤマダタロウ',
-            department: '開発部',
+            department: '001',
             category: '001',
-            tenkeyNumber: '0000',
-            startDate: { year: '2024', month: '01', day: '01' },
-            endDate: { year: '2025', month: '12', day: '31' },
-            proxyCode: '',
-            proxyEndDate: { year: '0000', month: '01', day: '01' },
-            password: '',
-            bioAuth: false,
+            gateMode: true,
             antiPassback: true,
+            securityOpDisable: false,
+            monitoringCard: false,
+            startDate: { year: '2024', month: '01', day: '01' },
+            endDate:   { year: '2025', month: '12', day: '31' },
+            bioIndex: '',
+            altCode: '',
+            altEndDate: { year: '0000', month: '00', day: '00' },
             bioId: '',
-            deMeta: '',
-            archiveEnabled: false,
-            timeSettings: true,
-            photo: null
+            remarks: '',
+            gateDefaultCode: '001'
         };
 
         this.populateForm(sampleData);
         this.currentData = sampleData;
     }
 
-    populateForm(data) {
-        $('#personCode').val(data.personCode || '');
-        $('#issueCount').val(data.issueCount || '0');
-        $('#managementNumber').val(data.managementNumber || '');
-        $('#name').val(data.name || '');
-        $('#nameKana').val(data.nameKana || '');
-        $('#department').val(data.department || '');
-        $('#category').val(data.category || '001');
-        $('#tenkeyNumber').val(data.tenkeyNumber || '0000');
-        $('#proxyCode').val(data.proxyCode || '');
-        $('#bioId').val(data.bioId || '');
-        $('#deMeta').val(data.deMeta || '');
-
-        // 日付の設定
-        if (data.startDate) {
-            const startInputs = $('.date-inputs').eq(0);
-            startInputs.find('input').val(data.startDate.year);
-            startInputs.find('select').eq(0).val(data.startDate.month);
-            startInputs.find('select').eq(1).val(data.startDate.day);
-        }
-
-        if (data.endDate) {
-            const endInputs = $('.date-inputs').eq(1);
-            endInputs.find('input').val(data.endDate.year);
-            endInputs.find('select').eq(0).val(data.endDate.month);
-            endInputs.find('select').eq(1).val(data.endDate.day);
-        }
-
-        if (data.proxyEndDate) {
-            const proxyInputs = $('.date-inputs').eq(2);
-            proxyInputs.find('input').val(data.proxyEndDate.year);
-            proxyInputs.find('select').eq(0).val(data.proxyEndDate.month);
-            proxyInputs.find('select').eq(1).val(data.proxyEndDate.day);
-        }
-
-        // チェックボックスの設定
-        $('#bioAuth').prop('checked', data.bioAuth || false);
-        $('#antiPassback').prop('checked', data.antiPassback || false);
-        $('#readProhibition').prop('checked', data.readProhibition || false); // No.8
-        $('#monitoringCard').prop('checked', data.monitoringCard || false); // No.8
-        $('#archiveSettings').prop('checked', data.archiveEnabled || false);
-        $('#timeSettings').prop('checked', data.timeSettings || false);
-
-        // バイオ認証フィールドの表示制御
-        this.toggleBioFields();
-    }
-
-    handleReferenceClick(e) {
-        const target = $(e.target).closest('.input-with-button');
-        const input = target.find('input');
-        const fieldType = input.attr('id');
-
-        switch (fieldType) {
-            case 'tenantCode':
-                this.openTenantSelector();
-                break;
-            case 'department':
-                this.openDepartmentSelector();
-                break;
-            case 'category':
-                this.openCategorySelector();
-                break;
-            case 'authorityCode':
-                this.openAuthoritySelector();
-                break;
-            default:
-        }
-    }
-
-    openTenantSelector() {
-        const tenants = [
-            { code: '001', name: 'テナント001' },
-            { code: '002', name: 'テナント002' }
-        ];
-        this.showSelectorModal('テナント選択', tenants, (selected) => {
-            $('#tenantCode').val(selected.code);
-            $('#tenantName').text('名称：' + selected.name);
-        });
-    }
-
-    openDepartmentSelector() {
-        const departments = [
-            { code: '001', name: '総務部' },
-            { code: '003', name: '開発部' }
-        ];
-        this.showSelectorModal('所属選択', departments, (selected) => {
-            $('#department').val(selected.code);
-            $('#departmentName').text('名称：' + selected.name);
-        });
-    }
-
-    openCategorySelector() {
-        const categories = [
-            { code: '001', name: '正社員' },
-            { code: '002', name: '契約社員' }
-        ];
-        this.showSelectorModal('区分選択', categories, (selected) => {
-            $('#category').val(selected.code);
-            $('#categoryName').text('名称：' + selected.name);
-        });
-    }
-
-    openAuthoritySelector() {
-        const authorities = [
-            { code: '001', name: 'ツウコウ001' },
-            { code: '002', name: 'ツウコウ002' }
-        ];
-        this.showSelectorModal('通行権限選択', authorities, (selected) => {
-            $('#authorityCode').val(selected.code);
-            $('#authorityName').text('名称：' + selected.name);
-        });
-    }
-
-    showSelectorModal(title, items, callback) {
-        // 簡易的なセレクターモーダル（実際の実装では適切なモーダルを使用）
-        let options = items.map(item => `${item.code}: ${item.name}`).join('\n');
-        let selected = prompt(`${title}\n\n${options}\n\nコードを入力してください:`);
-        
-        if (selected) {
-            let item = items.find(i => i.code === selected);
-            if (item) {
-                callback(item);
-            } else {
-                alert('無効なコードです');
-            }
-        }
-    }
-
-    handlePhotoUpload(e) {
-        const file = e.target.files[0];
-        if (file) {
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    $('.photo-preview').html(`<img src="${e.target.result}" alt="個人写真">`);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                alert('画像ファイルを選択してください');
-                e.target.value = '';
-            }
-        }
-    }
-
-    deletePhoto() {
-        $('.photo-preview').html(`
-            <div class="no-image-text">
-                <div style="font-size: 40px; margin-bottom: 10px;">👤</div>
-                <div>NO IMAGE</div>
-            </div>
-        `);
-        $('#photoUpload').val('');
-    }
-
-    validatePersonCode() {
-        const code = $('#personCode').val();
-        const isValid = code.length >= 6 && /^\d+$/.test(code);
-        
-        if (!isValid && code.length > 0) {
-            $('#personCode').addClass('is-invalid');
-        } else {
-            $('#personCode').removeClass('is-invalid');
-        }
-        
-        return isValid;
-    }
-
-    validateForm() {
-        const required = {
-            personCode: $('#personCode').val().trim(),
-            name: $('#name').val().trim()
-        };
-
-        let isValid = true;
-        Object.keys(required).forEach(key => {
-            const element = $(`#${key}`);
-            if (!required[key]) {
-                element.addClass('is-invalid');
-                isValid = false;
-            } else {
-                element.removeClass('is-invalid');
-            }
-        });
-
-        // 個人コードの形式チェック
-        if (required.personCode && !this.validatePersonCode()) {
-            isValid = false;
-        }
-
-        $('.btn-save').prop('disabled', !isValid);
-        return isValid;
-    }
-
-    handleDateInput(e) {
-        const input = $(e.target);
-        const value = input.val();
-        
-        // 年の入力は4桁まで
-        if (value.length > 4) {
-            input.val(value.substring(0, 4));
-        }
-        
-        // 数字のみ許可
-        if (!/^\d*$/.test(value)) {
-            input.val(value.replace(/\D/g, ''));
-        }
-    }
-
-    handleDateChange(e) {
-        // 日付選択の変更時の処理
-    }
-
-    toggleBioFields() {
-        const bioAuth = $('#bioAuth').is(':checked');
-        const bioFields = $('#bioId, #deMeta');
-        
-        if (bioAuth) {
-            bioFields.prop('disabled', false);
-            bioFields.closest('.form-row').show();
-        } else {
-            bioFields.prop('disabled', true);
-            bioFields.val('');
-        }
-    }
-
-    toggleAltSettings(enabled) {
-        const fields = $('#altCode, #altYear, #altMonth, #altDay');
-        const btn = $('#altCalendarBtn');
-        fields.prop('disabled', !enabled);
-        btn.prop('disabled', !enabled);
-        if (!enabled) {
-            fields.val('');
-            $('#altYear').val('0000');
-            $('#altMonth, #altDay').val('00');
-        }
-    }
-
-    toggleAntiPassback() {
-        const antiPassback = $('#antiPassback').is(':checked');
-    }
-
-    sendData() {
-        if (!this.validateForm()) {
-            alert('必須項目を入力してください');
-            return;
-        }
-        alert('データを送信しました');
-    }
-
-    deletePerson() {
-        if (confirm('この個人情報を削除しますか？')) {
-            alert('削除しました');
-            window.location.href = '/personalList-preview.html';
-        }
-    }
-
-    eraseData() {
-        if (confirm('入力内容を消去しますか？')) {
-            $('input[type="text"]').val('');
-            this.setDefaultValues();
-        }
-    }
-
-    collectFormData() {
-        const data = {
-            personCode: $('#personCode').val().trim(),
-            managementNumber: $('#managementNumber').val().trim(),
-            name: $('#name').val().trim(),
-            nameKana: $('#nameKana').val().trim(),
-            department: $('#department').val().trim(),
-            category: $('#category').val().trim(),
-            tenkeyNumber: $('#tenkeyNumber').val().trim(),
-            proxyCode: $('#proxyCode').val().trim(),
-            bioAuth: $('#bioAuth').is(':checked'),
-            antiPassback: $('#antiPassback').is(':checked'),
-            readProhibition: $('#readProhibition').is(':checked'), // No.8
-            monitoringCard: $('#monitoringCard').is(':checked'), // No.8
-            bioId: $('#bioId').val().trim(),
-            deMeta: $('#deMeta').val().trim(),
-            archiveEnabled: $('#archiveSettings').is(':checked'),
-            timeSettings: $('#timeSettings').is(':checked'),
-            startDate: $('#startDate').val(), // No.12
-            endDate: $('#endDate').val() // No.12
-        };
-
-        // 日付データの収集
-        const dateInputs = $('.date-inputs');
-        data.startDate = this.collectDateData(dateInputs.eq(0));
-        data.endDate = this.collectDateData(dateInputs.eq(1));
-        data.proxyEndDate = this.collectDateData(dateInputs.eq(2));
-
-        return data;
-    }
-
-    collectDateData(dateContainer) {
-        return {
-            year: dateContainer.find('input').val(),
-            month: dateContainer.find('select').eq(0).val(),
-            day: dateContainer.find('select').eq(1).val()
-        };
-    }
-
-    savePerson() {
-        if (!this.validateForm()) {
-            alert('必須項目を入力してください');
-            return;
-        }
-
-        const formData = this.collectFormData();
-        
-        // 確認ダイアログ
-        const action = this.isEditMode ? '更新' : '登録';
-        if (!confirm(`個人情報を${action}しますか？`)) {
-            return;
-        }
-
-        // ローディング状態
-        $('.btn-save').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 保存中...');
-
-        // APIコール（ダミー）
-        setTimeout(() => {
-            alert(`個人情報が${action}されました`);
-            
-            // 保存後の処理
-            $('.btn-save').prop('disabled', false).html('<i class="fas fa-save"></i> 保存');
-            
-            if (!this.isEditMode) {
-                // 新規登録の場合は一覧画面に戻る
-                window.location.href = '/personalList-preview.html';
-            } else {
-                // 編集の場合は現在のデータを更新
-                this.currentData = formData;
-            }
-        }, 1000);
-    }
-
-    cancelEdit() {
-        if (this.hasUnsavedChanges()) {
-            if (!confirm('変更内容が失われますが、よろしいですか？')) {
-                return;
-            }
-        }
-        
-        // 一覧画面に戻る
-        window.location.href = '/personalList-preview.html';
-    }
-
-    clearForm() {
-        if (!confirm('入力内容をクリアしますか？')) {
-            return;
-        }
-
-        // フォームをクリア
-        $('input[type="text"], input[type="password"]').val('');
-        $('input[type="checkbox"]').prop('checked', false);
-        $('select').prop('selectedIndex', 0);
-        
-        // 写真をクリア
-        this.deletePhoto();
-        
-        // デフォルト値を再設定
-        this.setDefaultValues();
-        
-        // バリデーション状態をクリア
-        $('.is-invalid').removeClass('is-invalid');
-        $('.btn-save').prop('disabled', true);
-    }
-
     hasUnsavedChanges() {
         if (!this.isEditMode) {
-            // 新規登録の場合、何かしら入力があるかチェック
-            return $('input[type="text"]').filter((i, el) => $(el).val().trim() !== '').length > 0;
-        } else {
-            // 編集の場合、現在のデータと比較
-            const currentFormData = this.collectFormData();
-            return JSON.stringify(currentFormData) !== JSON.stringify(this.currentData);
+            return document.querySelectorAll('.pr-col-left input[type="text"]').length > 0 &&
+                   Array.from(document.querySelectorAll('.pr-col-left input[type="text"]')).some(el => el.value.trim() !== '');
         }
+        return JSON.stringify(this.collectFormData()) !== JSON.stringify(this.currentData);
     }
 
-    // Enterキー押下時の自動入力機能
     setupEnterKeyHandlers() {
-        const enterHandlers = {
-            'personCode': (input) => {
-                if (!input.value.trim()) {
-                    this.showFieldError('個人コードは必須です');
-                    return false;
-                }
-                return true;
-            },
-            'issueCount': (input) => true,
-            'managementNumber': (input) => {
-                if (!input.value.trim()) {
-                    const personCode = $('#personCode').val().trim();
-                    if (personCode) input.value = personCode;
-                }
-                return true;
-            },
-            'name': (input) => {
-                if (!input.value.trim()) {
-                    const personCode = $('#personCode').val().trim();
-                    if (personCode) input.value = personCode;
-                }
-                return true;
-            },
-            'nameKana': (input) => {
-                if (!input.value.trim()) {
-                    const personCode = $('#personCode').val().trim();
-                    if (personCode) input.value = personCode;
-                }
-                return true;
-            },
-            'department': (input) => {
-                if (!input.value.trim()) input.value = '000';
-                return true;
-            },
-            'category': (input) => {
-                if (!input.value.trim()) input.value = '000';
-                return true;
-            },
-            'tenkeyNumber': (input) => {
-                if (!input.value.trim()) input.value = '0000';
-                return true;
-            },
-            'startYear': (input) => true,
-            'startMonth': (input) => true,
-            'startDay': (input) => true
-        };
+        const fields = document.querySelectorAll('.pr-col-left input[type="text"], .pr-col-left input[type="password"]');
+        const fieldArray = Array.from(fields).filter(el => !el.disabled && !el.hidden && el.type !== 'hidden');
 
-        Object.keys(enterHandlers).forEach(fieldId => {
-            const element = document.getElementById(fieldId);
-            if (element) {
-                element.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const handler = enterHandlers[fieldId];
-                        const shouldProceed = handler(element);
-                        if (shouldProceed) this.moveToNextField(element);
+        fieldArray.forEach((field, idx) => {
+            field.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (idx < fieldArray.length - 1) {
+                        fieldArray[idx + 1].focus();
                     }
-                });
-            }
+                }
+            });
         });
-    }
-
-    moveToNextField(currentElement) {
-        const formElements = Array.from(document.querySelectorAll('input, select, textarea')).filter(el =>
-            !el.disabled && !el.hidden && el.type !== 'hidden'
-        );
-        const currentIndex = formElements.indexOf(currentElement);
-        if (currentIndex >= 0 && currentIndex < formElements.length - 1) {
-            formElements[currentIndex + 1].focus();
-        }
-    }
-
-    showFieldError(message) {
-        console.error(message);
-        alert(message);
-    }
-}
-
-// グローバル関数（HTMLから呼び出される）
-function savePerson() {
-    if (window.personalRegistration) {
-        window.personalRegistration.savePerson();
-    }
-}
-
-function cancelEdit() {
-    if (window.personalRegistration) {
-        window.personalRegistration.cancelEdit();
-    }
-}
-
-function clearForm() {
-    if (window.personalRegistration) {
-        window.personalRegistration.clearForm();
-    }
-}
-
-// No.12: Calendar functionality
-function showCalendar(inputId) {
-    const input = document.getElementById(inputId);
-    if (input) {
-        // For modern browsers, this will trigger the native date picker
-        input.focus();
-        input.click();
-        
-        // Alternative: show a custom calendar modal if needed
     }
 }
 
 // 初期化
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', () => {
     window.personalRegistration = new PersonalRegistration();
 });

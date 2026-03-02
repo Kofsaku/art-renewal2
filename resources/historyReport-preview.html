@@ -1,1044 +1,638 @@
 <!DOCTYPE html>
-<html>
+<html
+	data-bs-theme="light">
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/resources/static/css/common.css" />
-    <link rel="stylesheet" href="/resources/static/css/unified-table.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <title>履歴レポート</title>
-    <style>
-        .history-report-container {
-            padding: 10px 15px;
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="_csrf"/>
+	<meta name="_csrf_header"/>
+	<link rel="stylesheet" href="/resources/static/css/common.css" />
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<title>TRIDENT</title>
+	<script type="text/javascript" src="/resources/static/js/jquery/3.7.1/jquery.min.js"></script>
+	<script type="text/javascript" src="/resources/static/js/common.js"></script>
+	<script type="text/javascript" src="/resources/static/js/popper.min.js"></script>
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<title>報告書</title>
+<style>
+        /* ---- ページ背景上書き ---- */
+        .td-main {
+            background: var(--td-header-bg);
         }
-        .filter-section {
-            margin-bottom: 5px;
+
+        /* ---- レイアウト ---- */
+        .hr-outer {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            padding: 12px;
+            box-sizing: border-box;
+            background: var(--td-header-bg);
+        }
+        .hr-inner {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            border: 2px solid var(--td-border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        /* ---- ヘッダーボタン ---- */
+        .hr-btn {
+            height: 28px;
+            padding: 0 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: background 0.15s, filter 0.15s;
+            font-family: inherit;
+        }
+        .hr-btn:hover { filter: brightness(0.92); }
+        .hr-btn-orange { background: #fd7e14; color: #fff; border-color: #fd7e14; }
+        .hr-btn-gray   { background: #6c757d; color: #fff; border-color: #6c757d; }
+        .hr-btn-outline-orange { background: #fff; color: #fd7e14; border: 2px solid #fd7e14; }
+        .hr-btn-outline-orange:hover { background: #fd7e14; color: #fff; }
+
+        /* ---- ツールバー ---- */
+        .hr-toolbar {
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             gap: 8px;
+            padding: 6px 10px;
+            background: #f0f4f8;
+            border-bottom: 1px solid var(--td-border);
+            flex-wrap: wrap;
         }
-        .unified-table {
+        .hr-count {
+            padding: 3px 10px;
+            background: #fff;
+            border: 2px solid #dc3545;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #dc3545;
+            white-space: nowrap;
+        }
+        .hr-select-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.85rem;
+        }
+        .hr-select {
+            height: 28px;
+            padding: 0 6px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.82rem;
+            background: #fff;
+            cursor: pointer;
+        }
+        .hr-period-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #333;
+        }
+        .hr-period-display {
+            padding: 2px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background: #fff;
+            font-family: monospace;
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+        .hr-data-type-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #333;
+        }
+        .hr-spacer { flex: 1; }
+        .hr-toolbar-btn {
+            height: 28px;
+            padding: 0 10px;
+            background: #fff;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: background 0.15s;
+        }
+        .hr-toolbar-btn:hover { background: #e9ecef; }
+
+        /* ---- テーブルコンテナ ---- */
+        .hr-table-container {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+
+        /* ---- テーブル ---- */
+        .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 5px;
+            font-size: 0.82rem;
+            table-layout: auto;
         }
-        .unified-table th,
-        .unified-table td {
-            border: 1px solid #ccc;
-            padding: 6px 8px;
-            text-align: left;
-            font-size: 0.9rem;
+        .data-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
-        .unified-table th {
-            background-color: #6c757d;
-            color: white;
-            font-weight: bold;
-        }
-        .unified-table tbody tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
-        
-        /* Data type row colors */
-        .unified-table tbody tr.row-normal {
-            background-color: #ffffff !important;
-        }
-        
-        .unified-table tbody tr.row-warning {
-            background-color: #fff3cd !important;
-        }
-        
-        .unified-table tbody tr.row-error {
-            background-color: #f8d7da !important;
-        }
-        
-        .unified-table tbody tr.row-recovery {
-            background-color: #d1ecf1 !important;
-        }
-        .content-wrapper {
-            padding-top: 70px;
-        }
-        .row-normal {
-            background-color: #ffffff !important;
-        }
-        .row-warning {
-            background-color: #fff3cd !important;
-        }
-        .row-error {
-            background-color: #f8d7da !important;
-            color: #dc3545;
-        }
-        
-        .row-recovery {
-            background-color: #d1ecf1 !important;
-            color: #0c5460;
-        }
-        
-        .filter-panel {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 10px;
-        }
-        .filter-section {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            align-items: flex-start;
-        }
-        .filter-group {
-            min-width: 200px;
-            flex: 1;
-        }
-        .filter-group h6 {
-            margin-bottom: 8px;
-            color: #495057;
-            font-size: 0.95rem;
-            font-weight: bold;
-        }
-        
-        /* 期間設定のスタイル */
-        .date-range-group {
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            padding: 10px;
-            background-color: white;
-        }
-        .date-input-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 5px;
-        }
-        .date-input-group input[type="radio"] {
-            margin-right: 5px;
-        }
-        .date-input-group input[type="date"] {
-            flex: 1;
-            min-width: 150px;
-        }
-        .calendar-picker {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            padding: 10px;
-            margin-top: 10px;
-            display: none;
-        }
-        .calendar-picker.show {
-            display: block;
-        }
-        
-        /* 条件保存のスタイル */
-        .condition-save-group {
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            padding: 10px;
-            background-color: white;
-        }
-        .save-options {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-top: 5px;
-        }
-        .save-options label {
-            display: flex;
-            align-items: center;
-            font-size: 0.9rem;
-        }
-        .save-options input[type="checkbox"] {
-            margin-right: 5px;
-        }
-        
-        /* Excelボタン */
-        .excel-export {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-        .excel-export:hover {
-            background-color: #218838;
-        }
-        
-        /* Excel-like table styling */
-        .unified-table {
-            border-collapse: separate;
-            border-spacing: 0;
-            border: 1px solid #d0d0d0;
-        }
-        
-        .unified-table th {
-            background: linear-gradient(180deg, #f7f7f7 0%, #e7e7e7 100%);
-            border-right: 1px solid #d0d0d0;
-            border-bottom: 1px solid #d0d0d0;
-            color: #333;
+        .data-table th {
+            background: #5a6268;
+            color: #fff;
             font-weight: 600;
+            padding: 6px 8px 6px 8px;
+            border: 1px solid #495057;
+            white-space: nowrap;
             position: relative;
-            padding-right: 25px;
-            cursor: move;
+            padding-right: 22px;
+            cursor: pointer;
             user-select: none;
-            transition: all 0.2s ease;
         }
-        
-        .unified-table th:hover {
-            background: linear-gradient(180deg, #e7e7e7 0%, #d0d0d0 100%);
-            transform: translateY(-1px);
+        .data-table td {
+            padding: 4px 8px;
+            border: 1px solid #dee2e6;
+            white-space: nowrap;
         }
-        
-        .unified-table td {
-            border-right: 1px solid #e7e7e7;
-            border-bottom: 1px solid #e7e7e7;
-            background: white;
+        .data-table tbody tr { background: #fff; }
+        .data-table tbody tr.row-warning  { background: #fff8e1; }
+        .data-table tbody tr.row-error    { background: #fdecea; color: #c62828; }
+        .data-table tbody tr.row-recovery { background: #d1ecf1; color: #00695c; }
+        .data-table tbody tr:hover { filter: brightness(0.96); }
+
+        /* ---- ソート表示 ---- */
+        .data-table th.sort-asc::before {
+            content: ' \25B2';
+            font-size: 8px;
+            margin-right: 4px;
         }
-        
-        .unified-table tbody tr:nth-child(even) td {
-            background: #f9f9f9;
+        .data-table th.sort-desc::before {
+            content: ' \25BC';
+            font-size: 8px;
+            margin-right: 4px;
         }
-        
-        .unified-table tbody tr:hover td {
-            background: #e7f3ff;
-        }
-        
-        /* Excel filter trigger */
+
+        /* ---- Excelフィルター ---- */
         .excel-filter-trigger {
             position: absolute;
-            top: 50%;
-            right: 8px;
+            top: 50%; right: 4px;
             transform: translateY(-50%);
-            width: 12px;
-            height: 12px;
+            width: 16px; height: 16px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0,0,0,0.1);
-            border-radius: 2px;
-            transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0.5;
+            transition: opacity 0.15s;
         }
-        
-        .excel-filter-trigger:hover {
-            background: rgba(0,0,0,0.3);
-            transform: translateY(-50%) scale(1.1);
-        }
-        
+        .excel-filter-trigger:hover { opacity: 1; }
         .excel-filter-trigger::after {
-            content: '▼';
-            font-size: 8px;
-            color: #333;
+            content: '\f0b0';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 9px;
+            color: rgba(255,255,255,0.8);
         }
-        
-        /* Excel filter menu */
+        .excel-filter-trigger.active { opacity: 1; }
+        .excel-filter-trigger.active::after {
+            color: #ffc107;
+        }
         .excel-filter-menu {
             display: none;
             position: absolute;
             top: 100%;
-            right: 0;
-            background: white;
-            border: 2px solid #e7e7e7;
-            border-radius: 0;
-            padding: 0;
-            z-index: 1000;
-            min-width: 280px;
-            max-width: 350px;
+            left: 0;
+            min-width: 220px;
+            max-width: 300px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .excel-filter-menu.show {
-            display: block;
-        }
-        
-        .excel-filter-header {
-            background: linear-gradient(180deg, #f7f7f7 0%, #e7e7e7 100%);
-            border-bottom: 1px solid #d0d0d0;
-            padding: 8px 12px;
-            font-size: 0.85em;
-            font-weight: 600;
+            z-index: 100;
             color: #333;
+            font-weight: 400;
+            font-size: 0.82rem;
         }
-        
+        .excel-filter-menu.show { display: block; }
+        /* 右端列のオーバーフロー対策 */
+        .data-table th:nth-last-child(-n+2) .excel-filter-menu {
+            left: auto;
+            right: 0;
+        }
+        .excel-filter-header {
+            padding: 8px 10px 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #555;
+            border-bottom: 1px solid #eee;
+        }
         .excel-search-section {
-            padding: 10px 12px;
-            border-bottom: 1px solid #e7e7e7;
-            background: #fafafa;
+            padding: 6px 10px;
         }
-        
         .excel-search-box {
             width: 100%;
-            padding: 6px 10px;
-            border: 1px solid #b7b7b7;
-            border-radius: 0;
-            font-size: 0.85em;
-            background: white;
-        }
-        
-        .excel-search-box:focus {
+            box-sizing: border-box;
+            padding: 5px 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 0.8rem;
             outline: none;
-            border-color: #4472c4;
-            box-shadow: 0 0 3px rgba(68, 114, 196, 0.3);
         }
-        
+        .excel-search-box:focus { border-color: #80bdff; }
         .excel-filter-actions {
-            padding: 8px 12px;
-            background: #f7f7f7;
-            border-bottom: 1px solid #e7e7e7;
             display: flex;
-            gap: 8px;
+            gap: 4px;
+            padding: 4px 10px 6px;
+            border-bottom: 1px solid #eee;
         }
-        
         .excel-action-btn {
-            padding: 4px 12px;
-            border: 1px solid #b7b7b7;
-            background: white;
-            font-size: 0.8em;
+            flex: 1;
+            padding: 4px 0;
+            background: #f0f4f8;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 0.75rem;
             cursor: pointer;
-            border-radius: 0;
-            transition: all 0.1s ease;
+            text-align: center;
+            transition: background 0.15s;
         }
-        
-        .excel-action-btn:hover {
-            background: #e7e7e7;
+        .excel-action-btn:hover { background: #e2e6ea; }
+        .excel-action-btn.ok-btn {
+            background: #007bff;
+            color: #fff;
+            border-color: #007bff;
         }
-        
-        .excel-action-btn.primary {
-            background: #4472c4;
-            color: white;
-            border-color: #4472c4;
-        }
-        
-        .excel-action-btn.primary:hover {
-            background: #365a9b;
-        }
-        
+        .excel-action-btn.ok-btn:hover { background: #0069d9; }
         .excel-filter-list {
             max-height: 200px;
             overflow-y: auto;
-            background: white;
+            padding: 4px 0;
         }
-        
         .excel-filter-item {
             display: flex;
             align-items: center;
-            padding: 4px 12px;
-            border-bottom: 1px solid #f0f0f0;
+            gap: 6px;
+            padding: 3px 10px;
             cursor: pointer;
-            font-size: 0.85em;
-            transition: background-color 0.1s ease;
+            user-select: none;
+            transition: background 0.1s;
         }
-        
-        .excel-filter-item:hover {
-            background: #e7f3ff;
-        }
-        
+        .excel-filter-item:hover { background: #f0f4f8; }
         .excel-filter-item input[type="checkbox"] {
-            margin-right: 8px;
+            margin: 0;
             cursor: pointer;
         }
-        
-        .excel-filter-item.select-all {
-            background: #f7f7f7;
-            font-weight: 600;
-            border-bottom: 2px solid #d0d0d0;
+        .excel-filter-item label {
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        
-        .excel-filter-stats {
-            padding: 6px 12px;
-            background: #f7f7f7;
-            border-top: 1px solid #e7e7e7;
-            font-size: 0.75em;
-            color: #666;
-            text-align: center;
-        }
-        
-        /* Column visibility toggle */
-        .column-visibility-toggle {
+
+        /* ---- 列表示管理ドロップダウン ---- */
+        .column-manager-menu {
+            display: none;
             position: absolute;
-            top: 2px;
-            right: 2px;
-            width: 12px;
-            height: 12px;
-            background: rgba(0,0,0,0.1);
-            border-radius: 2px;
+            top: 100%;
+            right: 0;
+            margin-top: 4px;
+            min-width: 180px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 100;
+            padding: 6px 0;
+            font-size: 0.82rem;
+        }
+        .column-manager-menu.show { display: block; }
+        .column-manager-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 12px;
             cursor: pointer;
+            user-select: none;
+            transition: background 0.1s;
+        }
+        .column-manager-item:hover { background: #f0f4f8; }
+        .column-manager-item input[type="checkbox"] {
+            margin: 0;
+            cursor: pointer;
+        }
+        .column-manager-item label {
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        /* ---- ページネーション ---- */
+        .hr-pagination {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 10px;
+            background: #f8f9fa;
+            border-top: 1px solid var(--td-border);
+            font-size: 0.82rem;
+        }
+        .hr-pagination .page-info {
+            color: #555;
+        }
+        .hr-pagination .pagination {
+            margin: 0;
+        }
+        .hr-pagination .page-link {
+            padding: 2px 8px;
+            font-size: 0.82rem;
+        }
+
+        /* ---- 凡例 ---- */
+        .hr-legend {
+            flex-shrink: 0;
+            background: #f8f9fa;
+            border-top: 1px solid var(--td-border);
+            padding: 5px 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 8px;
-            color: #333;
-            transition: all 0.2s ease;
+            gap: 16px;
+            font-size: 0.78rem;
+            color: #555;
+            flex-wrap: wrap;
         }
-        
-        .column-visibility-toggle:hover {
-            background: rgba(0,0,0,0.3);
-            transform: scale(1.2);
+        .hr-legend-item {
+            display: flex; align-items: center; gap: 4px;
         }
-        
-        .column-visibility-toggle.hidden {
-            background: rgba(220,53,69,0.8);
-            color: white;
-        }
-
-        .column-content {
-            margin-left: 5px;
-        }
-
-        /* ソート機能のスタイル（矢印なし版） */
-        .unified-table th.sortable {
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .unified-table th.sortable:hover {
-            background: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 100%);
-        }
-
-        /* 列幅変更機能のスタイル（個人一覧と同じ） */
-        .unified-table th {
-            position: relative;
-            min-width: 60px;
-        }
-
-        .column-resizer {
-            position: absolute;
-            top: 0;
-            right: -2px;
-            bottom: 0;
-            width: 4px;
-            cursor: col-resize;
-            background: rgba(200, 200, 200, 0.3);
-            z-index: 20;
-            transition: all 0.2s ease;
-            border-right: 1px solid rgba(200, 200, 200, 0.5);
-        }
-
-        .column-resizer:hover {
-            background: rgba(160, 160, 160, 0.5);
-            border-right: 2px solid #999;
-            width: 6px;
-            right: -3px;
-        }
-
-        .column-resizer.resizing {
-            background: #666;
-            border-right: 3px solid #444;
-            width: 6px;
-        }
-
-        .unified-table th.resizing {
-            border-right: 3px solid #666 !important;
-            background: rgba(200, 200, 200, 0.1) !important;
-        }
-
-        .unified-table th {
-            border-right: 1px solid #dee2e6;
-        }
-
-        /* リサイザーを常に表示 */
-        .unified-table th .column-resizer {
-            opacity: 0.7;
-        }
-
-        .unified-table th:hover .column-resizer {
-            opacity: 1;
-            background: rgba(160, 160, 160, 0.4);
-        }
-        
-        /* Dragging states */
-        .unified-table th.dragging {
-            opacity: 0.5;
-            z-index: 1000;
-            transform: rotate(3deg);
-        }
-        
-        .unified-table th.drag-over {
-            border-left: 2px solid #ccc;
-            background: #f0f0f0;
-        }
-        
-        /* Improved action toolbar */
-        .action-toolbar, .unified-action-toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding: 10px 15px;
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        
-        .action-group {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            padding-right: 15px;
-            margin-right: 15px;
-            border-right: 1px solid #dee2e6;
-        }
-        
-        .action-group:last-child {
-            border-right: none;
-            margin-right: 0;
-            padding-right: 0;
-        }
-        
-        .primary-actions {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        
-        .secondary-actions {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        
-        .filter-badge {
-            background: #e3f2fd;
-            color: #1976d2;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            font-weight: 500;
-        }
-        
-        /* ポイント吹き出し */
-        .point-annotation {
-            position: absolute;
-            background-color: #e3f2fd;
-            border: 2px solid #1976d2;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 13px;
-            max-width: 180px;
-            z-index: 1000;
-            line-height: 1.3;
-        }
-        .point1 { 
-            top: 320px; 
-            left: 280px; 
-        }
-        .point2 { 
-            top: 380px; 
-            left: 550px; 
-        }
-        .point3 { 
-            bottom: 280px; 
-            left: 550px; 
-        }
-        .point4 { 
-            bottom: 150px; 
-            right: 100px; 
-            background-color: #ffebee;
-            border-color: #d32f2f;
-        }
-        
-        /* コンパクトレイアウト用の追加スタイル */
-        .form-select, .form-control {
-            font-size: 0.9rem;
-            padding: 4px 8px;
-        }
-        
-        .history-report-container h2 {
-            margin-bottom: 8px;
-        }
-        
-        /* 全体的な余白調整 */
-        .container-fluid {
-            padding-left: 10px;
-            padding-right: 10px;
-        }
-
-        /* 列表示管理モーダル用スタイル（個人一覧と統一） */
-        .column-list {
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            min-height: 200px;
-            max-height: 300px;
-            overflow-y: auto;
-            padding: 8px;
-            background: #f8f9fa;
-        }
-
-        .column-item-manager {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 6px 8px;
-            margin-bottom: 4px;
-            background: white;
-            border: 1px solid #dee2e6;
-            border-radius: 3px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .column-item-manager:hover {
-            background: #e9ecef;
-            border-color: #adb5bd;
-        }
-
-        .column-item-manager.hidden {
-            background: #fff3cd;
-            border-color: #ffc107;
-        }
-
-        .column-item-manager .column-name {
-            font-size: 0.9em;
-            font-weight: 500;
-        }
-
-        .column-item-manager .column-toggle-btn {
-            background: none;
-            border: none;
-            color: #6c757d;
-            cursor: pointer;
-            padding: 2px 6px;
-            border-radius: 3px;
-            transition: all 0.2s ease;
-        }
-
-        .column-item-manager .column-toggle-btn:hover {
-            background: #dee2e6;
-            color: #495057;
-        }
-
-        .column-item-manager.hidden .column-toggle-btn {
-            color: #f57c00;
-        }
-
-        .column-visibility-modal .modal-body {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        /* データ種別セレクトボックスの色分け */
-        .data-type-select {
-            background-color: white;
-            transition: background-color 0.2s ease;
-        }
-
-        .data-type-select.normal-selected {
-            background-color: #ffffff;
-            color: #000;
-        }
-
-        .data-type-select.warning-selected {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-
-        .data-type-select.error-selected {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .data-type-select.recovery-selected {
-            background-color: #d1ecf1;
-            color: #0c5460;
-        }
-
-        /* セレクトオプションの色分け（一部ブラウザで対応） */
-        .data-type-select option[value="normal"] {
-            background-color: #ffffff;
-            color: #000;
-        }
-
-        .data-type-select option[value="warning"] {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-
-        .data-type-select option[value="error"] {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .data-type-select option[value="recovery"] {
-            background-color: #d1ecf1;
-            color: #0c5460;
+        .hr-legend-swatch {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 1px solid #ccc;
+            border-radius: 2px;
         }
     </style>
 </head>
-<body>
-    <!-- ヘッダー -->
-    <div class="bs-component" id="global-header">
-        <div class="fixed-top">
-            <nav class="sticky-top navbar navbar-expand-lg navbar-dark bg-success p-0">
-                <ul class="d-flex list-unstyled col-12 p-0" style="height:30px;">
-                    <li class="p-0 col-11">
-                        <div class="navbar-brand ms-3">
-                            Web版入退室管理システム
-                        </div>
-                    </li>
-                    <li class="p-0 col-1">
-                        <div class="border border-1 border-white m-1 g-center">
-                            <a class="text-white fs-5 text-decoration-none ms-2" href="/logout">
-                                ログアウト
-                            </a>
-                        </div>
-                    </li>
-                </ul>
-            </nav>
-        </div>
+
+<body class="td-body">
+
+	<!-- サイドメニュー -->
+	<div class="td-overlay" id="menuOverlay"></div>
+	<nav class="td-sidemenu" id="sideMenu">
+		<div class="td-sidemenu-header">
+			<span class="td-sidemenu-title">メニュー</span>
+			<button class="td-sidemenu-close" id="menuClose"><i class="fas fa-times"></i></button>
+		</div>
+		<ul class="td-sidemenu-list">
+			<li><a href="/resources/dataMonitor-preview.html"><i class="fas fa-table"></i>データモニター</a></li>
+			<li><a href="/resources/statusMonitor-preview.html"><i class="fas fa-th-large"></i>ステータスモニター</a></li>
+			<li><a href="/resources/mapMonitor-preview.html"><i class="fas fa-map"></i>マップモニター</a></li>
+			<li><a href="/resources/personalList-preview.html"><i class="fas fa-users"></i>個人情報一覧</a></li>
+			<li><a href="/resources/personalRegistration-preview.html"><i class="fas fa-user-plus"></i>個人情報登録</a></li>
+			<li><a href="/resources/historyReport-preview.html"><i class="fas fa-file-alt"></i>履歴レポート</a></li>
+		</ul>
+	</nav>
+
+	<!-- ヘッダー -->
+	<header class="td-header">
+		<!-- ハンバーガー -->
+		<button class="td-hamburger" id="menuOpen" title="メニュー">
+			<i class="fas fa-bars"></i>
+		</button>
+
+		<!-- システムロゴ（TODO: 正式ロゴ画像に差し替え） -->
+		<span class="td-logo">プレースホルダー</span>
+
+		<!-- ページ固有コントロール（各ページで上書き） -->
+		<div class="td-header-controls">
+        <button class="hr-btn hr-btn-orange" onclick="showHrPeriodModal()">
+            <i class="fas fa-calendar-alt"></i> ▼期間抽出
+        </button>
+        <button class="hr-btn hr-btn-gray">
+            <i class="fas fa-filter"></i> ▼条件抽出
+        </button>
+        <button class="hr-btn hr-btn-gray">
+            <i class="fas fa-save"></i> 条件保存
+        </button>
+        <button class="hr-btn hr-btn-outline-orange">
+            <i class="fas fa-file-export"></i> エクスポート
+        </button>
     </div>
 
-    <!-- ナビゲーション -->
-    <nav>
-        <div class="container-fluid">
-            <ul class="navbar-nav d-flex flex-row justify-content-center w-100">
-                <li class="nav-item">
-                    <a href="/resources/personalList-preview.html" class="nav-link">
-                        <i class="fas fa-users me-1"></i>
-                        個人情報一覧
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/resources/historyReport-preview.html" class="nav-link active">
-                        <i class="fas fa-chart-line me-1"></i>
-                        履歴レポート
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/resources/dataMonitor-preview.html" class="nav-link">
-                        <i class="fas fa-desktop me-1"></i>
-                        データモニター
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/resources/statusMonitor-preview.html" class="nav-link">
-                        <i class="fas fa-heartbeat me-1"></i>
-                        ステータスモニター
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/resources/mapMonitor-preview.html" class="nav-link">
-                        <i class="fas fa-map me-1"></i>
-                        マップモニター
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/resources/personalRegistration-preview.html" class="nav-link">
-                        <i class="fas fa-user-plus me-1"></i>
-                        個人情報登録
-                    </a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-cogs me-1"></i>
-                        システム設定
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-file-alt me-2"></i>操作ログ</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-calendar me-2"></i>休日設定</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-clock me-2"></i>時刻送信</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-database me-2"></i>バックアップ</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-broadcast-tower me-2"></i>一斉送信</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-user-shield me-2"></i>ユーザー管理</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-    </nav>
+		<!-- 設定ボタン -->
+		<button class="td-settings-btn" title="設定">
+			<i class="fas fa-cog"></i>
+		</button>
+	</header>
 
-    <!-- メインコンテンツ -->
-    <main class="content-wrapper">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <h2>履歴レポート</h2>
-                <div class="d-flex align-items-center gap-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <span style="font-weight: bold; white-space: nowrap;">表示件数:</span>
-                        <select id="itemsPerPageSelect" class="form-select" style="width: auto; min-width: 100px;">
+	<!-- メインコンテンツ -->
+	<main class="td-main">
+		<div class="hr-outer">
+            <div class="hr-inner">
+                <!-- ツールバー -->
+                <div class="hr-toolbar">
+                    <div class="hr-select-group">
+                        <span>表示件数:</span>
+                        <select class="hr-select" id="hrPageSize">
                             <option value="25" selected>25件</option>
                             <option value="50">50件</option>
                             <option value="100">100件</option>
                         </select>
                     </div>
-                    <div class="display-count" style="color: #dc3545; font-weight: bold; font-size: 1.1rem;">
-                        現条件: <span id="recordCountTop">0</span> 件
+
+                    <span class="hr-count">現条件: <span id="hrRecordCount">0</span>件</span>
+
+                    <div class="hr-period-group">
+                        <span>◆ 抽出期間:</span>
+                        <span class="hr-period-display" id="hrPeriodDisplay">YYYY/MM/DD hh:mm ～ YYYY/MM/DD hh:mm</span>
                     </div>
-                </div>
-            </div>
 
-            <!-- アクションツールバー -->
-            <div class="unified-action-toolbar" style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-                <div class="primary-actions" style="display: flex; gap: 8px;">
-                    <button type="button" class="btn btn-warning" onclick="showPeriodSelection()" style="background-color: #fd7e14; border-color: #fd7e14; color: white;">
-                        ▼期間抽出
-                    </button>
-                    <button type="button" class="btn btn-secondary" style="background-color: #6c757d;">
-                        ▼条件抽出
-                    </button>
-                    <button type="button" class="btn btn-secondary" style="background-color: #6c757d;">
-                        条件保存
-                    </button>
-                    <button type="button" class="btn btn-outline-info" style="border-color: #17a2b8; color: #17a2b8; background: white;">
-                        <i class="fas fa-external-link-alt"></i> エクスポート
-                    </button>
-                </div>
-                <div class="secondary-actions" style="display: flex; gap: 8px;">
-                    <button class="btn btn-outline-secondary btn-sm" onclick="resetAllFilters()">
-                        <i class="fas fa-filter-circle-xmark"></i> フィルターリセット
-                    </button>
-                    <button class="btn btn-outline-info btn-sm" onclick="showColumnManager()" id="columnManagerBtn">
-                        <i class="fas fa-columns"></i> 列表示管理
-                        <span class="badge bg-warning ms-1" id="hiddenColumnsBadge" style="display: none;">0</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- 削除された古いページネーションコントロール -->
-
-            
-            <div class="unified-filter-panel" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-bottom: 20px;">
-                <div class="filter-section" style="display: flex; flex-wrap: wrap; gap: 30px; align-items: center;">
-                    <!-- データ種別 -->
-                    <div class="filter-group" style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-weight: bold; white-space: nowrap;">◆データ種別：</span>
-                        <select id="dataDisplayFilter" class="form-select data-type-select" style="width: auto; min-width: 250px;" onchange="updateTableColoring(); updateSelectColor(this);">
+                    <div class="hr-data-type-group">
+                        <span>◆ データ種別:</span>
+                        <select class="hr-select" id="hrDataType">
                             <option value="all">全データ表示</option>
-                            <option value="normal">正常データ</option>
-                            <option value="warning">軽エラーデータ</option>
-                            <option value="error">重エラーデータ</option>
-                            <option value="recovery">重エラー復旧データ</option>
+                            <option value="normal">正常のみ</option>
+                            <option value="warning">軽エラーのみ</option>
+                            <option value="error">重エラーのみ</option>
+                            <option value="recovery">復旧のみ</option>
                         </select>
                     </div>
 
-                    <!-- 抽出期間 -->
-                    <div class="filter-group" style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-weight: bold; white-space: nowrap;">◆抽出期間：</span>
-                        <div style="border: 1px solid #ced4da; padding: 6px 15px; border-radius: 4px; background: white; min-width: 350px; font-family: monospace; font-size: 0.95rem;" id="extractionPeriodDisplay">
-                            YYYY/MM/DD hh:mm ～ YYYY/MM/DD hh:mm
+                    <div class="hr-spacer"></div>
+
+                    <button class="hr-toolbar-btn" id="hrFilterReset">
+                        <i class="fas fa-times-circle"></i>フィルターリセット
+                    </button>
+                    <div style="position: relative;">
+                        <button class="hr-toolbar-btn" id="hrColumnManager">
+                            <i class="fas fa-columns"></i>列表示管理
+                        </button>
+                        <div class="column-manager-menu" id="hrColumnManagerMenu">
+                            <!-- JSで生成 -->
                         </div>
                     </div>
                 </div>
-            </div>
 
-
-            <!-- データテーブル（初期状態では非表示） -->
-            <div class="unified-table-container" id="dataTableContainer" style="display: none;">
-                <table class="unified-table" id="historyTable">
-                    <thead>
-                        <tr id="tableHeaders">
-                            <!-- Headers will be dynamically generated by JavaScript -->
-                        </tr>
-                    </thead>
-                    <tbody id="historyTableBody">
-                        <!-- Data will be dynamically generated by JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- データ未選択時のメッセージ -->
-            <div id="noDataMessage" class="text-center p-5" style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 20px;">
-                <i class="fas fa-info-circle text-muted" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                <h5 class="text-muted">データが選択されていません</h5>
-                <p class="text-muted">「抽出」ボタンを押して対象期間を選択してください。</p>
-            </div>
-            
-            <!-- ページネーション（初期状態では非表示） -->
-            <div class="pagination-controls" id="paginationContainer" style="display: none; justify-content: space-between; align-items: center; margin-top: 15px;">
-                
-                <div class="page-info" id="pageInfo">
-                    1-30 / 1,000件中
+                <!-- テーブル -->
+                <div class="hr-table-container">
+                    <table class="data-table" id="hrTable">
+                        <thead>
+                            <tr>
+                                <th data-column="occurredDate">発生日時<div class="excel-filter-trigger" onclick="showHrFilter(event, 'occurredDate')"></div><div class="excel-filter-menu" id="excel-filter-occurredDate"></div></th>
+                                <th data-column="personalCode">個人コード<div class="excel-filter-trigger" onclick="showHrFilter(event, 'personalCode')"></div><div class="excel-filter-menu" id="excel-filter-personalCode"></div></th>
+                                <th data-column="issueCount">発行回数<div class="excel-filter-trigger" onclick="showHrFilter(event, 'issueCount')"></div><div class="excel-filter-menu" id="excel-filter-issueCount"></div></th>
+                                <th data-column="managementNumber">管理番号<div class="excel-filter-trigger" onclick="showHrFilter(event, 'managementNumber')"></div><div class="excel-filter-menu" id="excel-filter-managementNumber"></div></th>
+                                <th data-column="name">氏名<div class="excel-filter-trigger" onclick="showHrFilter(event, 'name')"></div><div class="excel-filter-menu" id="excel-filter-name"></div></th>
+                                <th data-column="departmentCode">所属コード<div class="excel-filter-trigger" onclick="showHrFilter(event, 'departmentCode')"></div><div class="excel-filter-menu" id="excel-filter-departmentCode"></div></th>
+                                <th data-column="departmentName">所属名称<div class="excel-filter-trigger" onclick="showHrFilter(event, 'departmentName')"></div><div class="excel-filter-menu" id="excel-filter-departmentName"></div></th>
+                                <th data-column="categoryCode">区分コード<div class="excel-filter-trigger" onclick="showHrFilter(event, 'categoryCode')"></div><div class="excel-filter-menu" id="excel-filter-categoryCode"></div></th>
+                                <th data-column="categoryName">区分名称<div class="excel-filter-trigger" onclick="showHrFilter(event, 'categoryName')"></div><div class="excel-filter-menu" id="excel-filter-categoryName"></div></th>
+                                <th data-column="alternativeCode">代替コード<div class="excel-filter-trigger" onclick="showHrFilter(event, 'alternativeCode')"></div><div class="excel-filter-menu" id="excel-filter-alternativeCode"></div></th>
+                                <th data-column="gateNumber">ゲート番号<div class="excel-filter-trigger" onclick="showHrFilter(event, 'gateNumber')"></div><div class="excel-filter-menu" id="excel-filter-gateNumber"></div></th>
+                                <th data-column="gateName">ゲート名称<div class="excel-filter-trigger" onclick="showHrFilter(event, 'gateName')"></div><div class="excel-filter-menu" id="excel-filter-gateName"></div></th>
+                                <th data-column="historyDetails">履歴詳細<div class="excel-filter-trigger" onclick="showHrFilter(event, 'historyDetails')"></div><div class="excel-filter-menu" id="excel-filter-historyDetails"></div></th>
+                            </tr>
+                        </thead>
+                        <tbody id="hrTableBody">
+                            <!-- JSで動的生成 -->
+                        </tbody>
+                    </table>
                 </div>
-                
-                <nav aria-label="ページネーション">
-                    <ul class="pagination pagination-sm" id="pagination">
-                        <!-- ページネーションボタンはJavaScriptで動的生成 -->
-                    </ul>
-                </nav>
-            </div>
 
+                <!-- ページネーション -->
+                <div class="hr-pagination" id="hrPaginationBar">
+                    <div class="page-info" id="hrPageInfo">
+                        0件中
+                    </div>
+                    <nav aria-label="ページネーション">
+                        <ul class="pagination pagination-sm" id="hrPagination">
+                        </ul>
+                    </nav>
+                </div>
+            </div>
         </div>
-    </main>
 
-    <!-- 期間選択モーダル -->
-    <div class="modal fade" id="periodSelectionModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-calendar-alt text-primary"></i>
-                        対象期間選択
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="period-selection">
-                        <h6>対象期間</h6>
+        <!-- 期間選択モーダル -->
+        <div class="modal fade" id="hrPeriodModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-calendar-alt text-primary"></i>
+                            対象期間選択
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
                         <div class="mb-3">
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="periodOption" id="allPeriod" value="all" checked>
-                                <label class="form-check-label" for="allPeriod">
-                                    全期間
-                                </label>
+                                <input class="form-check-input" type="radio" name="hrPeriodOption" id="hrPeriodAll" value="all" checked>
+                                <label class="form-check-label" for="hrPeriodAll">全期間</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="periodOption" id="oneYear" value="1year">
-                                <label class="form-check-label" for="oneYear">
-                                    1年前～
-                                </label>
+                                <input class="form-check-input" type="radio" name="hrPeriodOption" id="hrPeriod1y" value="1year">
+                                <label class="form-check-label" for="hrPeriod1y">1年前～</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="periodOption" id="oneMonth" value="1month">
-                                <label class="form-check-label" for="oneMonth">
-                                    1ヵ月前～
-                                </label>
+                                <input class="form-check-input" type="radio" name="hrPeriodOption" id="hrPeriod1m" value="1month">
+                                <label class="form-check-label" for="hrPeriod1m">1ヵ月前～</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="periodOption" id="oneWeek" value="1week">
-                                <label class="form-check-label" for="oneWeek">
-                                    1週間前～
-                                </label>
+                                <input class="form-check-input" type="radio" name="hrPeriodOption" id="hrPeriod1w" value="1week">
+                                <label class="form-check-label" for="hrPeriod1w">1週間前～</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="periodOption" id="oneDay" value="1day">
-                                <label class="form-check-label" for="oneDay">
-                                    1日前～
-                                </label>
+                                <input class="form-check-input" type="radio" name="hrPeriodOption" id="hrPeriod1d" value="1day">
+                                <label class="form-check-label" for="hrPeriod1d">1日前～</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="periodOption" id="customPeriod" value="custom">
-                                <label class="form-check-label" for="customPeriod">
-                                    期間指定
-                                </label>
+                                <input class="form-check-input" type="radio" name="hrPeriodOption" id="hrPeriodCustom" value="custom">
+                                <label class="form-check-label" for="hrPeriodCustom">期間指定</label>
                             </div>
                         </div>
-                        
-                        <!-- 期間指定用の入力欄 -->
-                        <div id="customPeriodInputs" style="display: none; margin-top: 15px;">
+                        <div id="hrCustomPeriodInputs" style="display: none;">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <label for="startDateModal" class="form-label">開始日時</label>
-                                    <input type="datetime-local" class="form-control" id="startDateModal">
+                                    <label for="hrStartDate" class="form-label">開始日時</label>
+                                    <input type="datetime-local" class="form-control" id="hrStartDate">
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="endDateModal" class="form-label">終了日時</label>
-                                    <input type="datetime-local" class="form-control" id="endDateModal">
+                                    <label for="hrEndDate" class="form-label">終了日時</label>
+                                    <input type="datetime-local" class="form-control" id="hrEndDate">
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                        <button type="button" class="btn btn-primary" onclick="applyHrPeriod()">適用</button>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                    <button type="button" class="btn btn-primary" onclick="applyPeriodSelection()">適用</button>
-                </div>
+            </div>
+        </div>
+	</main>
+
+	<!-- ページ固有フッター凡例（各ページで上書き） -->
+	<div>
+        <div class="hr-legend">
+            <div class="hr-legend-item">
+                <span class="hr-legend-swatch" style="background:#fff"></span><span>正常</span>
+            </div>
+            <div class="hr-legend-item">
+                <span class="hr-legend-swatch" style="background:#fff8e1"></span><span>軽エラー</span>
+            </div>
+            <div class="hr-legend-item">
+                <span class="hr-legend-swatch" style="background:#fdecea"></span><span>重エラー</span>
+            </div>
+            <div class="hr-legend-item">
+                <span class="hr-legend-swatch" style="background:#d1ecf1"></span><span>復旧</span>
             </div>
         </div>
     </div>
 
-    <!-- 列表示管理モーダル -->
-    <div class="modal fade" id="columnManagerModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-columns text-primary"></i>
-                        列表示管理
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6 class="text-success">
-                                <i class="fas fa-check"></i> 表示中の列
-                            </h6>
-                            <div class="column-list" id="visibleColumnsList" style="border: 1px solid #dee2e6; border-radius: 4px; min-height: 200px; max-height: 300px; overflow-y: auto; padding: 8px; background: #f8f9fa;">
-                                <!-- JavaScriptで動的生成 -->
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <h6 class="text-muted">
-                                <i class="fas fa-times"></i> 非表示の列
-                            </h6>
-                            <div class="column-list" id="hiddenColumnsList" style="border: 1px solid #dee2e6; border-radius: 4px; min-height: 200px; max-height: 300px; overflow-y: auto; padding: 8px; background: #f8f9fa;">
-                                <!-- JavaScriptで動的生成 -->
-                            </div>
-                            <div class="text-center mt-3" id="noHiddenColumns" style="display: none;">
-                                <span class="text-muted">
-                                    <i class="fas fa-check-circle"></i>
-                                    非表示の列はありません
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <hr class="my-3">
-                    
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-outline-success btn-sm" onclick="showAllColumns()">
-                            <i class="fas fa-plus"></i> すべて表示
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetToDefault()">
-                            <i class="fas fa-undo"></i> デフォルトに戻す
-                        </button>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
-                </div>
-            </div>
-        </div>
-    </div>
+	<!-- フッター -->
+	<footer class="td-footer">
+		<small>© ART CO., LTD. All Rights Reserved.</small>
+	</footer>
 
-    <!-- フッター -->
-    <div id="global-footer" class="mt-5">
-        <footer>
-            <p class="text-right"><small>© ART CO., LTD. All Rights Reserved.</small></p>
-        </footer>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript" src="/resources/static/js/jquery/3.7.1/jquery.min.js"></script>
-    <script type="text/javascript" src="/resources/static/js/common.js"></script>
-    
-    <script>
-        // Pre-define essential functions to prevent errors
-        window.showPeriodSelection = function() {
-            console.log('Placeholder showPeriodSelection called - waiting for historyReport.js to load');
-        };
-        
-        window.applyPeriodSelection = function() {
-            console.log('Placeholder applyPeriodSelection called');
-        };
-        
-        window.showColumnManager = function() {
-            console.log('Placeholder showColumnManager called');
-        };
-        
-        window.resetAllFilters = function() {
-            console.log('Placeholder resetAllFilters called');
-        };
-        
-        // Immediately check if functions are replaced after historyReport.js loads
-        window.addEventListener('load', function() {
-            setTimeout(() => {
-                console.log('🔍 Window load - checking functions:');
-                console.log('showPeriodSelection type:', typeof window.showPeriodSelection);
-                console.log('applyPeriodSelection type:', typeof window.applyPeriodSelection);
-                
-                // Test calling the function
-                if (typeof window.showPeriodSelection === 'function') {
-                    console.log('✅ showPeriodSelection is available');
-                }
-            }, 100);
-        });
-    </script>
-    
-    <script type="text/javascript" src="/resources/static/js/historyReport.js"></script>
-    
+	
+	<script>
+	(function(){
+		const overlay = document.getElementById('menuOverlay');
+		const menu    = document.getElementById('sideMenu');
+		const open    = document.getElementById('menuOpen');
+		const close   = document.getElementById('menuClose');
+		function show(){ menu.classList.add('open'); overlay.classList.add('open'); }
+		function hide(){ menu.classList.remove('open'); overlay.classList.remove('open'); }
+		open.addEventListener('click', show);
+		close.addEventListener('click', hide);
+		overlay.addEventListener('click', hide);
+	})();
+	</script>
+<script type="text/javascript" src="/resources/static/js/historyReport.js"></script>
 </body>
 </html>

@@ -1,909 +1,675 @@
-// History Report JavaScript - Based on Personal List Implementation
+/**
+ * historyReport.js - 報告書ページ
+ * dataMonitor / personalList パターン準拠 IIFE
+ */
+(function () {
+    'use strict';
 
-// History data for demonstration
-let historyData = [];
-let filteredData = [];
-let currentPage = 1;
-let itemsPerPage = 25;
-let currentFilters = {};
-let columnOrder = ['occurredDate', 'personalCode', 'issueCount', 'managementNumber', 'name', 'departmentCode', 'departmentName', 'categoryCode', 'categoryName', 'alternativeCode', 'gateNumber', 'gateName', 'historyDetails'];
-let hiddenColumns = ['issueCount', 'managementNumber', 'departmentCode', 'categoryCode', 'categoryName', 'alternativeCode'];
-let sortState = { column: null, direction: 'asc' };
-
-// Period selection state
-let periodFilters = {
-    periodType: 'all',
-    startDate: null,
-    endDate: null
-};
-
-// Setup global functions immediately
-function setupGlobalFunctions() {
-    window.applyPeriodSelection = applyPeriodSelection;
-    window.showPeriodSelection = showPeriodSelection;
-    window.showColumnManager = showColumnManager;
-    window.showAllColumns = showAllColumns;
-    window.resetToDefault = resetToDefault;
-    window.resetAllFilters = resetAllFilters;
-    window.changePage = changePage;
-    window.toggleColumnVisibilityDirect = toggleColumnVisibilityDirect;
-    window.toggleColumnFromManager = toggleColumnFromManager;
-    window.handleSort = handleSort;
-    window.handleDragStart = handleDragStart;
-    window.handleDragOver = handleDragOver;
-    window.handleDrop = handleDrop;
-    window.handleDragEnd = handleDragEnd;
-    window.startResize = startResize;
-    window.showExcelFilter = showExcelFilter;
-    window.hideAllExcelFilters = hideAllExcelFilters;
-    window.toggleExcelSelectAll = toggleExcelSelectAll;
-    window.toggleExcelOption = toggleExcelOption;
-    window.selectAllExcelFilter = selectAllExcelFilter;
-    window.clearAllExcelFilter = clearAllExcelFilter;
-    window.filterExcelOptions = filterExcelOptions;
-    window.applyExcelFilter = applyExcelFilter;
-}
-
-// Initialize immediately when script loads
-setupGlobalFunctions();
-
-// Initialize the page
-document.addEventListener('DOMContentLoaded', function () {
-
-    // Add visual confirmation
-    const debugDiv = document.createElement('div');
-    debugDiv.innerHTML = '🟢 履歴レポートJavaScript読み込み中...';
-    debugDiv.style.cssText = 'position: fixed; top: 100px; right: 20px; background: #d4edda; padding: 10px; border-radius: 5px; z-index: 9999;';
-    document.body.appendChild(debugDiv);
-
-    setTimeout(() => {
-
-        setupEventListeners();
-
-        updateTableHeaders();
-
-        // Show initial state (no data selected)
-        showNoDataMessage();
-        
-
-        debugDiv.innerHTML = '✅ 履歴レポート初期化完了！';
-
-        setTimeout(() => {
-            if (debugDiv.parentNode) {
-                document.body.removeChild(debugDiv);
-            }
-        }, 3000);
-    }, 100);
-});
-
-// Show no data message
-function showNoDataMessage() {
-    const container = document.getElementById('dataTableContainer');
-    const pagination = document.getElementById('paginationContainer');
-    const noData = document.getElementById('noDataMessage');
-    
-    if (container) container.style.display = 'none';
-    if (pagination) pagination.style.display = 'none';
-    if (noData) noData.style.display = 'block';
-    
-    updateRecordCount(0);
-}
-
-// Generate sample history data
-function generateHistoryData() {
-    const statuses = [
-        { id: 'normal', color: '#ffffff', textColor: '#000000', label: '正常', details: ['入室', '退室'] },
-        { id: 'warning', color: '#fff3cd', textColor: '#856404', label: '軽エラー', details: ['バッテリー低下', 'カード読取警告'] },
-        { id: 'error', color: '#f8d7da', textColor: '#721c24', label: '重エラー', details: ['通信異常', '不正入室'] },
-        { id: 'recovery', color: '#d1ecf1', textColor: '#0c5460', label: '重エラー復旧', details: ['システム復旧', '通信復旧'] }
+    /* ====== 定数 ====== */
+    var ALL_COLUMNS = [
+        'occurredDate', 'personalCode', 'issueCount', 'managementNumber',
+        'name', 'departmentCode', 'departmentName',
+        'categoryCode', 'categoryName', 'alternativeCode',
+        'gateNumber', 'gateName', 'historyDetails'
     ];
+    var DEFAULT_HIDDEN = [
+        'issueCount', 'managementNumber', 'departmentCode',
+        'categoryCode', 'categoryName', 'alternativeCode'
+    ];
+    var COLUMN_NAMES = {
+        occurredDate:     '発生日時',
+        personalCode:     '個人コード',
+        issueCount:       '発行回数',
+        managementNumber: '管理番号',
+        name:             '氏名',
+        departmentCode:   '所属コード',
+        departmentName:   '所属名称',
+        categoryCode:     '区分コード',
+        categoryName:     '区分名称',
+        alternativeCode:  '代替コード',
+        gateNumber:       'ゲート番号',
+        gateName:         'ゲート名称',
+        historyDetails:   '履歴詳細'
+    };
 
-    const departments = ['総務部', '営業部', 'システム部', '経理部', '人事部', '開発部', '企画部'];
-    const categories = ['正社員', '契約社員', '派遣社員', 'アルバイト', '役員'];
-    const names = ['ユーザーA', 'ユーザーB', 'ユーザーC', 'ユーザーD', 'ユーザーE', '田中太郎', '佐藤花子', '鈴木次郎'];
+    /* ====== 状態 ====== */
+    var masterData = [];        // 期間抽出で生成した全件
+    var filteredData = [];      // フィルター適用後
+    var currentPage = 1;
+    var pageSize = 25;
+    var sortState = { col: null, dir: 'asc' };
+    var excelFilters = {};      // { colAttr: Set }
+    var columnVisibility = {};  // { colAttr: true/false }
 
-    historyData = [];
-    const now = new Date();
-    
-    // Filter by period if set
-    let startDate = periodFilters.startDate || new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
-    let endDate = periodFilters.endDate || now;
-
-    // Generate 1000 records within the selected period
-    for (let i = 0; i < 1000; i++) {
-        const status = statuses[Math.floor(Math.random() * statuses.length)];
-        const department = departments[Math.floor(Math.random() * departments.length)];
-        const category = categories[Math.floor(Math.random() * categories.length)];
-        const name = names[Math.floor(Math.random() * names.length)];
-        
-        // Random date within the period
-        const randomTime = startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime());
-        const date = new Date(randomTime);
-
-        historyData.push({
-            occurredDate: formatDateTime(date),
-            personalCode: `${String(1000 + i).padStart(6, '0')}`,
-            issueCount: String(Math.floor(Math.random() * 2) + 1),
-            managementNumber: `M${String(i).padStart(5, '0')}`,
-            name: name,
-            departmentCode: `${String(Math.floor(Math.random() * 10) + 1).padStart(3, '0')}`,
-            departmentName: department,
-            categoryCode: `${String(Math.floor(Math.random() * 5) + 1).padStart(2, '0')}`,
-            categoryName: category,
-            alternativeCode: `A${String(i).padStart(4, '0')}`,
-            gateNumber: `${String(Math.floor(Math.random() * 10) + 1).padStart(4, '0')}`,
-            gateName: `ゲート${Math.floor(Math.random() * 10) + 1}`,
-            historyDetails: status.details[Math.floor(Math.random() * status.details.length)],
-            statusId: status.id,
-            statusColor: status.color,
-            statusTextColor: status.textColor,
-            selected: false
-        });
-    }
-    
-    filteredData = [...historyData];
-}
-
-// Format date time
-function formatDateTime(date) {
-    const y = date.getFullYear();
-    const m = (date.getMonth() + 1).toString().padStart(2, '0');
-    const d = date.getDate().toString().padStart(2, '0');
-    const hh = date.getHours().toString().padStart(2, '0');
-    const mm = date.getMinutes().toString().padStart(2, '0');
-    const ss = date.getSeconds().toString().padStart(2, '0');
-    return `${y}/${m}/${d} ${hh}:${mm}:${ss}`;
-}
-
-// Setup event listeners
-function setupEventListeners() {
-    // Data display filter
-    const dataDisplayFilter = document.getElementById('dataDisplayFilter');
-    if (dataDisplayFilter) {
-        dataDisplayFilter.addEventListener('change', (e) => {
-            currentFilters.dataDisplay = e.target.value;
-            applyFiltersAndDisplay();
-        });
-    }
-
-    // Items per page selector
-    const itemsPerPageSelect = document.getElementById('itemsPerPageSelect');
-    if (itemsPerPageSelect) {
-        itemsPerPageSelect.addEventListener('change', (e) => {
-            itemsPerPage = parseInt(e.target.value, 10);
-            currentPage = 1;
-            updatePagination();
-            displayCurrentPage();
-        });
-    }
-
-    // Click outside to close Excel filters
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.excel-filter-trigger') && 
-            !e.target.closest('.excel-filter-menu') &&
-            !e.target.closest('.excel-search-box')) {
-            hideAllExcelFilters();
-        }
+    ALL_COLUMNS.forEach(function (c) {
+        columnVisibility[c] = DEFAULT_HIDDEN.indexOf(c) === -1;
     });
 
-    // Period selection modal events
-    const periodOptions = document.querySelectorAll('input[name="periodOption"]');
-    const customInputs = document.getElementById('customPeriodInputs');
-    
-    periodOptions.forEach(option => {
-        option.addEventListener('change', function() {
-            if (this.value === 'custom') {
-                customInputs.style.display = 'block';
+    /* ====== ユーティリティ ====== */
+    function escapeHtml(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+    function fmtDate(d) {
+        return d.getFullYear() + '/' + pad2(d.getMonth() + 1) + '/' + pad2(d.getDate()) +
+               ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+    }
+
+    /* ====== データ生成 ====== */
+    function generateData(startDate, endDate) {
+        var depts = ['総務部', '営業部', 'システム部', '経理部', '人事部', '開発部', '企画部'];
+        var deptCodes = ['001', '002', '003', '004', '005', '006', '007'];
+        var cats  = ['正社員', '契約社員', '派遣社員', 'アルバイト', '役員'];
+        var catCodes = ['01', '02', '03', '04', '05'];
+        var names = ['田中太郎', '佐藤花子', '鈴木次郎', '山田一郎', '高橋美咲',
+                      '伊藤誠', '渡辺直美', '中村健太'];
+        var gates = [
+            { num: '0001', name: 'XA0001' }, { num: '0002', name: 'XA0002' },
+            { num: '0003', name: 'XA0003' }, { num: '0004', name: 'XA0004' }
+        ];
+        var statusDefs = [
+            { id: 'normal',   weight: 70, details: ['入室', '退室'] },
+            { id: 'warning',  weight: 15, details: ['バッテリー低下', 'カード読取警告', '通信異常復旧'] },
+            { id: 'error',    weight: 10, details: ['通信異常発生', 'ドア開放異常', '不正入室'] },
+            { id: 'recovery', weight: 5,  details: ['システム復旧', '通信復旧'] }
+        ];
+        var totalWeight = 100;
+
+        masterData = [];
+        var range = endDate.getTime() - startDate.getTime();
+
+        for (var i = 0; i < 1000; i++) {
+            // ステータス決定
+            var r = Math.random() * totalWeight, cum = 0, st = statusDefs[0];
+            for (var si = 0; si < statusDefs.length; si++) {
+                cum += statusDefs[si].weight;
+                if (r <= cum) { st = statusDefs[si]; break; }
+            }
+            var di = Math.floor(Math.random() * depts.length);
+            var ci = Math.floor(Math.random() * cats.length);
+            var gi = Math.floor(Math.random() * gates.length);
+            var ni = Math.floor(Math.random() * names.length);
+            var dt = new Date(startDate.getTime() + Math.random() * range);
+
+            masterData.push({
+                occurredDate:     fmtDate(dt),
+                personalCode:     String(Math.floor(Math.random() * 999) + 1).padStart(6, '0'),
+                issueCount:       String(Math.floor(Math.random() * 3) + 1),
+                managementNumber: 'M' + String(i).padStart(5, '0'),
+                name:             names[ni],
+                departmentCode:   deptCodes[di],
+                departmentName:   depts[di],
+                categoryCode:     catCodes[ci],
+                categoryName:     cats[ci],
+                alternativeCode:  'A' + String(Math.floor(Math.random() * 9999)).padStart(4, '0'),
+                gateNumber:       gates[gi].num,
+                gateName:         st.id === 'normal' ? gates[gi].name :
+                                  'H=' + gates[gi].num.substring(2) + ' A=' + (Math.floor(Math.random() * 99) + 1),
+                historyDetails:   st.details[Math.floor(Math.random() * st.details.length)],
+                _type:            st.id
+            });
+        }
+
+        // 日付降順ソート
+        masterData.sort(function (a, b) { return b.occurredDate.localeCompare(a.occurredDate); });
+    }
+
+    /* ====== フィルターロジック ====== */
+    function getFilteredBase(excludeCol) {
+        var typeVal = getDataTypeValue();
+        return masterData.filter(function (row) {
+            if (typeVal !== 'all' && row._type !== typeVal) return false;
+            for (var col in excelFilters) {
+                if (col === excludeCol) continue;
+                if (excelFilters.hasOwnProperty(col)) {
+                    var v = (row[col] || '').toString();
+                    if (!excelFilters[col].has(v)) return false;
+                }
+            }
+            return true;
+        });
+    }
+
+    function getUniqueValues(colAttr) {
+        var base = getFilteredBase(colAttr);
+        var seen = {}, vals = [];
+        base.forEach(function (row) {
+            var v = (row[colAttr] || '').toString();
+            if (!seen[v]) { seen[v] = true; vals.push(v); }
+        });
+        vals.sort();
+        return vals;
+    }
+
+    function getDataTypeValue() {
+        var el = document.getElementById('hrDataType');
+        return el ? el.value : 'all';
+    }
+
+    function applyAllFilters() {
+        var typeVal = getDataTypeValue();
+        filteredData = masterData.filter(function (row) {
+            if (typeVal !== 'all' && row._type !== typeVal) return false;
+            for (var col in excelFilters) {
+                if (excelFilters.hasOwnProperty(col)) {
+                    var v = (row[col] || '').toString();
+                    if (!excelFilters[col].has(v)) return false;
+                }
+            }
+            return true;
+        });
+        applySortToFiltered();
+        currentPage = 1;
+        render();
+    }
+
+    function applySortToFiltered() {
+        if (!sortState.col) return;
+        var col = sortState.col, dir = sortState.dir;
+        filteredData.sort(function (a, b) {
+            var va = (a[col] || '').toString();
+            var vb = (b[col] || '').toString();
+            if (!isNaN(va) && !isNaN(vb) && va !== '' && vb !== '') {
+                va = parseFloat(va);
+                vb = parseFloat(vb);
             } else {
-                customInputs.style.display = 'none';
+                va = va.toLowerCase();
+                vb = vb.toLowerCase();
+            }
+            var cmp = va < vb ? -1 : (va > vb ? 1 : 0);
+            return dir === 'asc' ? cmp : -cmp;
+        });
+    }
+
+    /* ====== レンダリング ====== */
+    function render() {
+        renderTable();
+        renderPagination();
+        updateRecordCount();
+    }
+
+    function renderTable() {
+        var tbody = document.getElementById('hrTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        var start = (currentPage - 1) * pageSize;
+        var end = Math.min(start + pageSize, filteredData.length);
+
+        for (var i = start; i < end; i++) {
+            var row = filteredData[i];
+            var tr = document.createElement('tr');
+            if (row._type === 'warning')  tr.className = 'row-warning';
+            if (row._type === 'error')    tr.className = 'row-error';
+            if (row._type === 'recovery') tr.className = 'row-recovery';
+
+            ALL_COLUMNS.forEach(function (col) {
+                var td = document.createElement('td');
+                td.textContent = row[col] || '';
+                if (!columnVisibility[col]) td.style.display = 'none';
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+        }
+        applyColumnVisibility();
+    }
+
+    function renderPagination() {
+        var total = filteredData.length;
+        var totalPages = Math.ceil(total / pageSize) || 1;
+
+        // ページ情報
+        var info = document.getElementById('hrPageInfo');
+        if (info) {
+            if (total === 0) {
+                info.textContent = '0件中';
+            } else {
+                var s = (currentPage - 1) * pageSize + 1;
+                var e = Math.min(currentPage * pageSize, total);
+                info.textContent = s + '-' + e + ' / ' + total.toLocaleString() + '件中';
+            }
+        }
+
+        // ページ番号
+        var ul = document.getElementById('hrPagination');
+        if (!ul) return;
+        ul.innerHTML = '';
+        if (totalPages <= 1) return;
+
+        // 前へ
+        addPageItem(ul, '前へ', currentPage > 1 ? currentPage - 1 : null, currentPage === 1);
+
+        // 表示するページ番号を算出: 1 ... [cur-2 cur-1 cur cur+1 cur+2] ... last
+        var pages = [];
+        pages.push(1);
+        var rangeStart = Math.max(2, currentPage - 2);
+        var rangeEnd = Math.min(totalPages - 1, currentPage + 2);
+        if (rangeStart > 2) pages.push(null); // 省略
+        for (var p = rangeStart; p <= rangeEnd; p++) pages.push(p);
+        if (rangeEnd < totalPages - 1) pages.push(null); // 省略
+        if (totalPages > 1) pages.push(totalPages);
+
+        pages.forEach(function (p) {
+            if (p === null) {
+                addPageItem(ul, '…', null, true);
+            } else {
+                addPageItem(ul, String(p), p, false, p === currentPage);
             }
         });
-    });
-}
 
-// Update table headers - based on personal list
-function updateTableHeaders() {
-    const thead = document.querySelector('#historyTable thead tr');
-    if (!thead) return;
-    
-    const columnDefinitions = {
-        'occurredDate': { title: '発生日時', draggable: true },
-        'personalCode': { title: '個人コード', draggable: true },
-        'issueCount': { title: '発行回数', draggable: true },
-        'managementNumber': { title: '管理番号', draggable: true },
-        'name': { title: '氏名', draggable: true },
-        'departmentCode': { title: '所属コード', draggable: true },
-        'departmentName': { title: '所属', draggable: true },
-        'categoryCode': { title: '区分コード', draggable: true },
-        'categoryName': { title: '区分名称', draggable: true },
-        'alternativeCode': { title: '代替コード', draggable: true },
-        'gateNumber': { title: 'ゲート番号', draggable: true },
-        'gateName': { title: 'ゲート名称', draggable: true },
-        'historyDetails': { title: '履歴詳細', draggable: true }
-    };
+        // 次へ
+        addPageItem(ul, '次へ', currentPage < totalPages ? currentPage + 1 : null, currentPage === totalPages);
+    }
 
-    // Clear and rebuild headers
-    thead.innerHTML = '';
+    function addPageItem(ul, label, page, disabled, active) {
+        var li = document.createElement('li');
+        li.className = 'page-item' + (disabled ? ' disabled' : '') + (active ? ' active' : '');
+        var a = document.createElement('a');
+        a.className = 'page-link';
+        a.href = 'javascript:void(0)';
+        a.textContent = label;
+        if (page && !disabled) {
+            a.addEventListener('click', function (pg) {
+                return function () { goToPage(pg); };
+            }(page));
+        }
+        li.appendChild(a);
+        ul.appendChild(li);
+    }
 
-    columnOrder.forEach(columnKey => {
-        if (hiddenColumns.includes(columnKey)) return;
+    function goToPage(p) {
+        currentPage = p;
+        render();
+    }
 
-        const def = columnDefinitions[columnKey];
-        if (!def) return;
+    function updateRecordCount() {
+        var el = document.getElementById('hrRecordCount');
+        if (el) el.textContent = filteredData.length.toLocaleString();
+    }
 
-        const th = document.createElement('th');
-        th.setAttribute('data-column', columnKey);
+    /* ====== ソート ====== */
+    function handleSort(e) {
+        var th = e.target.closest('th');
+        if (!th) return;
+        if (e.target.closest('.excel-filter-trigger') || e.target.closest('.excel-filter-menu')) return;
+        var col = th.getAttribute('data-column');
+        if (!col) return;
 
-        if (def.draggable) {
-            th.setAttribute('draggable', 'true');
-            th.addEventListener('dragstart', handleDragStart);
-            th.addEventListener('dragover', handleDragOver);
-            th.addEventListener('drop', handleDrop);
-            th.addEventListener('dragend', handleDragEnd);
-            
-            // ソート機能を追加
-            th.classList.add('sortable');
-            th.addEventListener('click', (e) => {
-                // リサイザーとフィルター以外をクリック時のみソート
-                if (!e.target.closest('.column-visibility-toggle') && 
-                    !e.target.closest('.excel-filter-trigger') &&
-                    !e.target.closest('.column-resizer')) {
-                    handleSort(columnKey);
-                }
-            });
-            
-            // ソート状態の表示（無効化）
-            // if (sortState.column === columnKey) {
-            //     th.classList.add(sortState.direction === 'asc' ? 'sort-asc' : 'sort-desc');
-            // }
-
-            th.innerHTML = `
-                <span class="column-visibility-toggle" onclick="toggleColumnVisibilityDirect('${columnKey}', event)" title="列表示切替">×</span>
-                <span class="column-content">${def.title}</span>
-                <div class="excel-filter-trigger" onclick="showExcelFilter(event, '${columnKey}')"></div>
-                <div class="excel-filter-menu" id="excel-filter-${columnKey}"></div>
-                <div class="column-resizer" data-column="${columnKey}" title="列幅変更"></div>
-            `;
+        if (sortState.col === col) {
+            sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
         } else {
-            th.innerHTML = def.title;
+            sortState.col = col;
+            sortState.dir = 'asc';
         }
-
-        thead.appendChild(th);
-    });
-
-    // 列幅変更イベントリスナーのセットアップ
-    setupColumnResizers();
-}
-
-// Handle column sorting
-function handleSort(columnKey) {
-    
-    // ソート状態の更新
-    if (sortState.column === columnKey) {
-        sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
-    } else {
-        sortState.column = columnKey;
-        sortState.direction = 'asc';
-    }
-    
-    // データのソート
-    filteredData.sort((a, b) => {
-        let aValue = a[columnKey] || '';
-        let bValue = b[columnKey] || '';
-        
-        // 数値っぽい場合は数値としてソート
-        if (!isNaN(aValue) && !isNaN(bValue)) {
-            aValue = parseFloat(aValue);
-            bValue = parseFloat(bValue);
-        } else {
-            // 文字列として比較
-            aValue = aValue.toString().toLowerCase();
-            bValue = bValue.toString().toLowerCase();
-        }
-        
-        if (sortState.direction === 'asc') {
-            return aValue < bValue ? -1 : (aValue > bValue ? 1 : 0);
-        } else {
-            return aValue > bValue ? -1 : (aValue < bValue ? 1 : 0);
-        }
-    });
-    
-    // テーブルヘッダーとデータを更新
-    updateTableHeaders();
-    displayCurrentPage();
-}
-
-// Column visibility toggle
-function toggleColumnVisibilityDirect(columnKey, event) {
-    event.stopPropagation();
-    
-    // 少なくとも1つの列は表示する必要がある
-    const visibleColumns = columnOrder.filter(col => !hiddenColumns.includes(col));
-    if (visibleColumns.length <= 1 && visibleColumns.includes(columnKey)) {
-        alert('少なくとも1つの列を表示する必要があります。');
-        return;
-    }
-    
-    if (hiddenColumns.includes(columnKey)) {
-        // 表示する
-        hiddenColumns = hiddenColumns.filter(col => col !== columnKey);
-    } else {
-        // 非表示にする
-        hiddenColumns.push(columnKey);
-    }
-    
-    updateTableHeaders();
-    displayCurrentPage();
-    updateColumnManager();
-}
-
-// Drag and drop functions
-let draggedColumn = null;
-let draggedColumnIndex = null;
-
-function handleDragStart(e) {
-    draggedColumn = e.target;
-    draggedColumnIndex = Array.from(draggedColumn.parentNode.children).indexOf(draggedColumn);
-    draggedColumn.classList.add('dragging');
-}
-
-function handleDragOver(e) {
-    e.preventDefault();
-    const targetTh = e.target.closest('th');
-    if (targetTh && targetTh !== draggedColumn) {
-        targetTh.classList.add('drag-over');
-    }
-}
-
-function handleDrop(e) {
-    e.preventDefault();
-    const targetTh = e.target.closest('th');
-    
-    if (targetTh && targetTh !== draggedColumn) {
-        const targetColumn = targetTh.getAttribute('data-column');
-        const draggedColumnKey = draggedColumn.getAttribute('data-column');
-        
-        // 配列内での位置を変更
-        const draggedIndex = columnOrder.indexOf(draggedColumnKey);
-        const targetIndex = columnOrder.indexOf(targetColumn);
-        
-        if (draggedIndex !== -1 && targetIndex !== -1) {
-            columnOrder.splice(draggedIndex, 1);
-            columnOrder.splice(targetIndex, 0, draggedColumnKey);
-            
-            // テーブルを再構築
-            updateTableHeaders();
-            displayCurrentPage();
-        }
-    }
-    
-    cleanupDragState();
-}
-
-function handleDragEnd(e) {
-    cleanupDragState();
-}
-
-function cleanupDragState() {
-    if (draggedColumn) {
-        draggedColumn.classList.remove('dragging');
-    }
-    document.querySelectorAll('th.drag-over').forEach(th => th.classList.remove('drag-over'));
-    draggedColumn = null;
-    draggedColumnIndex = null;
-}
-
-// Column resizing
-function setupColumnResizers() {
-    const resizers = document.querySelectorAll('.column-resizer');
-    resizers.forEach(resizer => {
-        resizer.addEventListener('mousedown', startResize);
-    });
-}
-
-function startResize(e) {
-    e.preventDefault();
-    const resizer = e.target;
-    const column = resizer.getAttribute('data-column');
-    const th = resizer.closest('th');
-    const startX = e.pageX;
-    const startWidth = th.offsetWidth;
-
-    function handleMouseMove(e) {
-        const width = startWidth + e.pageX - startX;
-        if (width > 60) { // Minimum width
-            th.style.width = width + 'px';
-            th.style.minWidth = width + 'px';
-        }
+        applySortToFiltered();
+        currentPage = 1;
+        render();
+        updateSortIndicators();
     }
 
-    function handleMouseUp() {
-        resizer.classList.remove('resizing');
-        th.classList.remove('resizing');
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-    }
-
-    resizer.classList.add('resizing');
-    th.classList.add('resizing');
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-}
-
-// Data filtering and display
-function applyFiltersAndDisplay() {
-    if (!historyData || historyData.length === 0) {
-        filteredData = [];
-        updateRecordCount(0);
-        displayCurrentPage();
-        return;
-    }
-
-    let data = [...historyData];
-    
-    // Apply data type filter
-    const dataFilter = currentFilters.dataDisplay;
-    if (dataFilter && dataFilter !== 'all') {
-        data = data.filter(item => item.statusId === dataFilter);
-    }
-    
-    // Apply Excel filters
-    Object.keys(currentFilters).forEach(columnKey => {
-        if (columnKey === 'dataDisplay') return;
-        const filterValues = currentFilters[columnKey];
-        if (filterValues && filterValues.length > 0) {
-            data = data.filter(item => filterValues.includes(item[columnKey]));
-        }
-    });
-    
-    filteredData = data;
-    currentPage = 1; // Reset to first page
-    updateRecordCount(filteredData.length);
-    updatePagination();
-    displayCurrentPage();
-}
-
-function displayCurrentPage() {
-    const tbody = document.getElementById('historyTableBody');
-    if (!tbody) return;
-    
-    tbody.innerHTML = '';
-    
-    if (!filteredData || filteredData.length === 0) {
-        updateRecordCount(0);
-        return;
-    }
-    
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    const pageData = filteredData.slice(start, end);
-    
-    pageData.forEach(row => {
-        const tr = document.createElement('tr');
-        tr.classList.add(`row-${row.statusId}`);
-        
-        columnOrder.forEach(columnKey => {
-            if (hiddenColumns.includes(columnKey)) return;
-            
-            const td = document.createElement('td');
-            td.textContent = row[columnKey] || '';
-            tr.appendChild(td);
+    function updateSortIndicators() {
+        document.querySelectorAll('#hrTable thead th').forEach(function (th) {
+            th.classList.remove('sort-asc', 'sort-desc');
+            if (th.getAttribute('data-column') === sortState.col) {
+                th.classList.add(sortState.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+            }
         });
-        
-        tbody.appendChild(tr);
-    });
-    
-    updateRecordCount(filteredData.length);
-}
-
-function updateRecordCount(count) {
-    const recordCountTop = document.getElementById('recordCountTop');
-    if (recordCountTop) {
-        recordCountTop.textContent = count;
-    }
-}
-
-function updatePagination() {
-    const totalItems = filteredData.length;
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-    
-    const pageInfo = document.getElementById('pageInfo');
-    if (pageInfo) {
-        const start = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
-        const end = Math.min(currentPage * itemsPerPage, totalItems);
-        pageInfo.textContent = `${start}-${end} / ${totalItems}件中`;
-    }
-    
-    const pagination = document.getElementById('pagination');
-    if (!pagination) return;
-    
-    pagination.innerHTML = '';
-    
-    if (totalPages <= 1) return;
-
-    for (let i = 1; i <= totalPages; i++) {
-        const li = document.createElement('li');
-        li.className = `page-item ${i === currentPage ? 'active' : ''}`;
-        li.innerHTML = `<a class="page-link" href="javascript:void(0)" onclick="changePage(${i})">${i}</a>`;
-        pagination.appendChild(li);
-    }
-}
-
-function changePage(page) {
-    currentPage = page;
-    displayCurrentPage();
-    updatePagination();
-}
-
-// Period selection functionality
-function showPeriodSelection() {
-    const modalElement = document.getElementById('periodSelectionModal');
-    if (modalElement) {
-        const modal = new bootstrap.Modal(modalElement);
-        modal.show();
-    }
-}
-
-function applyPeriodSelection() {
-    const selectedOption = document.querySelector('input[name="periodOption"]:checked');
-    if (!selectedOption) {
-        console.warn('No period option selected');
-        return;
     }
 
-    periodFilters.periodType = selectedOption.value;
-    
-    // Calculate date range based on selection
-    const now = new Date();
-    let startDate, endDate = new Date(now);
-    
-    if (selectedOption.value === 'custom') {
-        const startInput = document.getElementById('startDateModal');
-        const endInput = document.getElementById('endDateModal');
-        if (startInput && endInput && startInput.value && endInput.value) {
-            startDate = new Date(startInput.value);
-            endDate = new Date(endInput.value);
+    /* ====== 列表示管理 ====== */
+    function applyColumnVisibility() {
+        // ヘッダー
+        document.querySelectorAll('#hrTable thead th[data-column]').forEach(function (th) {
+            var col = th.getAttribute('data-column');
+            th.style.display = columnVisibility[col] ? '' : 'none';
+        });
+        // ボディ
+        document.querySelectorAll('#hrTable tbody tr').forEach(function (tr) {
+            var tds = tr.querySelectorAll('td');
+            ALL_COLUMNS.forEach(function (col, idx) {
+                if (tds[idx]) tds[idx].style.display = columnVisibility[col] ? '' : 'none';
+            });
+        });
+    }
+
+    function buildColumnManagerMenu() {
+        var menu = document.getElementById('hrColumnManagerMenu');
+        if (!menu) return;
+        menu.innerHTML = '';
+        ALL_COLUMNS.forEach(function (col) {
+            var item = document.createElement('div');
+            item.className = 'column-manager-item';
+            var cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.checked = columnVisibility[col];
+            cb.setAttribute('data-col', col);
+            cb.addEventListener('change', function () {
+                columnVisibility[col] = this.checked;
+                applyColumnVisibility();
+            });
+            var lbl = document.createElement('label');
+            lbl.textContent = COLUMN_NAMES[col] || col;
+            lbl.addEventListener('click', function () { cb.click(); });
+            item.appendChild(cb);
+            item.appendChild(lbl);
+            menu.appendChild(item);
+        });
+    }
+
+    function toggleColumnManagerMenu() {
+        var menu = document.getElementById('hrColumnManagerMenu');
+        if (!menu) return;
+        if (menu.classList.contains('show')) {
+            menu.classList.remove('show');
         } else {
-            alert('期間指定の場合は開始日時と終了日時を入力してください。');
-            return;
-        }
-    } else {
-        switch (selectedOption.value) {
-            case 'all':
-                startDate = new Date('2020-01-01');
-                break;
-            case '1year':
-                startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-                break;
-            case '1month':
-                startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-                break;
-            case '1week':
-                startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                break;
-            case '1day':
-                startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-                break;
-            default:
-                startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+            buildColumnManagerMenu();
+            menu.classList.add('show');
         }
     }
-    
-    periodFilters.startDate = startDate;
-    periodFilters.endDate = endDate;
-    
-    // Update period display
-    updateExtractionPeriodDisplay(startDate, endDate);
-    
-    // Generate data for the selected period
-    generateHistoryData();
-    
-    // Show the table
-    const container = document.getElementById('dataTableContainer');
-    const pagination = document.getElementById('paginationContainer');
-    const noData = document.getElementById('noDataMessage');
-    
-    if (container) container.style.display = 'block';
-    if (pagination) pagination.style.display = 'flex';
-    if (noData) noData.style.display = 'none';
 
-    // Close modal
-    const modalElement = document.getElementById('periodSelectionModal');
-    if (modalElement) {
-        const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-        modal.hide();
+    /* ====== Excelフィルター ====== */
+    function hideHrFilters() {
+        document.querySelectorAll('.excel-filter-menu.show').forEach(function (m) {
+            m.classList.remove('show');
+        });
     }
 
-    // Apply filters and display
-    applyFiltersAndDisplay();
-}
+    function showHrFilter(event, colAttr) {
+        event.stopPropagation();
+        var menuId = 'excel-filter-' + colAttr;
+        var menu = document.getElementById(menuId);
+        if (!menu) return;
+        var wasOpen = menu.classList.contains('show');
+        hideHrFilters();
+        if (wasOpen) return;
 
-function updateExtractionPeriodDisplay(startDate, endDate) {
-    const display = document.getElementById('extractionPeriodDisplay');
-    if (!display) return;
-    
-    const startStr = formatDateTime(startDate);
-    const endStr = formatDateTime(endDate);
-    display.textContent = `${startStr} ～ ${endStr}`;
-}
+        var allValues = getUniqueValues(colAttr);
+        var selected = excelFilters[colAttr] || null;
 
-// Column manager functions
-function showColumnManager() {
-    updateColumnManager();
-    const modalElement = document.getElementById('columnManagerModal');
-    if (modalElement) {
-        const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-        modal.show();
+        var html = '';
+        html += '<div class="excel-filter-header">' + escapeHtml(COLUMN_NAMES[colAttr] || colAttr) + ' のフィルター</div>';
+        html += '<div class="excel-search-section"><input type="text" class="excel-search-box" placeholder="検索..." oninput="filterHrOptions(\'' + colAttr + '\', this.value)"></div>';
+        html += '<div class="excel-filter-actions">';
+        html += '<button class="excel-action-btn" onclick="selectAllHrFilter(\'' + colAttr + '\')">すべて選択</button>';
+        html += '<button class="excel-action-btn" onclick="clearAllHrFilter(\'' + colAttr + '\')">すべてクリア</button>';
+        html += '<button class="excel-action-btn ok-btn" onclick="applyHrFilter(\'' + colAttr + '\')">OK</button>';
+        html += '</div>';
+        html += '<div class="excel-filter-list" id="hr-filter-list-' + colAttr + '">';
+        allValues.forEach(function (val) {
+            var checked = !selected || selected.has(val) ? 'checked' : '';
+            var displayVal = val === '' ? '(空白)' : escapeHtml(val);
+            html += '<div class="excel-filter-item" data-value="' + escapeHtml(val) + '" onclick="toggleHrOption(event, this)">';
+            html += '<input type="checkbox" ' + checked + '>';
+            html += '<label>' + displayVal + '</label>';
+            html += '</div>';
+        });
+        html += '</div>';
+
+        menu.innerHTML = html;
+        menu.classList.add('show');
     }
-}
 
-function updateColumnManager() {
-    const visibleList = document.getElementById('visibleColumnsList');
-    const hiddenList = document.getElementById('hiddenColumnsList');
-    const noHiddenMsg = document.getElementById('noHiddenColumns');
-    
-    if (!visibleList || !hiddenList) return;
+    function toggleHrOption(e, itemEl) {
+        if (e.target.tagName === 'INPUT') return;
+        var cb = itemEl.querySelector('input[type="checkbox"]');
+        if (cb) cb.checked = !cb.checked;
+    }
 
-    visibleList.innerHTML = '';
-    hiddenList.innerHTML = '';
+    function selectAllHrFilter(colAttr) {
+        var list = document.getElementById('hr-filter-list-' + colAttr);
+        if (!list) return;
+        list.querySelectorAll('.excel-filter-item').forEach(function (item) {
+            if (item.style.display !== 'none') {
+                var cb = item.querySelector('input[type="checkbox"]');
+                if (cb) cb.checked = true;
+            }
+        });
+    }
 
-    let hiddenCount = 0;
-    
-    columnOrder.forEach(key => {
-        const columnDefinitions = {
-            'occurredDate': { title: '発生日時', draggable: true },
-            'personalCode': { title: '個人コード', draggable: true },
-            'issueCount': { title: '発行回数', draggable: true },
-            'managementNumber': { title: '管理番号', draggable: true },
-            'name': { title: '氏名', draggable: true },
-            'departmentCode': { title: '所属コード', draggable: true },
-            'departmentName': { title: '所属', draggable: true },
-            'categoryCode': { title: '区分コード', draggable: true },
-            'categoryName': { title: '区分名称', draggable: true },
-            'alternativeCode': { title: '代替コード', draggable: true },
-            'gateNumber': { title: 'ゲート番号', draggable: true },
-            'gateName': { title: 'ゲート名称', draggable: true },
-            'historyDetails': { title: '履歴詳細', draggable: true }
-        };
-        
-        const def = columnDefinitions[key];
-        if (!def) return;
-        
-        const isVisible = !hiddenColumns.includes(key);
-        
-        const itemHTML = `
-            <div class="column-item-manager ${!isVisible ? 'hidden' : ''}" data-column="${key}">
-                <span class="column-name">${def.title}</span>
-                <button class="column-toggle-btn" onclick="toggleColumnFromManager('${key}')" title="${isVisible ? '非表示にする' : '表示する'}">
-                    <i class="fas fa-${isVisible ? 'eye-slash' : 'eye'}"></i>
-                </button>
-            </div>
-        `;
-        
-        if (isVisible) {
-            visibleList.insertAdjacentHTML('beforeend', itemHTML);
+    function clearAllHrFilter(colAttr) {
+        var list = document.getElementById('hr-filter-list-' + colAttr);
+        if (!list) return;
+        list.querySelectorAll('.excel-filter-item').forEach(function (item) {
+            if (item.style.display !== 'none') {
+                var cb = item.querySelector('input[type="checkbox"]');
+                if (cb) cb.checked = false;
+            }
+        });
+    }
+
+    function filterHrOptions(colAttr, text) {
+        var list = document.getElementById('hr-filter-list-' + colAttr);
+        if (!list) return;
+        var lower = text.toLowerCase();
+        list.querySelectorAll('.excel-filter-item').forEach(function (item) {
+            var val = (item.getAttribute('data-value') || '').toLowerCase();
+            var disp = val === '' ? '(空白)' : val;
+            item.style.display = (lower === '' || disp.indexOf(lower) >= 0) ? '' : 'none';
+        });
+    }
+
+    function applyHrFilter(colAttr) {
+        var list = document.getElementById('hr-filter-list-' + colAttr);
+        if (!list) return;
+        var allValues = getUniqueValues(colAttr);
+        var selectedSet = new Set();
+        list.querySelectorAll('.excel-filter-item').forEach(function (item) {
+            var cb = item.querySelector('input[type="checkbox"]');
+            if (cb && cb.checked) selectedSet.add(item.getAttribute('data-value'));
+        });
+        if (selectedSet.size === allValues.length) {
+            delete excelFilters[colAttr];
         } else {
-            hiddenList.insertAdjacentHTML('beforeend', itemHTML);
-            hiddenCount++;
+            excelFilters[colAttr] = selectedSet;
         }
-    });
-
-    if (noHiddenMsg) {
-        noHiddenMsg.style.display = hiddenCount === 0 ? 'block' : 'none';
+        hideHrFilters();
+        applyAllFilters();
+        updateFilterTriggerStates();
     }
-    
-    // Update hidden columns badge
-    const badge = document.getElementById('hiddenColumnsBadge');
-    if (badge) {
-        if (hiddenCount > 0) {
-            badge.textContent = hiddenCount;
-            badge.style.display = 'inline';
+
+    function updateFilterTriggerStates() {
+        document.querySelectorAll('#hrTable .excel-filter-trigger').forEach(function (trigger) {
+            var th = trigger.closest('th');
+            if (!th) return;
+            var col = th.getAttribute('data-column');
+            trigger.classList.toggle('active', !!excelFilters[col]);
+        });
+    }
+
+    /* ====== 期間選択モーダル ====== */
+    function showHrPeriodModal() {
+        var el = document.getElementById('hrPeriodModal');
+        if (el) {
+            var modal = new bootstrap.Modal(el);
+            modal.show();
+        }
+    }
+
+    function applyHrPeriod() {
+        var checked = document.querySelector('input[name="hrPeriodOption"]:checked');
+        if (!checked) return;
+        var now = new Date();
+        var startDate, endDate = new Date(now);
+
+        switch (checked.value) {
+            case 'all':    startDate = new Date('2020-01-01'); break;
+            case '1year':  startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()); break;
+            case '1month': startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate()); break;
+            case '1week':  startDate = new Date(now.getTime() - 7 * 24 * 3600000); break;
+            case '1day':   startDate = new Date(now.getTime() - 24 * 3600000); break;
+            case 'custom':
+                var s = document.getElementById('hrStartDate');
+                var e = document.getElementById('hrEndDate');
+                if (s && e && s.value && e.value) {
+                    startDate = new Date(s.value);
+                    endDate = new Date(e.value);
+                    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                        alert('有効な日時を入力してください。');
+                        return;
+                    }
+                    if (startDate > endDate) {
+                        alert('開始日時は終了日時より前に設定してください。');
+                        return;
+                    }
+                } else {
+                    alert('開始日時と終了日時を入力してください。');
+                    return;
+                }
+                break;
+            default: startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        }
+
+        // 表示更新
+        var disp = document.getElementById('hrPeriodDisplay');
+        if (disp) disp.textContent = fmtDate(startDate) + ' ～ ' + fmtDate(endDate);
+
+        // データ生成 → フィルター適用
+        generateData(startDate, endDate);
+        excelFilters = {};
+        sortState = { col: null, dir: 'asc' };
+        var typeEl = document.getElementById('hrDataType');
+        if (typeEl) typeEl.value = 'all';
+        filteredData = masterData.slice();
+        currentPage = 1;
+        render();
+        updateFilterTriggerStates();
+        updateSortIndicators();
+
+        // モーダルを閉じる
+        var modalEl = document.getElementById('hrPeriodModal');
+        if (modalEl) {
+            var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modal.hide();
+        }
+    }
+
+    /* ====== フィルターリセット ====== */
+    function resetHrFilters() {
+        excelFilters = {};
+        var typeEl = document.getElementById('hrDataType');
+        if (typeEl) typeEl.value = 'all';
+        updateFilterTriggerStates();
+        applyAllFilters();
+    }
+
+    /* ====== 初期化 ====== */
+    document.addEventListener('DOMContentLoaded', function () {
+        // ページサイズ変更
+        var sizeEl = document.getElementById('hrPageSize');
+        if (sizeEl) {
+            sizeEl.addEventListener('change', function () {
+                pageSize = parseInt(this.value, 10);
+                currentPage = 1;
+                render();
+            });
+        }
+
+        // データ種別フィルター
+        var typeEl = document.getElementById('hrDataType');
+        if (typeEl) {
+            typeEl.addEventListener('change', function () {
+                applyAllFilters();
+            });
+        }
+
+        // フィルターリセット
+        var resetBtn = document.getElementById('hrFilterReset');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', resetHrFilters);
+        }
+
+        // 列表示管理
+        var colMgrBtn = document.getElementById('hrColumnManager');
+        if (colMgrBtn) {
+            colMgrBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                toggleColumnManagerMenu();
+            });
+        }
+
+        // ソート（ヘッダークリック）
+        var thead = document.querySelector('#hrTable thead');
+        if (thead) {
+            thead.addEventListener('click', handleSort);
+        }
+
+        // 期間モーダル: カスタム表示切替
+        document.querySelectorAll('input[name="hrPeriodOption"]').forEach(function (radio) {
+            radio.addEventListener('change', function () {
+                var custom = document.getElementById('hrCustomPeriodInputs');
+                if (custom) custom.style.display = this.value === 'custom' ? 'block' : 'none';
+            });
+        });
+
+        // 外側クリックでメニューを閉じる
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.excel-filter-menu') && !e.target.closest('.excel-filter-trigger')) {
+                hideHrFilters();
+            }
+            if (!e.target.closest('#hrColumnManager') && !e.target.closest('.column-manager-menu')) {
+                var menu = document.getElementById('hrColumnManagerMenu');
+                if (menu) menu.classList.remove('show');
+            }
+        });
+
+        // 初期列非表示を適用
+        applyColumnVisibility();
+
+        // URLパラメータからの自動抽出 (ステータスモニターからの遷移)
+        var urlParams = new URLSearchParams(window.location.search);
+        var paramGate = urlParams.get('gate');
+        var paramPeriod = urlParams.get('period');
+        var paramDataType = urlParams.get('dataType');
+
+        if (paramPeriod) {
+            // 期間を算出
+            var now = new Date();
+            var autoStart, autoEnd = new Date(now);
+            switch (paramPeriod) {
+                case '1day':  autoStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()); break;
+                case '2day':  autoStart = new Date(now.getTime() - 24 * 3600000); break;
+                case '1week': autoStart = new Date(now.getTime() - 7 * 24 * 3600000); break;
+                default:      autoStart = new Date(now.getTime() - 24 * 3600000);
+            }
+
+            // 期間表示を更新
+            var disp = document.getElementById('hrPeriodDisplay');
+            if (disp) disp.textContent = fmtDate(autoStart) + ' ～ ' + fmtDate(autoEnd);
+
+            // データ生成
+            generateData(autoStart, autoEnd);
+
+            // データ種別フィルターを設定
+            if (paramDataType && paramDataType !== 'all') {
+                var dtEl = document.getElementById('hrDataType');
+                if (dtEl) dtEl.value = paramDataType;
+            }
+
+            // ゲート番号でExcelフィルターを自動適用
+            if (paramGate) {
+                var gateValues = getUniqueValues('gateNumber');
+                var gateMatch = gateValues.filter(function (v) { return v === paramGate; });
+                if (gateMatch.length > 0) {
+                    excelFilters['gateNumber'] = new Set(gateMatch);
+                    updateFilterTriggerStates();
+                }
+            }
+
+            filteredData = masterData.slice();
+            applyAllFilters();
         } else {
-            badge.style.display = 'none';
-        }
-    }
-}
-
-function toggleColumnFromManager(columnKey) {
-    toggleColumnVisibilityDirect(columnKey, { stopPropagation: () => {} });
-}
-
-function showAllColumns() {
-    hiddenColumns = [];
-    updateTableHeaders();
-    displayCurrentPage();
-    updateColumnManager();
-}
-
-function resetToDefault() {
-    hiddenColumns = ['issueCount', 'managementNumber', 'departmentCode', 'categoryCode', 'categoryName', 'alternativeCode'];
-    updateTableHeaders();
-    displayCurrentPage();
-    updateColumnManager();
-}
-
-// Excel filter functionality
-function showExcelFilter(event, columnKey) {
-    event.stopPropagation();
-    hideAllExcelFilters();
-
-    const filterMenu = document.getElementById(`excel-filter-${columnKey}`);
-    if (!filterMenu) return;
-
-    // Get unique values for this column
-    const uniqueValues = [...new Set(historyData.map(item => item[columnKey]))]
-        .filter(val => val && val.toString().trim() !== '')
-        .sort();
-
-    const currentFilterValues = currentFilters[columnKey] || [];
-    const isFiltered = currentFilterValues.length > 0 && currentFilterValues.length < uniqueValues.length;
-
-    filterMenu.innerHTML = `
-        <div class="excel-filter-header">
-            ${getColumnDisplayName(columnKey)} のフィルター
-        </div>
-        
-        <div class="excel-search-section">
-            <input type="text" class="excel-search-box" placeholder="検索テキストを入力" 
-                   oninput="filterExcelOptions('${columnKey}', this.value)"
-                   onclick="event.stopPropagation()">
-        </div>
-        
-        <div class="excel-filter-actions">
-            <button class="excel-action-btn" onclick="selectAllExcelFilter('${columnKey}')">すべて選択</button>
-            <button class="excel-action-btn" onclick="clearAllExcelFilter('${columnKey}')">すべてクリア</button>
-            <button class="excel-action-btn primary" onclick="applyExcelFilter('${columnKey}')">OK</button>
-        </div>
-        
-        <div class="excel-filter-list" id="excel-options-${columnKey}">
-            <div class="excel-filter-item select-all" onclick="toggleExcelSelectAll('${columnKey}'); event.stopPropagation();">
-                <input type="checkbox" id="select-all-${columnKey}" ${!isFiltered ? 'checked' : ''} onclick="event.stopPropagation();">
-                <span>（すべて選択）</span>
-            </div>
-            ${uniqueValues.map(value => {
-                const isChecked = currentFilterValues.length === 0 || currentFilterValues.includes(value);
-                return `
-                    <div class="excel-filter-item" onclick="toggleExcelOption('${columnKey}', '${value}'); event.stopPropagation();">
-                        <input type="checkbox" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation();">
-                        <span>${value}</span>
-                    </div>
-                `;
-            }).join('')}
-        </div>
-        
-        <div class="excel-filter-stats">
-            ${uniqueValues.length}件中 ${currentFilterValues.length || uniqueValues.length}件を表示
-        </div>
-    `;
-
-    filterMenu.classList.add('show');
-}
-
-function getColumnDisplayName(columnKey) {
-    const columnDefinitions = {
-        'occurredDate': { title: '発生日時' },
-        'personalCode': { title: '個人コード' },
-        'issueCount': { title: '発行回数' },
-        'managementNumber': { title: '管理番号' },
-        'name': { title: '氏名' },
-        'departmentCode': { title: '所属コード' },
-        'departmentName': { title: '所属' },
-        'categoryCode': { title: '区分コード' },
-        'categoryName': { title: '区分名称' },
-        'alternativeCode': { title: '代替コード' },
-        'gateNumber': { title: 'ゲート番号' },
-        'gateName': { title: 'ゲート名称' },
-        'historyDetails': { title: '履歴詳細' }
-    };
-    return columnDefinitions[columnKey]?.title || columnKey;
-}
-
-function hideAllExcelFilters() {
-    document.querySelectorAll('.excel-filter-menu').forEach(menu => {
-        menu.classList.remove('show');
-    });
-}
-
-function toggleExcelSelectAll(columnKey) {
-    const selectAllCheckbox = document.getElementById(`select-all-${columnKey}`);
-    const allCheckboxes = document.querySelectorAll(`#excel-options-${columnKey} .excel-filter-item:not(.select-all) input[type="checkbox"]`);
-    
-    selectAllCheckbox.checked = !selectAllCheckbox.checked;
-    
-    allCheckboxes.forEach(checkbox => {
-        checkbox.checked = selectAllCheckbox.checked;
-    });
-    
-    updateExcelFilterStats(columnKey);
-}
-
-function toggleExcelOption(columnKey, value) {
-    const item = event.currentTarget;
-    const checkbox = item.querySelector('input[type="checkbox"]');
-    checkbox.checked = !checkbox.checked;
-    
-    updateExcelSelectAllState(columnKey);
-    updateExcelFilterStats(columnKey);
-}
-
-function updateExcelSelectAllState(columnKey) {
-    const selectAllCheckbox = document.getElementById(`select-all-${columnKey}`);
-    const allCheckboxes = document.querySelectorAll(`#excel-options-${columnKey} .excel-filter-item:not(.select-all) input[type="checkbox"]`);
-    const checkedBoxes = document.querySelectorAll(`#excel-options-${columnKey} .excel-filter-item:not(.select-all) input[type="checkbox"]:checked`);
-    
-    if (checkedBoxes.length === 0) {
-        selectAllCheckbox.checked = false;
-        selectAllCheckbox.indeterminate = false;
-    } else if (checkedBoxes.length === allCheckboxes.length) {
-        selectAllCheckbox.checked = true;
-        selectAllCheckbox.indeterminate = false;
-    } else {
-        selectAllCheckbox.checked = false;
-        selectAllCheckbox.indeterminate = true;
-    }
-}
-
-function selectAllExcelFilter(columnKey) {
-    const allCheckboxes = document.querySelectorAll(`#excel-options-${columnKey} .excel-filter-item input[type="checkbox"]`);
-    allCheckboxes.forEach(checkbox => {
-        checkbox.checked = true;
-    });
-    updateExcelFilterStats(columnKey);
-}
-
-function clearAllExcelFilter(columnKey) {
-    const allCheckboxes = document.querySelectorAll(`#excel-options-${columnKey} .excel-filter-item input[type="checkbox"]`);
-    allCheckboxes.forEach(checkbox => {
-        checkbox.checked = false;
-    });
-    updateExcelFilterStats(columnKey);
-}
-
-function filterExcelOptions(columnKey, searchText) {
-    const items = document.querySelectorAll(`#excel-options-${columnKey} .excel-filter-item:not(.select-all)`);
-    items.forEach(item => {
-        const text = item.querySelector('span').textContent.toLowerCase();
-        if (text.includes(searchText.toLowerCase())) {
-            item.style.display = 'flex';
-        } else {
-            item.style.display = 'none';
+            render();
         }
     });
-}
 
-function updateExcelFilterStats(columnKey) {
-    const statsElement = document.querySelector(`#excel-filter-${columnKey} .excel-filter-stats`);
-    if (!statsElement) return;
-    
-    const uniqueValues = [...new Set(historyData.map(item => item[columnKey]))];
-    const checkedBoxes = document.querySelectorAll(`#excel-options-${columnKey} .excel-filter-item:not(.select-all) input[type="checkbox"]:checked`);
-    const displayCount = checkedBoxes.length;
-    
-    statsElement.textContent = `${uniqueValues.length}件中 ${displayCount}件を表示`;
-}
-
-function applyExcelFilter(columnKey) {
-    const checkedBoxes = document.querySelectorAll(`#excel-options-${columnKey} .excel-filter-item:not(.select-all) input[type="checkbox"]:checked`);
-    const selectedValues = Array.from(checkedBoxes).map(cb => cb.nextElementSibling.textContent);
-    
-    const allUniqueValues = [...new Set(historyData.map(item => item[columnKey]))];
-    if (selectedValues.length === 0 || selectedValues.length === allUniqueValues.length) {
-        delete currentFilters[columnKey];
-    } else {
-        currentFilters[columnKey] = selectedValues;
-    }
-    
-    applyFiltersAndDisplay();
-    hideAllExcelFilters();
-}
-
-// Reset filters
-function resetAllFilters() {
-    currentFilters = {};
-    const dataDisplayFilter = document.getElementById('dataDisplayFilter');
-    if (dataDisplayFilter) {
-        dataDisplayFilter.value = 'all';
-    }
-    applyFiltersAndDisplay();
-}
-
+    /* ====== グローバル公開 (onclick用) ====== */
+    window.showHrFilter = showHrFilter;
+    window.toggleHrOption = toggleHrOption;
+    window.selectAllHrFilter = selectAllHrFilter;
+    window.clearAllHrFilter = clearAllHrFilter;
+    window.filterHrOptions = filterHrOptions;
+    window.applyHrFilter = applyHrFilter;
+    window.showHrPeriodModal = showHrPeriodModal;
+    window.applyHrPeriod = applyHrPeriod;
+})();
