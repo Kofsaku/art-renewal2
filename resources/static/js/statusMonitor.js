@@ -664,7 +664,11 @@ class StatusMonitor {
             params.set('gate', gate.number);
             params.set('period', period);
             params.set('dataType', dataType);
-            window.location.href = '/historyReport?' + params.toString();
+            // Preview環境対応: -preview.html内ならプレビューURLへ遷移
+            var basePath = window.location.pathname.includes('-preview.html')
+                ? '/resources/historyReport-preview.html'
+                : '/historyReport';
+            window.location.href = basePath + '?' + params.toString();
         });
         const bootstrapModal = new bootstrap.Modal(modal);
         bootstrapModal.show();
