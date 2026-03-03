@@ -166,9 +166,68 @@
             margin-right: 5px;
             flex-shrink: 0;
         }
+        .dot-all     { background: #6c757d; }
         .dot-normal  { background: #28a745; }
-        .dot-warning { background: #e07b00; }
+        .dot-warning { background: #ffc107; }
         .dot-error   { background: #dc3545; }
+
+        /* ---- カスタム データ種別ドロップダウン ---- */
+        .dm-custom-select {
+            position: relative;
+            height: 28px;
+        }
+        .dm-custom-selected {
+            height: 28px;
+            padding: 0 24px 0 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.82rem;
+            background: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            user-select: none;
+            position: relative;
+            white-space: nowrap;
+        }
+        .dm-custom-selected::after {
+            content: '';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 5px solid #666;
+        }
+        .dm-custom-options {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            min-width: 100%;
+            background: #fff;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            z-index: 200;
+            margin-top: 2px;
+        }
+        .dm-custom-options.show { display: block; }
+        .dm-custom-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            white-space: nowrap;
+            user-select: none;
+            transition: background 0.1s;
+        }
+        .dm-custom-option:hover { background: #f0f4f8; }
+        .dm-custom-option.selected { background: #e8f4ff; font-weight: 600; }
         .date-cell   { display: flex; align-items: center; }
 
         /* ---- Excelフィルター ---- */
@@ -421,20 +480,34 @@
                     <div class="dm-select-group">
                         <span>表示件数:</span>
                         <select class="dm-select" id="pageSize">
+                            <option value="25">25件</option>
                             <option value="50">50件</option>
                             <option value="100">100件</option>
-                            <option value="200">200件</option>
                         </select>
                     </div>
 
                     <div class="dm-data-type-group">
                         <span>◆ データ種別:</span>
-                        <select class="dm-select" id="dataType">
-                            <option value="all">全データ表示</option>
-                            <option value="normal">正常のみ</option>
-                            <option value="warning">警告のみ</option>
-                            <option value="error">異常のみ</option>
-                        </select>
+                        <div class="dm-custom-select" id="dataTypeDropdown">
+                            <div class="dm-custom-selected" id="dataTypeSelected">
+                                <span class="status-dot" id="dataTypeDot" style="display:none;"></span>
+                                <span id="dataTypeLabel">全データ表示</span>
+                            </div>
+                            <div class="dm-custom-options" id="dataTypeOptions">
+                                <div class="dm-custom-option selected" data-value="all">
+                                    全データ表示
+                                </div>
+                                <div class="dm-custom-option" data-value="normal">
+                                    <span class="status-dot dot-normal"></span>正常データ表示
+                                </div>
+                                <div class="dm-custom-option" data-value="warning">
+                                    <span class="status-dot dot-warning"></span>軽エラーデータ表示
+                                </div>
+                                <div class="dm-custom-option" data-value="error">
+                                    <span class="status-dot dot-error"></span>重エラーデータ表示
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="dm-spacer"></div>
@@ -499,13 +572,13 @@
 	<div>
         <div class="dm-legend">
             <div class="dm-legend-item">
-                <span class="status-dot dot-normal"></span><span>正常</span>
+                <span class="status-dot dot-normal"></span><span>正常データ</span>
             </div>
             <div class="dm-legend-item">
-                <span class="status-dot dot-warning"></span><span>警告</span>
+                <span class="status-dot dot-warning"></span><span>軽エラーデータ</span>
             </div>
             <div class="dm-legend-item">
-                <span class="status-dot dot-error"></span><span>異常</span>
+                <span class="status-dot dot-error"></span><span>重エラーデータ</span>
             </div>
         </div>
     </div>
@@ -556,6 +629,33 @@
         // Excelフィルター状態: { colAttr: Set of selected values } (未設定=全選択)
         var excelFilters = {};
         var selectedRowData = null;
+        var dataTypeValue = 'all';
+
+        var dataTypeDotClasses = { all: 'dot-all', normal: 'dot-normal', warning: 'dot-warning', error: 'dot-error' };
+        var dataTypeLabels = { all: '全データ表示', normal: '正常データ表示', warning: '軽エラーデータ表示', error: '重エラーデータ表示' };
+
+        function updateDataTypeDisplay(value) {
+            var selected = document.getElementById('dataTypeSelected');
+            var label = document.getElementById('dataTypeLabel');
+            if (!selected || !label) return;
+            var dot = document.getElementById('dataTypeDot');
+            if (dot) {
+                if (value === 'all') {
+                    dot.style.display = 'none';
+                    dot.className = 'status-dot';
+                } else {
+                    dot.style.display = '';
+                    dot.className = 'status-dot ' + (dataTypeDotClasses[value] || '');
+                }
+            }
+            label.textContent = dataTypeLabels[value] || value;
+            var options = document.getElementById('dataTypeOptions');
+            if (options) {
+                options.querySelectorAll('.dm-custom-option').forEach(function (opt) {
+                    opt.classList.toggle('selected', opt.getAttribute('data-value') === value);
+                });
+            }
+        }
 
         // デモデータ
         var demoData = [
@@ -635,10 +735,8 @@
         // 他列フィルター＋データ種別を適用済みのデータからユニーク値を取得
         // excludeCol: 現在開いている列は除外して絞り込む
         function getFilteredBase(excludeCol) {
-            var typeSelect = document.getElementById('dataType');
-            var typeVal = typeSelect ? typeSelect.value : 'all';
             return demoData.filter(function (row) {
-                if (typeVal !== 'all' && row.type !== typeVal) return false;
+                if (dataTypeValue !== 'all' && row.type !== dataTypeValue) return false;
                 for (var colAttr in excelFilters) {
                     if (colAttr === excludeCol) continue;
                     if (excelFilters.hasOwnProperty(colAttr)) {
@@ -772,12 +870,9 @@
         }
 
         function applyAllFilters() {
-            var typeSelect = document.getElementById('dataType');
-            var typeVal = typeSelect ? typeSelect.value : 'all';
-
             var filtered = demoData.filter(function (row) {
                 // データ種別フィルター
-                if (typeVal !== 'all' && row.type !== typeVal) return false;
+                if (dataTypeValue !== 'all' && row.type !== dataTypeValue) return false;
                 // Excelカラムフィルター
                 for (var colAttr in excelFilters) {
                     if (excelFilters.hasOwnProperty(colAttr)) {
@@ -962,11 +1057,21 @@
                 });
             }
 
-            // データ種別フィルター
-            var typeSelect = document.getElementById('dataType');
-            if (typeSelect) {
-                typeSelect.addEventListener('change', function () {
-                    applyAllFilters();
+            // データ種別カスタムドロップダウン
+            var dataTypeSelected = document.getElementById('dataTypeSelected');
+            var dataTypeOptions = document.getElementById('dataTypeOptions');
+            if (dataTypeSelected && dataTypeOptions) {
+                dataTypeSelected.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    dataTypeOptions.classList.toggle('show');
+                });
+                dataTypeOptions.querySelectorAll('.dm-custom-option').forEach(function (opt) {
+                    opt.addEventListener('click', function () {
+                        dataTypeValue = this.getAttribute('data-value');
+                        updateDataTypeDisplay(dataTypeValue);
+                        dataTypeOptions.classList.remove('show');
+                        applyAllFilters();
+                    });
                 });
             }
 
@@ -974,7 +1079,8 @@
             var resetBtn = document.getElementById('filterReset');
             if (resetBtn) {
                 resetBtn.addEventListener('click', function () {
-                    if (typeSelect) typeSelect.value = 'all';
+                    dataTypeValue = 'all';
+                    updateDataTypeDisplay('all');
                     excelFilters = {};
                     updateFilterTriggerStates();
                     applyAllFilters();
@@ -995,6 +1101,10 @@
                 if (!e.target.closest('#columnManager') && !e.target.closest('.column-manager-menu')) {
                     var menu = document.getElementById('columnManagerMenu');
                     if (menu) menu.classList.remove('show');
+                }
+                if (!e.target.closest('#dataTypeDropdown')) {
+                    var dtOptions = document.getElementById('dataTypeOptions');
+                    if (dtOptions) dtOptions.classList.remove('show');
                 }
             });
         });
