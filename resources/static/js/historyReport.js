@@ -621,8 +621,10 @@
         var paramGate = urlParams.get('gate');
         var paramPeriod = urlParams.get('period');
         var paramDataType = urlParams.get('dataType');
+        var paramPersonalCode = urlParams.get('personalCode');
 
-        if (paramPeriod) {
+        if (paramPeriod || paramPersonalCode) {
+            if (!paramPeriod) paramPeriod = '1day';
             // 期間を算出
             var now = new Date();
             var autoStart, autoEnd = new Date(now);
@@ -652,6 +654,16 @@
                 var gateMatch = gateValues.filter(function (v) { return v === paramGate; });
                 if (gateMatch.length > 0) {
                     excelFilters['gateNumber'] = new Set(gateMatch);
+                    updateFilterTriggerStates();
+                }
+            }
+
+            // 個人コードでExcelフィルターを自動適用
+            if (paramPersonalCode) {
+                var pcValues = getUniqueValues('personalCode');
+                var pcMatch = pcValues.filter(function (v) { return v === paramPersonalCode; });
+                if (pcMatch.length > 0) {
+                    excelFilters['personalCode'] = new Set(pcMatch);
                     updateFilterTriggerStates();
                 }
             }

@@ -6,14 +6,14 @@
 // グローバル変数
 let mapMonitor = {
     gateData: [
-        { id: 1, name: 'ゲート①', status: 'normal', position: { x: 110, y: 60 }, lastUpdate: new Date() },
-        { id: 2, name: 'ゲート②', status: 'warning', position: { x: 210, y: 60 }, lastUpdate: new Date() },
-        { id: 3, name: 'ゲート③', status: 'normal', position: { x: 310, y: 60 }, lastUpdate: new Date() },
-        { id: 4, name: 'ゲート④', status: 'error', position: { x: 210, y: 110 }, lastUpdate: new Date() },
-        { id: 5, name: 'ゲート⑤', status: 'normal', position: { x: 330, y: 110 }, lastUpdate: new Date() },
-        { id: 6, name: 'ゲート⑥', status: 'offline', position: { x: 110, y: 170 }, lastUpdate: new Date() },
-        { id: 7, name: 'ゲート⑦', status: 'normal', position: { x: 110, y: 270 }, lastUpdate: new Date() },
-        { id: 8, name: 'ゲート⑧', status: 'warning', position: { x: 110, y: 240 }, lastUpdate: new Date() }
+        { id: 1, code: '0001', name: 'ゲートA', status: 'normal', position: { x: 110, y: 60 }, lastUpdate: new Date() },
+        { id: 2, code: '0002', name: 'ゲートB', status: 'warning', position: { x: 210, y: 60 }, lastUpdate: new Date() },
+        { id: 3, code: '0003', name: 'ゲートC', status: 'normal', position: { x: 310, y: 60 }, lastUpdate: new Date() },
+        { id: 4, code: '0004', name: 'ゲートD', status: 'error', position: { x: 210, y: 110 }, lastUpdate: new Date() },
+        { id: 5, code: '0005', name: 'ゲートE', status: 'normal', position: { x: 330, y: 110 }, lastUpdate: new Date() },
+        { id: 6, code: '0006', name: 'ゲートF', status: 'offline', position: { x: 110, y: 170 }, lastUpdate: new Date() },
+        { id: 7, code: '0007', name: 'ゲートG', status: 'normal', position: { x: 110, y: 270 }, lastUpdate: new Date() },
+        { id: 8, code: '0008', name: 'ゲートH', status: 'warning', position: { x: 110, y: 240 }, lastUpdate: new Date() }
     ],
 
     zoomLevel: 1,
@@ -121,7 +121,7 @@ function renderGateIndicators() {
         dot.className = 'status-dot status-' + safeStatus;
         dot.style.background = getStatusColorHex(safeStatus);
         var label = document.createElement('span');
-        label.textContent = gate.id.toString().padStart(4, '0') + ' ' + gate.name;
+        label.textContent = gate.name + '(' + gate.code + ')';
         header.appendChild(dot);
         header.appendChild(label);
 
@@ -235,14 +235,14 @@ function switchFloor(floor) {
     // ゲートの再配置（フロア2/3はランダム）
     if (floor === 1) {
         mapMonitor.gateData = [
-            { id: 1, name: 'ゲート①', status: 'normal', position: { x: 110, y: 60 }, lastUpdate: new Date() },
-            { id: 2, name: 'ゲート②', status: 'normal', position: { x: 210, y: 60 }, lastUpdate: new Date() },
-            { id: 3, name: 'ゲート③', status: 'warning', position: { x: 310, y: 60 }, lastUpdate: new Date() },
-            { id: 4, name: 'ゲート④', status: 'error', position: { x: 210, y: 110 }, lastUpdate: new Date() },
-            { id: 5, name: 'ゲート⑤', status: 'error', position: { x: 330, y: 110 }, lastUpdate: new Date() },
-            { id: 6, name: 'ゲート⑥', status: 'normal', position: { x: 110, y: 170 }, lastUpdate: new Date() },
-            { id: 7, name: 'ゲート⑦', status: 'normal', position: { x: 110, y: 270 }, lastUpdate: new Date() },
-            { id: 8, name: 'ゲート⑧', status: 'offline', position: { x: 110, y: 240 }, lastUpdate: new Date() }
+            { id: 1, code: '0001', name: 'ゲートA', status: 'normal', position: { x: 110, y: 60 }, lastUpdate: new Date() },
+            { id: 2, code: '0002', name: 'ゲートB', status: 'normal', position: { x: 210, y: 60 }, lastUpdate: new Date() },
+            { id: 3, code: '0003', name: 'ゲートC', status: 'warning', position: { x: 310, y: 60 }, lastUpdate: new Date() },
+            { id: 4, code: '0004', name: 'ゲートD', status: 'error', position: { x: 210, y: 110 }, lastUpdate: new Date() },
+            { id: 5, code: '0005', name: 'ゲートE', status: 'error', position: { x: 330, y: 110 }, lastUpdate: new Date() },
+            { id: 6, code: '0006', name: 'ゲートF', status: 'normal', position: { x: 110, y: 170 }, lastUpdate: new Date() },
+            { id: 7, code: '0007', name: 'ゲートG', status: 'normal', position: { x: 110, y: 270 }, lastUpdate: new Date() },
+            { id: 8, code: '0008', name: 'ゲートH', status: 'offline', position: { x: 110, y: 240 }, lastUpdate: new Date() }
         ];
     } else {
         mapMonitor.gateData.forEach(function(gate) {
@@ -260,13 +260,15 @@ function switchFloor(floor) {
  * ゲート制御モーダル表示
  */
 function showGateControlModal(element) {
-    var gateNumber = element.getAttribute('data-gate');
+    var gateId = parseInt(element.getAttribute('data-gate'), 10);
+    var gateData = mapMonitor.gateData.find(function(g) { return g.id === gateId; });
     var className = element.querySelector('.pointer-circle').className;
     var gateStatus = className.indexOf('status-normal') !== -1 ? '正常' :
                      className.indexOf('status-warning') !== -1 ? '警告' :
                      className.indexOf('status-error') !== -1 ? '異常' : 'オフライン';
 
-    document.getElementById('modalGateNumber').textContent = 'ゲート' + gateNumber;
+    var displayName = gateData ? gateData.name + '(' + gateData.code + ')' : 'ゲート' + gateId;
+    document.getElementById('modalGateNumber').textContent = displayName;
     document.getElementById('modalGateStatus').textContent = gateStatus;
     document.getElementById('modalLastUpdate').textContent = new Date().toLocaleString();
 
@@ -299,6 +301,13 @@ function executeSingleRemoteCommand() {
  * グループ制御モーダル表示
  */
 function showGroupControlModal() {
+    // チェックボックス・ラジオボタンをリセット
+    document.querySelectorAll('#groupControlModal input[type="checkbox"]').forEach(function(cb) {
+        cb.checked = false;
+    });
+    document.querySelectorAll('#groupControlModal input[type="radio"]').forEach(function(radio) {
+        radio.checked = false;
+    });
     bootstrap.Modal.getOrCreateInstance(document.getElementById('groupControlModal')).show();
 }
 

@@ -463,7 +463,7 @@ function displayCurrentPage() {
 
         row.addEventListener('contextmenu', (e) => {
             e.preventDefault();
-            showContextMenu(e, person);
+            showHistorySettingsModal(person);
         });
 
         tbody.appendChild(row);
@@ -1161,245 +1161,108 @@ function updateCurrentCountDisplay() {
     }
 }
 
-// Context menu functionality
-function showContextMenu(event, person) {
-    const contextMenu = document.getElementById('contextMenu');
-
-    // Clear previous highlights
-    document.querySelectorAll('.row-highlight').forEach(row => {
-        row.classList.remove('row-highlight');
-    });
-
-    // Highlight the clicked row
-    event.currentTarget.classList.add('row-highlight');
-
-    // Populate context menu
-    contextMenu.innerHTML = `
-        <div class="context-menu-header">
-            <i class="fas fa-user"></i>
-            ${escapeHtml(person.name)} (${escapeHtml(person.personalCode)})
-        </div>
-        <div class="context-menu-item primary" onclick="editPersonRowById(${Number(person.id)})">
-            <i class="fas fa-edit"></i>
-            <span>編集</span>
-        </div>
-        <div class="context-menu-item" onclick="showHistoryOptionsById(${Number(person.id)})">
-            <i class="fas fa-history"></i>
-            <span>履歴表示</span>
-        </div>
-        <div class="context-menu-item" onclick="duplicatePersonById(${Number(person.id)})">
-            <i class="fas fa-copy"></i>
-            <span>複製</span>
-        </div>
-        <div class="context-menu-item danger" onclick="deletePerson(${Number(person.id)})">
-            <i class="fas fa-trash"></i>
-            <span>削除</span>
-        </div>
-    `;
-
-    // Position the context menu
-    const rect = contextMenu.getBoundingClientRect();
-    let x = event.clientX;
-    let y = event.clientY;
-
-    // Adjust position to keep menu within viewport
-    if (x + 220 > window.innerWidth) {
-        x = window.innerWidth - 220;
-    }
-    if (y + 200 > window.innerHeight) {
-        y = window.innerHeight - 200;
-    }
-
-    contextMenu.style.left = x + 'px';
-    contextMenu.style.top = y + 'px';
-    contextMenu.style.display = 'block';
-
-    // Add global click listener to close menu
-    setTimeout(() => {
-        document.addEventListener('click', hideContextMenu, { once: true });
-    }, 10);
-}
-
-function hideContextMenu() {
-    const contextMenu = document.getElementById('contextMenu');
-    contextMenu.style.display = 'none';
-
-    // Remove row highlighting
-    document.querySelectorAll('.row-highlight').forEach(row => {
-        row.classList.remove('row-highlight');
-    });
-}
-
-function editPersonRow(person) {
-    hideContextMenu();
-    showOperationStatus(`${person.name}の編集画面に遷移しています...`, 'info');
-    setTimeout(() => {
-        alert(`${person.name}の編集画面を開きます\n\n個人コード: ${person.personalCode}\n氏名: ${person.name}`);
-    }, 500);
-}
-
-function editPersonRowById(personId) {
-    const person = personalData.find(p => p.id === personId);
-    if (person) {
-        editPersonRow(person);
-    }
-}
-
-function showHistoryOptionsById(personId) {
-    const person = personalData.find(p => p.id === personId);
-    if (person) {
-        showHistoryOptions(person);
-    }
-}
-
-function duplicatePersonById(personId) {
-    const person = personalData.find(p => p.id === personId);
-    if (person) {
-        duplicatePerson(person);
-    }
-}
-
-function showHistoryOptions(person) {
-    hideContextMenu();
+// 履歴表示設定モーダル（右クリックで直接表示）
+function showHistorySettingsModal(person) {
+    const existingModal = document.getElementById('historySettingsModal');
+    if (existingModal) existingModal.remove();
 
     const safeName = escapeHtml(person.name);
     const safeCode = escapeHtml(person.personalCode);
 
-    // Create history options modal
     const modal = document.createElement('div');
     modal.className = 'modal fade';
-    modal.id = 'historyOptionsModal';
+    modal.id = 'historySettingsModal';
+    modal.tabIndex = -1;
+    modal.setAttribute('aria-hidden', 'true');
+
     modal.innerHTML = `
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-history text-info"></i>
-                        履歴表示設定
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header py-2">
+                    <h6 class="modal-title mb-0">
+                        <i class="fas fa-history text-info me-2"></i>履歴表示設定 - ${safeName}(${safeCode})
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="alert alert-info">
-                        <i class="fas fa-user"></i>
-                        <strong>${safeName}</strong> (${safeCode}) の履歴を表示します
+                    <div class="alert alert-info py-2 mb-3" style="font-size: 0.9em;">
+                        ${safeName}(${safeCode})の報告書を抽出します。
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6><i class="fas fa-calendar"></i> 期間選択</h6>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="historyPeriod" id="today" value="today" checked>
-                                <label class="form-check-label" for="today">当日</label>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="fw-bold small border-bottom pb-1 mb-2"><i class="fas fa-calendar-alt me-1"></i>期間</div>
+                            <div class="form-check small">
+                                <input class="form-check-input" type="radio" name="histPeriod" id="p1" value="1day" checked>
+                                <label class="form-check-label" for="p1">当日</label>
                             </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="historyPeriod" id="yesterday" value="yesterday">
-                                <label class="form-check-label" for="yesterday">前日～</label>
+                            <div class="form-check small">
+                                <input class="form-check-input" type="radio" name="histPeriod" id="p2" value="2day">
+                                <label class="form-check-label" for="p2">前日～</label>
                             </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="historyPeriod" id="week" value="week">
-                                <label class="form-check-label" for="week">1週間前～</label>
+                            <div class="form-check small">
+                                <input class="form-check-input" type="radio" name="histPeriod" id="p3" value="1week">
+                                <label class="form-check-label" for="p3">1週間前～</label>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <h6><i class="fas fa-filter"></i> 履歴種類</h6>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="historyAll" value="all" checked>
-                                <label class="form-check-label" for="historyAll">全て</label>
+                        <div class="col-6">
+                            <div class="fw-bold small border-bottom pb-1 mb-2"><i class="fas fa-filter me-1"></i>履歴種類</div>
+                            <div class="form-check small">
+                                <input class="form-check-input" type="radio" name="histDataType" id="t1" value="all" checked>
+                                <label class="form-check-label" for="t1">全て</label>
                             </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="historyLightError" value="light-error">
-                                <label class="form-check-label" for="historyLightError">軽エラー</label>
+                            <div class="form-check small">
+                                <input class="form-check-input" type="radio" name="histDataType" id="t2" value="warning">
+                                <label class="form-check-label" for="t2">軽エラー</label>
                             </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="historyHeavyError" value="heavy-error">
-                                <label class="form-check-label" for="historyHeavyError">重エラー</label>
+                            <div class="form-check small">
+                                <input class="form-check-input" type="radio" name="histDataType" id="t3" value="error">
+                                <label class="form-check-label" for="t3">重エラー</label>
                             </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="historyRecovery" value="recovery">
-                                <label class="form-check-label" for="historyRecovery">重エラー復旧</label>
+                            <div class="form-check small">
+                                <input class="form-check-input" type="radio" name="histDataType" id="t4" value="recovery">
+                                <label class="form-check-label" for="t4">重エラー＋復旧</label>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                    <button type="button" class="btn btn-primary" id="historySubmitBtn">
-                        <i class="fas fa-arrow-right"></i> 履歴画面へ遷移
+                <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="navigateReportBtn">
+                        <i class="fas fa-arrow-right me-1"></i>報告書画面へ遷移
                     </button>
                 </div>
             </div>
         </div>
     `;
-    // onclick を属性埋め込みではなくイベントリスナーで安全に設定
-    modal.querySelector('#historySubmitBtn').addEventListener('click', function () {
-        executeHistoryView(person.personalCode, person.name);
-    });
 
     document.body.appendChild(modal);
+    modal.querySelector('#navigateReportBtn').addEventListener('click', function () {
+        executeHistoryView(person.personalCode, modal);
+    });
     const bootstrapModal = new bootstrap.Modal(modal);
     bootstrapModal.show();
-
-    // Remove modal from DOM when hidden
-    modal.addEventListener('hidden.bs.modal', () => {
-        document.body.removeChild(modal);
-    });
+    modal.addEventListener('hidden.bs.modal', function () { modal.remove(); });
 }
 
-function executeHistoryView(personalCode, personName) {
-    const period = document.querySelector('input[name="historyPeriod"]:checked').value;
-    const historyTypes = [];
-    document.querySelectorAll('#historyOptionsModal input[type="checkbox"]:checked').forEach(checkbox => {
-        historyTypes.push(checkbox.value);
-    });
+// 報告書画面へ遷移
+function executeHistoryView(personalCode, modal) {
+    var periodRadio = modal.querySelector('input[name="histPeriod"]:checked');
+    var period = periodRadio ? periodRadio.value : '1day';
+    var dataTypeRadio = modal.querySelector('input[name="histDataType"]:checked');
+    var dataType = dataTypeRadio ? dataTypeRadio.value : 'all';
 
-    const modal = bootstrap.Modal.getInstance(document.getElementById('historyOptionsModal'));
-    modal.hide();
+    var params = new URLSearchParams();
+    params.set('personalCode', personalCode);
+    params.set('period', period);
+    params.set('dataType', dataType);
 
-    // 報告書画面に遷移
-    const reportUrl = `/historyReport?personCode=${encodeURIComponent(personalCode)}&name=${encodeURIComponent(personName)}&period=${encodeURIComponent(period)}&types=${encodeURIComponent(historyTypes.join(','))}`;
-    window.location.href = reportUrl;
-}
+    var basePath = window.location.pathname.includes('-preview.html')
+        ? '/resources/historyReport-preview.html'
+        : '/historyReport';
+    window.open(basePath + '?' + params.toString(), '_blank');
 
-function duplicatePerson(person) {
-    hideContextMenu();
-
-    if (confirm(`${person.name}のデータを複製しますか？`)) {
-        showOperationStatus(`${person.name}のデータを複製しています...`, 'info');
-
-        setTimeout(() => {
-            const newPerson = {
-                ...person,
-                id: personalData.length + 1,
-                personalCode: `${person.personalCode}_copy`,
-                name: `${person.name}（複製）`,
-                sendStatus: '未送信',
-                registrationStatus: '登録中',
-                selected: false
-            };
-
-            personalData.push(newPerson);
-            applyFiltersAndDisplay();
-            showOperationStatus(`${person.name}のデータ複製が完了しました`, 'success');
-        }, 1000);
-    }
-}
-
-function deletePerson(personId) {
-    hideContextMenu();
-
-    const person = personalData.find(p => p.id === personId);
-    if (!person) return;
-
-    if (confirm(`${person.name}のデータを削除しますか？\n\n※この操作は元に戻せません`)) {
-        showOperationStatus(`${person.name}のデータを削除しています...`, 'info');
-
-        setTimeout(() => {
-            personalData = personalData.filter(p => p.id !== personId);
-            applyFiltersAndDisplay();
-            showOperationStatus(`${person.name}のデータ削除が完了しました`, 'success');
-        }, 800);
-    }
+    var bootstrapModal = bootstrap.Modal.getInstance(modal);
+    if (bootstrapModal) bootstrapModal.hide();
 }
 
 // 編集画面を開く

@@ -144,6 +144,18 @@
         .data-table tbody tr.row-warning { background: #fff8e1; }
         .data-table tbody tr.row-error   { background: #fdecea; }
         .data-table tbody tr:hover { filter: brightness(0.96); }
+        .data-table tbody tr.row-selected {
+            background: #cce5ff !important;
+            outline: 2px solid #007bff;
+            outline-offset: -2px;
+        }
+        .data-table tbody tr.row-selected:hover {
+            background: #b8daff !important;
+        }
+        .dm-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
         /* ステータスドット */
         .status-dot {
@@ -427,6 +439,9 @@
 
                     <div class="dm-spacer"></div>
 
+                    <button class="dm-btn" id="openRegistration" disabled>
+                        <i class="fas fa-user-edit"></i>登録/編集
+                    </button>
                     <button class="dm-btn" id="filterReset">
                         <i class="fas fa-times-circle"></i>フィルターリセット
                     </button>
@@ -540,6 +555,7 @@
 
         // Excelフィルター状態: { colAttr: Set of selected values } (未設定=全選択)
         var excelFilters = {};
+        var selectedRowData = null;
 
         // デモデータ
         var demoData = [
@@ -583,10 +599,35 @@
                     '<td>' + escapeHtml(row.gate) + '</td>' +
                     '<td>' + escapeHtml(row.gateName) + '</td>' +
                     '<td>' + escapeHtml(row.detail) + '</td>';
+                tr.style.cursor = 'pointer';
+                tr.addEventListener('click', function () {
+                    tbody.querySelectorAll('tr.row-selected').forEach(function (r) {
+                        r.classList.remove('row-selected');
+                    });
+                    tr.classList.add('row-selected');
+                    selectedRowData = row;
+                    document.getElementById('openRegistration').disabled = false;
+                });
                 tbody.appendChild(tr);
             });
             var el = document.getElementById('recordCount');
             if (el) el.textContent = data.length;
+            selectedRowData = null;
+            var regBtn = document.getElementById('openRegistration');
+            if (regBtn) regBtn.disabled = true;
+        }
+
+        function openRegistrationPage() {
+            if (!selectedRowData) return;
+            var params = new URLSearchParams();
+            params.set('personalCode', selectedRowData.code);
+            if (selectedRowData.name) {
+                params.set('name', selectedRowData.name);
+            }
+            var basePath = window.location.pathname.includes('-preview.html')
+                ? '/resources/personalRegistration-preview.html'
+                : '/personalRegistration';
+            window.open(basePath + '?' + params.toString(), '_blank');
         }
 
         // ---- フィルターロジック ----
@@ -938,6 +979,12 @@
                     updateFilterTriggerStates();
                     applyAllFilters();
                 });
+            }
+
+            // 登録/編集ボタン
+            var regBtn = document.getElementById('openRegistration');
+            if (regBtn) {
+                regBtn.addEventListener('click', openRegistrationPage);
             }
 
             // 外側クリックでメニューを閉じる

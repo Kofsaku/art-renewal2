@@ -73,6 +73,11 @@ class PersonalRegistration {
         } else {
             this.isEditMode = false;
             this.setDefaultValues();
+            // データモニターからの遷移: personalCode pre-fill
+            const personalCode = urlParams.get('personalCode');
+            if (personalCode) {
+                document.getElementById('personCode').value = personalCode;
+            }
         }
     }
 
