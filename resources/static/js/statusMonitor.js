@@ -721,13 +721,6 @@ class StatusMonitor {
     }
 
     handleResize() {
-        const screenWidth = window.innerWidth;
-        const screenHeight = window.innerHeight;
-        let recommendedLayout = 32;
-        if (screenWidth >= 1920 && screenHeight >= 1080) recommendedLayout = 64;
-        else if (screenWidth >= 1400) recommendedLayout = 32;
-        else if (screenWidth < 992) recommendedLayout = 16;
-        if (this.currentLayout > recommendedLayout) this.switchLayout(recommendedLayout);
         this.updateGridLayout();
     }
 }

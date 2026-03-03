@@ -6,6 +6,20 @@
 <head>
     <title>マップモニター</title>
     <style>
+        /* マップモニターはビューポート固定（サイドバー独立スクロールのため） */
+        body.td-body {
+            height: 100vh;
+            overflow: hidden;
+        }
+        body.td-body .td-main {
+            min-height: 0;
+            overflow: hidden;
+        }
+        .sm-outer {
+            min-height: 0;
+            overflow: hidden;
+        }
+
         /* ---- コンテンツラッパー ---- */
         .sm-outer {
             display: flex;
@@ -43,6 +57,11 @@
             gap: 6px;
             padding: 8px;
             background: var(--td-header-bg);
+            overflow-y: auto;
+            scrollbar-width: none; /* Firefox */
+        }
+        .mm-sidebar::-webkit-scrollbar {
+            display: none; /* Chrome / Safari */
         }
         .mm-floor-btn {
             display: flex;
@@ -291,15 +310,36 @@
             <div class="mm-layout">
                 <!-- 左サイドバー: フロアタブ -->
                 <div class="mm-sidebar">
-                    <button class="mm-floor-btn active" data-floor="1">
-                        フロア1 <span class="mm-floor-badge">8</span>
-                    </button>
-                    <button class="mm-floor-btn" data-floor="2">
-                        フロア2 <span class="mm-floor-badge">6</span>
-                    </button>
-                    <button class="mm-floor-btn" data-floor="3">
-                        フロア3 <span class="mm-floor-badge">4</span>
-                    </button>
+                    <button class="mm-floor-btn active" data-floor="1">フロア1 <span class="mm-floor-badge">8</span></button>
+                    <button class="mm-floor-btn" data-floor="2">フロア2 <span class="mm-floor-badge">6</span></button>
+                    <button class="mm-floor-btn" data-floor="3">フロア3 <span class="mm-floor-badge">4</span></button>
+                    <button class="mm-floor-btn" data-floor="4">フロア4 <span class="mm-floor-badge">5</span></button>
+                    <button class="mm-floor-btn" data-floor="5">フロア5 <span class="mm-floor-badge">7</span></button>
+                    <button class="mm-floor-btn" data-floor="6">フロア6 <span class="mm-floor-badge">3</span></button>
+                    <button class="mm-floor-btn" data-floor="7">フロア7 <span class="mm-floor-badge">9</span></button>
+                    <button class="mm-floor-btn" data-floor="8">フロア8 <span class="mm-floor-badge">6</span></button>
+                    <button class="mm-floor-btn" data-floor="9">フロア9 <span class="mm-floor-badge">4</span></button>
+                    <button class="mm-floor-btn" data-floor="10">フロア10 <span class="mm-floor-badge">8</span></button>
+                    <button class="mm-floor-btn" data-floor="11">フロア11 <span class="mm-floor-badge">5</span></button>
+                    <button class="mm-floor-btn" data-floor="12">フロア12 <span class="mm-floor-badge">7</span></button>
+                    <button class="mm-floor-btn" data-floor="13">フロア13 <span class="mm-floor-badge">3</span></button>
+                    <button class="mm-floor-btn" data-floor="14">フロア14 <span class="mm-floor-badge">6</span></button>
+                    <button class="mm-floor-btn" data-floor="15">フロア15 <span class="mm-floor-badge">8</span></button>
+                    <button class="mm-floor-btn" data-floor="16">フロア16 <span class="mm-floor-badge">4</span></button>
+                    <button class="mm-floor-btn" data-floor="17">フロア17 <span class="mm-floor-badge">9</span></button>
+                    <button class="mm-floor-btn" data-floor="18">フロア18 <span class="mm-floor-badge">5</span></button>
+                    <button class="mm-floor-btn" data-floor="19">フロア19 <span class="mm-floor-badge">7</span></button>
+                    <button class="mm-floor-btn" data-floor="20">フロア20 <span class="mm-floor-badge">6</span></button>
+                    <button class="mm-floor-btn" data-floor="21">フロア21 <span class="mm-floor-badge">3</span></button>
+                    <button class="mm-floor-btn" data-floor="22">フロア22 <span class="mm-floor-badge">8</span></button>
+                    <button class="mm-floor-btn" data-floor="23">フロア23 <span class="mm-floor-badge">4</span></button>
+                    <button class="mm-floor-btn" data-floor="24">フロア24 <span class="mm-floor-badge">7</span></button>
+                    <button class="mm-floor-btn" data-floor="25">フロア25 <span class="mm-floor-badge">5</span></button>
+                    <button class="mm-floor-btn" data-floor="26">フロア26 <span class="mm-floor-badge">9</span></button>
+                    <button class="mm-floor-btn" data-floor="27">フロア27 <span class="mm-floor-badge">6</span></button>
+                    <button class="mm-floor-btn" data-floor="28">フロア28 <span class="mm-floor-badge">3</span></button>
+                    <button class="mm-floor-btn" data-floor="29">フロア29 <span class="mm-floor-badge">8</span></button>
+                    <button class="mm-floor-btn" data-floor="30">フロア30 <span class="mm-floor-badge">5</span></button>
                 </div>
 
                 <!-- マップエリア -->
