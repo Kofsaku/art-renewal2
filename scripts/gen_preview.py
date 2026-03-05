@@ -206,7 +206,7 @@ def compose(layout_path: Path, page_path: Path) -> str:
         layout = layout.replace("</head>", "\n".join(extras) + "\n</head>", 1)
 
     # ② フラグメントを置換（header-controls / content / page-legend）
-    for frag_name in ["header-controls", "content", "page-legend"]:
+    for frag_name in ["page-icon", "page-title", "header-controls", "content", "page-legend"]:
         page_elem,   _ = find_fragment(page,   frag_name)
         layout_elem, _ = find_fragment(layout, frag_name)
 

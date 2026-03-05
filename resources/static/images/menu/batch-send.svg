@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Stacked documents -->
+  <rect x="10" y="8" width="22" height="30" rx="2"/>
+  <path d="M14 8V6a2 2 0 0 1 2-2h22a2 2 0 0 1 2 2v30a2 2 0 0 1-2 2h-4"/>
+  <!-- Lines on front doc -->
+  <line x1="16" y1="16" x2="26" y2="16"/>
+  <line x1="16" y1="22" x2="26" y2="22"/>
+  <!-- Download/send arrow -->
+  <path d="M21 28v10"/>
+  <path d="M16 33l5 5 5-5"/>
+</svg>

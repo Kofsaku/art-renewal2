@@ -61,12 +61,16 @@
             font-family: inherit;
         }
         .pr-btn:hover { filter: brightness(0.92); }
-        .pr-btn-blue   { background: #007bff; color: #fff; border-color: #007bff; }
-        .pr-btn-green  { background: #28a745; color: #fff; border-color: #28a745; }
-        .pr-btn-red    { background: #dc3545; color: #fff; border-color: #dc3545; }
-        .pr-btn-dark   { background: #343a40; color: #fff; border-color: #343a40; }
-        .pr-btn-gray   { background: #6c757d; color: #fff; border-color: #6c757d; }
-        .pr-btn-yellow { background: #ffc107; color: #333; border-color: #ffc107; }
+        .pr-btn-blue   { background: #fff; color: #007bff; border-color: #007bff; }
+        .pr-btn-blue i { color: #007bff; }
+        .pr-btn-green  { background: #fff; color: #007bff; border-color: #007bff; }
+        .pr-btn-green i { color: #007bff; }
+        .pr-btn-red    { background: #fff; color: #dc3545; border-color: #dc3545; }
+        .pr-btn-red i  { color: #dc3545; }
+        .pr-btn-orange { background: #fff; color: #e67e22; border: 1px solid #e67e22; }
+        .pr-btn-orange i { color: #e67e22; }
+        .pr-btn-gray   { background: #fff; color: #6c757d; border-color: #adb5bd; }
+        .pr-btn-gray i { color: #6c757d; }
 
         /* ---- 3カラムグリッド ---- */
         .pr-body {
@@ -508,8 +512,11 @@
 			<i class="fas fa-bars"></i>
 		</button>
 
-		<!-- システムロゴ（TODO: 正式ロゴ画像に差し替え） -->
-		<span class="td-logo">プレースホルダー</span>
+		<!-- ページアイコン＋ページ名 -->
+		<span class="td-page-icon">
+        <i class="fas fa-user-plus"></i>
+    </span>
+		<span class="td-page-title">個人情報登録</span>
 
 		<!-- ページ固有コントロール（各ページで上書き） -->
 		<div class="td-header-controls">
@@ -520,16 +527,13 @@
             <i class="fas fa-save"></i> 登録
         </button>
         <button class="pr-btn pr-btn-red" id="deleteBtn">
-            <i class="fas fa-trash-alt"></i> 削除
+            <i class="fas fa-trash-alt"></i> DB削除
         </button>
-        <button class="pr-btn pr-btn-dark" id="eraseBtn">
-            <i class="fas fa-eraser"></i> 消去
+        <button class="pr-btn pr-btn-orange" id="revokeBtn">
+            <i class="fas fa-unlink"></i> 権限失効
         </button>
-        <button class="pr-btn pr-btn-gray" id="cancelBtn">
-            <i class="fas fa-arrow-left"></i> キャンセル
-        </button>
-        <button class="pr-btn pr-btn-yellow" id="clearBtn">
-            クリア
+        <button class="pr-btn pr-btn-gray" id="clearBtn">
+            <i class="fas fa-eraser"></i> クリア
         </button>
     </div>
 

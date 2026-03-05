@@ -48,8 +48,11 @@
 			<i class="fas fa-bars"></i>
 		</button>
 
-		<!-- システムロゴ（TODO: 正式ロゴ画像に差し替え） -->
-		<span class="td-logo">プレースホルダー</span>
+		<!-- ページアイコン＋ページ名 -->
+		<span class="td-page-icon" layout:fragment="page-icon">
+			<i class="fas fa-file"></i>
+		</span>
+		<span class="td-page-title" layout:fragment="page-title">ページ名</span>
 
 		<!-- ページ固有コントロール（各ページで上書き） -->
 		<div layout:fragment="header-controls" class="td-header-controls">
