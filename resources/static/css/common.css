@@ -165,6 +165,12 @@ body.td-body {
     min-height: 100vh;
 }
 
+/* ---- Material Symbols（ヘッダーボタン用） ---- */
+.td-header-controls .material-symbols-outlined,
+.pl-manage-menu .material-symbols-outlined {
+    font-size: 18px;
+}
+
 /* ---- ヘッダー ---- */
 .td-header {
     position: fixed;

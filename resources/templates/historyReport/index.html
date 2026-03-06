@@ -444,6 +444,30 @@
         }
         .hr-custom-option:hover { background: #f0f4f8; }
         .hr-custom-option.selected { background: #e8f4ff; font-weight: 600; }
+        .hr-modal-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid;
+            font-family: inherit;
+        }
+        .hr-modal-btn-red {
+            background: #ffffff;
+            color: #d32f2f;
+            border-color: #d32f2f;
+        }
+        .hr-modal-btn-red:hover { background: #fef0f0; }
+        .hr-modal-btn-green {
+            background: #ffffff;
+            color: #2e7d32;
+            border-color: #2e7d32;
+        }
+        .hr-modal-btn-green:hover { background: #f0f8f0; }
     </style>
 </head>
 
@@ -458,16 +482,16 @@
     <!-- ヘッダー固有コントロール -->
     <div layout:fragment="header-controls" class="td-header-controls">
         <button class="hr-btn hr-btn-orange">
-            <i class="fas fa-unlink"></i> 権限失効
+            <span class="material-symbols-outlined">key_off</span> 権限失効
         </button>
         <button class="hr-btn hr-btn-gray">
-            <i class="fas fa-download"></i> 出力
+            <span class="material-symbols-outlined">file_download</span> 出力
         </button>
         <button class="hr-btn hr-btn-gray" onclick="showHrPeriodModal()">
-            <i class="fas fa-calendar-alt"></i> 期間抽出
+            <span class="material-symbols-outlined">event</span> 期間抽出
         </button>
         <button class="hr-btn hr-btn-gray" onclick="showHrConditionModal()">
-            <i class="fas fa-filter"></i> 条件抽出
+            <span class="material-symbols-outlined">filter_alt</span> 条件抽出
         </button>
     </div>
 
@@ -581,8 +605,12 @@
                             条件選択
                         </h5>
                         <div class="d-flex gap-2 ms-3">
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="loadHrCondition()">条件取得</button>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="saveHrCondition()">条件保存</button>
+                            <button type="button" class="hr-btn hr-btn-gray" onclick="loadHrCondition()">
+                                <span class="material-symbols-outlined">folder_open</span> 読込
+                            </button>
+                            <button type="button" class="hr-btn hr-btn-gray" onclick="saveHrCondition()">
+                                <span class="material-symbols-outlined">save</span> 保存
+                            </button>
                         </div>
                         <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -679,8 +707,12 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                        <button type="button" class="btn btn-primary" onclick="applyHrCondition()">適用</button>
+                        <button type="button" class="hr-modal-btn hr-modal-btn-red" data-bs-dismiss="modal">
+                            <span class="material-symbols-outlined">cancel</span> 中止
+                        </button>
+                        <button type="button" class="hr-modal-btn hr-modal-btn-green" onclick="applyHrCondition()">
+                            <span class="material-symbols-outlined">play_arrow</span> 実行
+                        </button>
                     </div>
                 </div>
             </div>
@@ -738,8 +770,12 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                        <button type="button" class="btn btn-primary" onclick="applyHrPeriod()">適用</button>
+                        <button type="button" class="hr-modal-btn hr-modal-btn-red" data-bs-dismiss="modal">
+                            <span class="material-symbols-outlined">cancel</span> 中止
+                        </button>
+                        <button type="button" class="hr-modal-btn hr-modal-btn-green" onclick="applyHrPeriod()">
+                            <span class="material-symbols-outlined">play_arrow</span> 実行
+                        </button>
                     </div>
                 </div>
             </div>

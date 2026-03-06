@@ -14,6 +14,7 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
 	<title>TRIDENT</title>
 	<script type="text/javascript" src="/resources/static/js/jquery/3.7.1/jquery.min.js"></script>
 	<script type="text/javascript" src="/resources/static/js/common.js"></script>
@@ -201,6 +202,18 @@
             width: 1px;
             height: 16px;
             background: #ccc;
+        }
+
+        /* ---- ページ内スクロール抑止（グリッド内部でのみスクロール） ---- */
+        body.td-body {
+            height: 100vh;
+            overflow: hidden;
+        }
+        .td-main {
+            min-height: 0;
+        }
+        .sm-outer {
+            min-height: 0;
         }
     </style>
 </head>

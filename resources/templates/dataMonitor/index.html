@@ -340,30 +340,30 @@
             display: flex; align-items: center; gap: 4px;
         }
 
-        /* ---- ヘッダー自動更新コントロール ---- */
-        .dm-auto-update {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.85rem;
-            color: #212529;
-        }
-        .dm-start-btn {
+        /* ---- ヘッダー自動更新ボタン ---- */
+        .dm-auto-update-btn {
             height: 28px;
-            padding: 0 14px;
-            background: #28a745;
-            color: #fff;
-            border: none;
+            padding: 0 10px;
+            background: #ffffff;
+            color: #2e7d32;
+            border: 1px solid #2e7d32;
             border-radius: 4px;
             font-size: 0.82rem;
             font-weight: 600;
             cursor: pointer;
             font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
             transition: background 0.2s;
         }
-        .dm-start-btn:hover { background: #218838; }
-        .dm-start-btn.running { background: #dc3545; }
-        .dm-start-btn.running:hover { background: #c82333; }
+        .dm-auto-update-btn:hover { background: #f0f8f0; }
+        .dm-auto-update-btn.running {
+            background: #ffffff;
+            color: #d32f2f;
+            border-color: #d32f2f;
+        }
+        .dm-auto-update-btn.running:hover { background: #fef0f0; }
 
         /* ---- 列表示管理ドロップダウン ---- */
         .column-manager-menu {
@@ -439,10 +439,9 @@
 
     <!-- ヘッダー固有コントロール -->
     <div layout:fragment="header-controls" class="td-header-controls">
-        <div class="dm-auto-update">
-            <span>自動更新</span>
-            <button class="dm-start-btn" id="autoUpdateBtn">開始</button>
-        </div>
+        <button class="dm-auto-update-btn" id="autoUpdateBtn">
+            <span class="material-symbols-outlined">sync</span> 自動更新
+        </button>
     </div>
 
     <!-- メインコンテンツ -->
@@ -918,10 +917,10 @@
             if (autoUpdateTimer) {
                 clearInterval(autoUpdateTimer);
                 autoUpdateTimer = null;
-                btn.textContent = '開始';
+                btn.innerHTML = '<span class="material-symbols-outlined">sync</span> 自動更新';
                 btn.classList.remove('running');
             } else {
-                btn.textContent = '停止';
+                btn.innerHTML = '<span class="material-symbols-outlined">sync_disabled</span> 自動更新';
                 btn.classList.add('running');
                 autoUpdateTimer = setInterval(function () {
                     addNewDemoRow();

@@ -221,13 +221,41 @@
 
         /* ---- 一斉制御ボタン ---- */
         .mm-batch-ctrl-btn {
-            background: #dc3545 !important;
-            border-color: #dc3545 !important;
+            background: #ffffff !important;
+            color: #d32f2f !important;
+            border: 1px solid #d32f2f !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
         .mm-batch-ctrl-btn:hover {
-            background: #c82333 !important;
-            border-color: #bd2130 !important;
+            background: #fef0f0 !important;
+            border-color: #c62828 !important;
         }
+        .mm-modal-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid;
+            font-family: inherit;
+        }
+        .mm-modal-btn-red {
+            background: #ffffff;
+            color: #d32f2f;
+            border-color: #d32f2f;
+        }
+        .mm-modal-btn-red:hover { background: #fef0f0; }
+        .mm-modal-btn-green {
+            background: #ffffff;
+            color: #2e7d32;
+            border-color: #2e7d32;
+        }
+        .mm-modal-btn-green:hover { background: #f0f8f0; }
 
         /* ---- 凡例（statusMonitorと同一パターン） ---- */
         .sm-legend {
@@ -298,7 +326,7 @@
         </button>
         <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
             <button class="td-page-btn mm-batch-ctrl-btn" onclick="showGroupControlModal()">
-                一斉遠隔操作
+                <span class="material-symbols-outlined">support_agent</span> 一斉遠隔操作
             </button>
         </div>
     </div>
@@ -406,8 +434,12 @@
                             </div>
                         </div>
                         <div class="text-end mt-3">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                            <button type="button" class="btn btn-primary" onclick="executeGroupControl()">実行</button>
+                            <button type="button" class="mm-modal-btn mm-modal-btn-red" data-bs-dismiss="modal">
+                                <span class="material-symbols-outlined">cancel</span> 中止
+                            </button>
+                            <button type="button" class="mm-modal-btn mm-modal-btn-green" onclick="executeGroupControl()">
+                                <span class="material-symbols-outlined">play_arrow</span> 実行
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -460,8 +492,12 @@
                         </div>
                     </div>
                     <div class="modal-footer py-2">
-                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">キャンセル</button>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="executeSingleRemoteCommand()">実行</button>
+                        <button type="button" class="mm-modal-btn mm-modal-btn-red" data-bs-dismiss="modal">
+                            <span class="material-symbols-outlined">cancel</span> 中止
+                        </button>
+                        <button type="button" class="mm-modal-btn mm-modal-btn-green" onclick="executeSingleRemoteCommand()">
+                            <span class="material-symbols-outlined">play_arrow</span> 実行
+                        </button>
                     </div>
                 </div>
             </div>
