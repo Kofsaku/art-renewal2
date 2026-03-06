@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Monitor -->
+  <rect x="4" y="6" width="40" height="28" rx="3"/>
+  <!-- Stand -->
+  <line x1="24" y1="34" x2="24" y2="40"/>
+  <line x1="16" y1="40" x2="32" y2="40"/>
+  <!-- Bar chart inside -->
+  <rect x="12" y="24" width="5" height="6" rx="1" fill="currentColor" stroke="none"/>
+  <rect x="20" y="18" width="5" height="12" rx="1" fill="currentColor" stroke="none"/>
+  <rect x="28" y="14" width="5" height="16" rx="1" fill="currentColor" stroke="none"/>
+</svg>

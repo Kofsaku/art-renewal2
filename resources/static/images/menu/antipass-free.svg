@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- IN arrow (left to right) -->
+  <path d="M6 16h18"/>
+  <path d="M19 11l5 5-5 5"/>
+  <!-- OUT arrow (right to left) -->
+  <path d="M42 32H24"/>
+  <path d="M29 37l-5-5 5-5"/>
+  <!-- Divider -->
+  <line x1="24" y1="4" x2="24" y2="44" stroke-dasharray="3 3" stroke-width="1.5"/>
+  <!-- Labels -->
+  <text x="12" y="12" font-family="Arial, sans-serif" font-size="7" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">IN</text>
+  <text x="36" y="44" font-family="Arial, sans-serif" font-size="7" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">OUT</text>
+</svg>

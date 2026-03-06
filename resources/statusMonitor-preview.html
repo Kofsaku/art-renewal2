@@ -14,6 +14,7 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
 	<title>TRIDENT</title>
 	<script type="text/javascript" src="/resources/static/js/jquery/3.7.1/jquery.min.js"></script>
 	<script type="text/javascript" src="/resources/static/js/common.js"></script>
@@ -141,13 +142,14 @@
             display: flex;
             flex-direction: column;
             flex: 1;
+            min-height: 0;
             padding: 4px;
             box-sizing: border-box;
             background: var(--td-header-bg);
         }
         .sm-inner {
             flex: 1;
-            min-height: 200px;
+            min-height: 0;
             display: flex;
             flex-direction: column;
             background: #e0ecf8;
@@ -157,6 +159,7 @@
         }
         .gate-grid-container {
             flex: 1;
+            min-height: 0;
             overflow-y: auto;
             padding: 6px;
         }
@@ -200,6 +203,18 @@
             height: 16px;
             background: #ccc;
         }
+
+        /* ---- ページ内スクロール抑止（グリッド内部でのみスクロール） ---- */
+        body.td-body {
+            height: 100vh;
+            overflow: hidden;
+        }
+        .td-main {
+            min-height: 0;
+        }
+        .sm-outer {
+            min-height: 0;
+        }
     </style>
 </head>
 
@@ -229,8 +244,11 @@
 			<i class="fas fa-bars"></i>
 		</button>
 
-		<!-- システムロゴ（TODO: 正式ロゴ画像に差し替え） -->
-		<span class="td-logo">プレースホルダー</span>
+		<!-- ページアイコン＋ページ名 -->
+		<span class="td-page-icon">
+        <i class="fas fa-th-large"></i>
+    </span>
+		<span class="td-page-title">ステータスモニター</span>
 
 		<!-- ページ固有コントロール（各ページで上書き） -->
 		<div class="td-header-controls">

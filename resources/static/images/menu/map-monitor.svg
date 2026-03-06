@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <filter id="tile-shadow" x="-10%" y="-5%" width="125%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#000" flood-opacity="0.07"/>
+    </filter>
+  </defs>
+
+  <!-- Rounded tile background -->
+  <rect x="8" y="8" width="104" height="104" rx="18" fill="#f2f3f6" filter="url(#tile-shadow)"/>
+
+  <!-- Monitor screen background -->
+  <rect x="22" y="28" width="76" height="50" rx="5" fill="#e8ecf0" stroke="#334155" stroke-width="4.5" stroke-linejoin="round"/>
+
+  <!-- Grid lines on screen -->
+  <line x1="22" y1="42" x2="98" y2="42" stroke="#cdd5de" stroke-width="1.5"/>
+  <line x1="22" y1="56" x2="98" y2="56" stroke="#cdd5de" stroke-width="1.5"/>
+  <line x1="22" y1="70" x2="98" y2="70" stroke="#cdd5de" stroke-width="1.5"/>
+  <line x1="41" y1="28" x2="41" y2="78" stroke="#cdd5de" stroke-width="1.5"/>
+  <line x1="60" y1="28" x2="60" y2="78" stroke="#cdd5de" stroke-width="1.5"/>
+  <line x1="79" y1="28" x2="79" y2="78" stroke="#cdd5de" stroke-width="1.5"/>
+
+  <!-- Monitor stand legs -->
+  <line x1="50" y1="78" x2="44" y2="90" stroke="#334155" stroke-width="4" stroke-linecap="round"/>
+  <line x1="70" y1="78" x2="76" y2="90" stroke="#334155" stroke-width="4" stroke-linecap="round"/>
+  <!-- Stand base -->
+  <line x1="40" y1="90" x2="80" y2="90" stroke="#334155" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Location pin - teardrop shape (TEAL - change this fill for different color) -->
+  <path d="M60 26c-11 0-19.5 8-19.5 18.5C40.5 58 60 72 60 72s19.5-14 19.5-27.5C79.5 34 71 26 60 26z"
+        fill="#2bbcb3" stroke="#334155" stroke-width="3.5" stroke-linejoin="round"/>
+
+  <!-- Pin inner circle (white ring) -->
+  <circle cx="60" cy="44" r="8.5" fill="#f2f3f6" stroke="#334155" stroke-width="3"/>
+
+  <!-- Pin center dot -->
+  <circle cx="60" cy="44" r="3.5" fill="#334155"/>
+</svg>

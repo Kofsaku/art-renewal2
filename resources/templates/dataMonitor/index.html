@@ -43,16 +43,6 @@
             border-bottom: 1px solid var(--td-border);
             flex-wrap: wrap;
         }
-        .dm-count {
-            padding: 3px 10px;
-            background: #fff;
-            border: 2px solid #dc3545;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #dc3545;
-            white-space: nowrap;
-        }
         .dm-select-group {
             display: flex;
             align-items: center;
@@ -350,30 +340,30 @@
             display: flex; align-items: center; gap: 4px;
         }
 
-        /* ---- ヘッダー自動更新コントロール ---- */
-        .dm-auto-update {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.85rem;
-            color: #212529;
-        }
-        .dm-start-btn {
+        /* ---- ヘッダー自動更新ボタン ---- */
+        .dm-auto-update-btn {
             height: 28px;
-            padding: 0 14px;
-            background: #28a745;
-            color: #fff;
-            border: none;
+            padding: 0 10px;
+            background: #ffffff;
+            color: #2e7d32;
+            border: 1px solid #2e7d32;
             border-radius: 4px;
             font-size: 0.82rem;
             font-weight: 600;
             cursor: pointer;
             font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
             transition: background 0.2s;
         }
-        .dm-start-btn:hover { background: #218838; }
-        .dm-start-btn.running { background: #dc3545; }
-        .dm-start-btn.running:hover { background: #c82333; }
+        .dm-auto-update-btn:hover { background: #f0f8f0; }
+        .dm-auto-update-btn.running {
+            background: #ffffff;
+            color: #d32f2f;
+            border-color: #d32f2f;
+        }
+        .dm-auto-update-btn.running:hover { background: #fef0f0; }
 
         /* ---- 列表示管理ドロップダウン ---- */
         .column-manager-menu {
@@ -410,16 +400,48 @@
             cursor: pointer;
             white-space: nowrap;
         }
+        /* 右クリックコンテキストメニュー */
+        .dm-context-menu {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.2);
+            min-width: 160px;
+            padding: 4px 0;
+        }
+        .dm-context-item {
+            padding: 7px 16px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+        .dm-context-item:hover {
+            background: #f0f0f0;
+        }
+        .dm-context-item i {
+            margin-right: 8px;
+            width: 16px;
+            text-align: center;
+        }
     </style>
 </head>
 
 <body>
+    <!-- ページアイコン -->
+    <span layout:fragment="page-icon" class="td-page-icon">
+        <i class="fas fa-table"></i>
+    </span>
+    <!-- ページタイトル -->
+    <span layout:fragment="page-title" class="td-page-title">データモニター</span>
+
     <!-- ヘッダー固有コントロール -->
     <div layout:fragment="header-controls" class="td-header-controls">
-        <div class="dm-auto-update">
-            <span>自動更新</span>
-            <button class="dm-start-btn" id="autoUpdateBtn">開始</button>
-        </div>
+        <button class="dm-auto-update-btn" id="autoUpdateBtn">
+            <span class="material-symbols-outlined">sync</span> 自動更新
+        </button>
     </div>
 
     <!-- メインコンテンツ -->
@@ -428,8 +450,6 @@
             <div class="dm-inner">
                 <!-- ツールバー -->
                 <div class="dm-toolbar">
-                    <span class="dm-count">現条件: <span id="recordCount">0</span>件</span>
-
                     <div class="dm-select-group">
                         <span>表示件数:</span>
                         <select class="dm-select" id="pageSize">
@@ -465,9 +485,6 @@
 
                     <div class="dm-spacer"></div>
 
-                    <button class="dm-btn" id="openRegistration" disabled>
-                        <i class="fas fa-user-edit"></i>登録/編集
-                    </button>
                     <button class="dm-btn" id="filterReset">
                         <i class="fas fa-times-circle"></i>フィルターリセット
                     </button>
@@ -517,6 +534,16 @@
                     </table>
                 </div>
 
+            </div>
+        </div>
+
+        <!-- 右クリックコンテキストメニュー -->
+        <div class="dm-context-menu" id="contextMenu">
+            <div class="dm-context-item" id="ctxPersonalReg">
+                <i class="fas fa-user-edit"></i>個人登録
+            </div>
+            <div class="dm-context-item" id="ctxAntiPassback">
+                <i class="fas fa-exchange-alt"></i>アンチパスフリー
             </div>
         </div>
     </div>
@@ -640,19 +667,39 @@
                     });
                     tr.classList.add('row-selected');
                     selectedRowData = row;
-                    document.getElementById('openRegistration').disabled = false;
+                });
+                tr.addEventListener('contextmenu', function (e) {
+                    e.preventDefault();
+                    tbody.querySelectorAll('tr.row-selected').forEach(function (r) {
+                        r.classList.remove('row-selected');
+                    });
+                    tr.classList.add('row-selected');
+                    selectedRowData = row;
+                    showContextMenu(e.clientX, e.clientY);
                 });
                 tbody.appendChild(tr);
             });
-            var el = document.getElementById('recordCount');
-            if (el) el.textContent = data.length;
             selectedRowData = null;
-            var regBtn = document.getElementById('openRegistration');
-            if (regBtn) regBtn.disabled = true;
+        }
+
+        function showContextMenu(x, y) {
+            var menu = document.getElementById('contextMenu');
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+            menu.style.display = 'block';
+            // 画面外にはみ出す場合は補正
+            var rect = menu.getBoundingClientRect();
+            if (rect.right > window.innerWidth) menu.style.left = (x - rect.width) + 'px';
+            if (rect.bottom > window.innerHeight) menu.style.top = (y - rect.height) + 'px';
+        }
+
+        function hideContextMenu() {
+            document.getElementById('contextMenu').style.display = 'none';
         }
 
         function openRegistrationPage() {
             if (!selectedRowData) return;
+            hideContextMenu();
             var params = new URLSearchParams();
             params.set('personalCode', selectedRowData.code);
             if (selectedRowData.name) {
@@ -661,6 +708,24 @@
             var basePath = window.location.pathname.includes('-preview.html')
                 ? '/resources/personalRegistration-preview.html'
                 : '/personalRegistration';
+            window.open(basePath + '?' + params.toString(), '_blank');
+        }
+
+        function openAntiPassbackPage() {
+            if (!selectedRowData) return;
+            hideContextMenu();
+            var params = new URLSearchParams();
+            params.set('personalCode', selectedRowData.code);
+            if (selectedRowData.name) {
+                params.set('name', selectedRowData.name);
+            }
+            var basePath = window.location.pathname.includes('-preview.html')
+                ? '#'
+                : '/antiPassback';
+            if (basePath === '#') {
+                alert('アンチパスフリー画面（実装予定）');
+                return;
+            }
             window.open(basePath + '?' + params.toString(), '_blank');
         }
 
@@ -852,10 +917,10 @@
             if (autoUpdateTimer) {
                 clearInterval(autoUpdateTimer);
                 autoUpdateTimer = null;
-                btn.textContent = '開始';
+                btn.innerHTML = '<span class="material-symbols-outlined">sync</span> 自動更新';
                 btn.classList.remove('running');
             } else {
-                btn.textContent = '停止';
+                btn.innerHTML = '<span class="material-symbols-outlined">sync_disabled</span> 自動更新';
                 btn.classList.add('running');
                 autoUpdateTimer = setInterval(function () {
                     addNewDemoRow();
@@ -1021,11 +1086,10 @@
                 });
             }
 
-            // 登録/編集ボタン
-            var regBtn = document.getElementById('openRegistration');
-            if (regBtn) {
-                regBtn.addEventListener('click', openRegistrationPage);
-            }
+            // コンテキストメニュー
+            document.getElementById('ctxPersonalReg').addEventListener('click', openRegistrationPage);
+            document.getElementById('ctxAntiPassback').addEventListener('click', openAntiPassbackPage);
+            document.addEventListener('click', function () { hideContextMenu(); });
 
             // 外側クリックでメニューを閉じる
             document.addEventListener('click', function (e) {

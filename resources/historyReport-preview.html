@@ -14,6 +14,7 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
 	<title>TRIDENT</title>
 	<script type="text/javascript" src="/resources/static/js/jquery/3.7.1/jquery.min.js"></script>
 	<script type="text/javascript" src="/resources/static/js/common.js"></script>
@@ -61,10 +62,12 @@
             font-family: inherit;
         }
         .hr-btn:hover { filter: brightness(0.92); }
-        .hr-btn-orange { background: #fd7e14; color: #fff; border-color: #fd7e14; }
-        .hr-btn-gray   { background: #6c757d; color: #fff; border-color: #6c757d; }
-        .hr-btn-outline-orange { background: #fff; color: #fd7e14; border: 2px solid #fd7e14; }
-        .hr-btn-outline-orange:hover { background: #fd7e14; color: #fff; }
+        /* グレーアウトライン */
+        .hr-btn-gray   { background: #fff; color: #6c757d; border-color: #adb5bd; }
+        .hr-btn-gray i { color: #6c757d; }
+        /* オレンジアウトライン */
+        .hr-btn-orange { background: #fff; color: #e67e22; border-color: #e67e22; }
+        .hr-btn-orange i { color: #e67e22; }
 
         /* ---- ツールバー ---- */
         .hr-toolbar {
@@ -388,13 +391,97 @@
         .hr-legend-item {
             display: flex; align-items: center; gap: 4px;
         }
-        .hr-legend-swatch {
+        .hr-legend-dot {
             display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 1px solid #ccc;
-            border-radius: 2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
         }
+        .hr-dot-normal  { background: #28a745; }
+        .hr-dot-warning { background: #ffc107; }
+        .hr-dot-error   { background: #dc3545; }
+
+        /* ---- カスタム データ種別ドロップダウン ---- */
+        .hr-custom-select {
+            position: relative;
+            height: 28px;
+        }
+        .hr-custom-selected {
+            height: 28px;
+            padding: 0 24px 0 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.82rem;
+            background: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            user-select: none;
+            position: relative;
+            white-space: nowrap;
+        }
+        .hr-custom-selected::after {
+            content: '';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 5px solid #666;
+        }
+        .hr-custom-options {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            min-width: 100%;
+            background: #fff;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            z-index: 200;
+            margin-top: 2px;
+        }
+        .hr-custom-options.show { display: block; }
+        .hr-custom-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            white-space: nowrap;
+            user-select: none;
+            transition: background 0.1s;
+        }
+        .hr-custom-option:hover { background: #f0f4f8; }
+        .hr-custom-option.selected { background: #e8f4ff; font-weight: 600; }
+        .hr-modal-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid;
+            font-family: inherit;
+        }
+        .hr-modal-btn-red {
+            background: #ffffff;
+            color: #d32f2f;
+            border-color: #d32f2f;
+        }
+        .hr-modal-btn-red:hover { background: #fef0f0; }
+        .hr-modal-btn-green {
+            background: #ffffff;
+            color: #2e7d32;
+            border-color: #2e7d32;
+        }
+        .hr-modal-btn-green:hover { background: #f0f8f0; }
     </style>
 </head>
 
@@ -424,22 +511,25 @@
 			<i class="fas fa-bars"></i>
 		</button>
 
-		<!-- システムロゴ（TODO: 正式ロゴ画像に差し替え） -->
-		<span class="td-logo">プレースホルダー</span>
+		<!-- ページアイコン＋ページ名 -->
+		<span class="td-page-icon">
+        <i class="fas fa-file-alt"></i>
+    </span>
+		<span class="td-page-title">報告書</span>
 
 		<!-- ページ固有コントロール（各ページで上書き） -->
 		<div class="td-header-controls">
-        <button class="hr-btn hr-btn-orange" onclick="showHrPeriodModal()">
-            <i class="fas fa-calendar-alt"></i> ▼期間抽出
+        <button class="hr-btn hr-btn-orange">
+            <span class="material-symbols-outlined">key_off</span> 権限失効
         </button>
         <button class="hr-btn hr-btn-gray">
-            <i class="fas fa-filter"></i> ▼条件抽出
+            <span class="material-symbols-outlined">file_download</span> 出力
         </button>
-        <button class="hr-btn hr-btn-gray">
-            <i class="fas fa-save"></i> 条件保存
+        <button class="hr-btn hr-btn-gray" onclick="showHrPeriodModal()">
+            <span class="material-symbols-outlined">event</span> 期間抽出
         </button>
-        <button class="hr-btn hr-btn-outline-orange">
-            <i class="fas fa-file-export"></i> エクスポート
+        <button class="hr-btn hr-btn-gray" onclick="showHrConditionModal()">
+            <span class="material-symbols-outlined">filter_alt</span> 条件抽出
         </button>
     </div>
 
@@ -455,6 +545,8 @@
             <div class="hr-inner">
                 <!-- ツールバー -->
                 <div class="hr-toolbar">
+                    <span class="hr-count">現条件: <span id="hrRecordCount">0</span>件</span>
+
                     <div class="hr-select-group">
                         <span>表示件数:</span>
                         <select class="hr-select" id="hrPageSize">
@@ -464,22 +556,33 @@
                         </select>
                     </div>
 
-                    <span class="hr-count">現条件: <span id="hrRecordCount">0</span>件</span>
+                    <div class="hr-data-type-group">
+                        <span>◆ データ種別:</span>
+                        <div class="hr-custom-select" id="hrDataTypeDropdown">
+                            <div class="hr-custom-selected" id="hrDataTypeSelected">
+                                <span class="hr-legend-dot" id="hrDataTypeDot" style="display:none;"></span>
+                                <span id="hrDataTypeLabel">全データ表示</span>
+                            </div>
+                            <div class="hr-custom-options" id="hrDataTypeOptions">
+                                <div class="hr-custom-option selected" data-value="all">
+                                    全データ表示
+                                </div>
+                                <div class="hr-custom-option" data-value="normal">
+                                    <span class="hr-legend-dot hr-dot-normal"></span>正常データ表示
+                                </div>
+                                <div class="hr-custom-option" data-value="warning">
+                                    <span class="hr-legend-dot hr-dot-warning"></span>軽エラーデータ表示
+                                </div>
+                                <div class="hr-custom-option" data-value="error">
+                                    <span class="hr-legend-dot hr-dot-error"></span>重エラーデータ表示
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="hr-period-group">
                         <span>◆ 抽出期間:</span>
                         <span class="hr-period-display" id="hrPeriodDisplay">YYYY/MM/DD hh:mm ～ YYYY/MM/DD hh:mm</span>
-                    </div>
-
-                    <div class="hr-data-type-group">
-                        <span>◆ データ種別:</span>
-                        <select class="hr-select" id="hrDataType">
-                            <option value="all">全データ表示</option>
-                            <option value="normal">正常のみ</option>
-                            <option value="warning">軽エラーのみ</option>
-                            <option value="error">重エラーのみ</option>
-                            <option value="recovery">復旧のみ</option>
-                        </select>
                     </div>
 
                     <div class="hr-spacer"></div>
@@ -536,6 +639,129 @@
             </div>
         </div>
 
+        <!-- 条件選択モーダル -->
+        <div class="modal fade" id="hrConditionModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-filter text-primary"></i>
+                            条件選択
+                        </h5>
+                        <div class="d-flex gap-2 ms-3">
+                            <button type="button" class="hr-btn hr-btn-gray" onclick="loadHrCondition()">
+                                <span class="material-symbols-outlined">folder_open</span> 読込
+                            </button>
+                            <button type="button" class="hr-btn hr-btn-gray" onclick="saveHrCondition()">
+                                <span class="material-symbols-outlined">save</span> 保存
+                            </button>
+                        </div>
+                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- 抽出元 -->
+                        <div class="mb-3">
+                            <div class="fw-bold mb-1">抽出元</div>
+                            <div class="ms-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="hrSource" id="hrSourceCurrent" value="current" checked>
+                                    <label class="form-check-label" for="hrSourceCurrent">現データ</label>
+                                </div>
+                                <div class="form-check d-flex align-items-center gap-3">
+                                    <input class="form-check-input" type="radio" name="hrSource" id="hrSourceBackup" value="backup">
+                                    <label class="form-check-label" for="hrSourceBackup">バックアップデータ</label>
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="browseBackup()">参照</button>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="my-2">
+                        <!-- 対象期間 -->
+                        <div class="mb-3">
+                            <div class="fw-bold mb-1">対象期間</div>
+                            <div class="ms-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="hrCondPeriod" id="hrCondPeriodAll" value="all" checked>
+                                    <label class="form-check-label" for="hrCondPeriodAll">全データ</label>
+                                </div>
+                                <div class="form-check d-flex align-items-center gap-3">
+                                    <input class="form-check-input" type="radio" name="hrCondPeriod" id="hrCondPeriodCustom" value="custom">
+                                    <label class="form-check-label" for="hrCondPeriodCustom">期間指定</label>
+                                    <input type="datetime-local" class="form-control form-control-sm" id="hrCondStartDate" style="width:auto;">
+                                    <input type="datetime-local" class="form-control form-control-sm" id="hrCondEndDate" style="width:auto;">
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="my-2">
+                        <!-- 対象個人 -->
+                        <div class="mb-3">
+                            <div class="fw-bold mb-1">対象個人</div>
+                            <div class="ms-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="hrCondPerson" id="hrCondPersonAll" value="all" checked>
+                                    <label class="form-check-label" for="hrCondPersonAll">全個人</label>
+                                </div>
+                                <div class="form-check d-flex align-items-center gap-3">
+                                    <input class="form-check-input" type="radio" name="hrCondPerson" id="hrCondPersonIndiv" value="individual">
+                                    <label class="form-check-label" for="hrCondPersonIndiv">個人指定</label>
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="browsePersonal()">参照</button>
+                                </div>
+                                <div class="form-check d-flex align-items-center gap-3">
+                                    <input class="form-check-input" type="radio" name="hrCondPerson" id="hrCondPersonDept" value="department">
+                                    <label class="form-check-label" for="hrCondPersonDept">所属指定</label>
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="browseDepartment()">参照</button>
+                                </div>
+                                <div class="form-check d-flex align-items-center gap-3">
+                                    <input class="form-check-input" type="radio" name="hrCondPerson" id="hrCondPersonCat" value="category">
+                                    <label class="form-check-label" for="hrCondPersonCat">区分指定</label>
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="browseCategory()">参照</button>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="my-2">
+                        <!-- 対象ゲート -->
+                        <div class="mb-3">
+                            <div class="fw-bold mb-1">対象ゲート</div>
+                            <div class="ms-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="hrCondGate" id="hrCondGateAll" value="all" checked>
+                                    <label class="form-check-label" for="hrCondGateAll">全ゲート</label>
+                                </div>
+                                <div class="form-check d-flex align-items-center gap-3">
+                                    <input class="form-check-input" type="radio" name="hrCondGate" id="hrCondGateSelect" value="select">
+                                    <label class="form-check-label" for="hrCondGateSelect">ゲート指定</label>
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="browseGate()">参照</button>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="my-2">
+                        <!-- 対象履歴データ -->
+                        <div class="mb-3">
+                            <div class="fw-bold mb-1">対象履歴データ</div>
+                            <div class="ms-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="hrCondHistory" id="hrCondHistoryAll" value="all" checked>
+                                    <label class="form-check-label" for="hrCondHistoryAll">全履歴データ</label>
+                                </div>
+                                <div class="form-check d-flex align-items-center gap-3">
+                                    <input class="form-check-input" type="radio" name="hrCondHistory" id="hrCondHistorySelect" value="select">
+                                    <label class="form-check-label" for="hrCondHistorySelect">履歴データ指定</label>
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="browseHistory()">参照</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="hr-modal-btn hr-modal-btn-red" data-bs-dismiss="modal">
+                            <span class="material-symbols-outlined">cancel</span> 中止
+                        </button>
+                        <button type="button" class="hr-modal-btn hr-modal-btn-green" onclick="applyHrCondition()">
+                            <span class="material-symbols-outlined">play_arrow</span> 実行
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 期間選択モーダル -->
         <div class="modal fade" id="hrPeriodModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
@@ -588,8 +814,12 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                        <button type="button" class="btn btn-primary" onclick="applyHrPeriod()">適用</button>
+                        <button type="button" class="hr-modal-btn hr-modal-btn-red" data-bs-dismiss="modal">
+                            <span class="material-symbols-outlined">cancel</span> 中止
+                        </button>
+                        <button type="button" class="hr-modal-btn hr-modal-btn-green" onclick="applyHrPeriod()">
+                            <span class="material-symbols-outlined">play_arrow</span> 実行
+                        </button>
                     </div>
                 </div>
             </div>
@@ -600,16 +830,13 @@
 	<div>
         <div class="hr-legend">
             <div class="hr-legend-item">
-                <span class="hr-legend-swatch" style="background:#fff"></span><span>正常</span>
+                <span class="hr-legend-dot hr-dot-normal"></span><span>正常データ</span>
             </div>
             <div class="hr-legend-item">
-                <span class="hr-legend-swatch" style="background:#fff8e1"></span><span>軽エラー</span>
+                <span class="hr-legend-dot hr-dot-warning"></span><span>軽エラーデータ</span>
             </div>
             <div class="hr-legend-item">
-                <span class="hr-legend-swatch" style="background:#fdecea"></span><span>重エラー</span>
-            </div>
-            <div class="hr-legend-item">
-                <span class="hr-legend-swatch" style="background:#d1ecf1"></span><span>復旧</span>
+                <span class="hr-legend-dot hr-dot-error"></span><span>重エラーデータ</span>
             </div>
         </div>
     </div>
@@ -633,6 +860,54 @@
 		overlay.addEventListener('click', hide);
 	})();
 	</script>
+<script>
+    /* データ種別カスタムドロップダウン */
+    (function() {
+        var dotClasses = { all: '', normal: 'hr-dot-normal', warning: 'hr-dot-warning', error: 'hr-dot-error' };
+        var labels = { all: '全データ表示', normal: '正常データ表示', warning: '軽エラーデータ表示', error: '重エラーデータ表示' };
+        var selected = document.getElementById('hrDataTypeSelected');
+        var options = document.getElementById('hrDataTypeOptions');
+        var dot = document.getElementById('hrDataTypeDot');
+        var label = document.getElementById('hrDataTypeLabel');
+        if (selected && options) {
+            selected.addEventListener('click', function(e) {
+                e.stopPropagation();
+                options.classList.toggle('show');
+            });
+            options.querySelectorAll('.hr-custom-option').forEach(function(opt) {
+                opt.addEventListener('click', function() {
+                    var value = this.getAttribute('data-value');
+                    label.textContent = labels[value];
+                    dot.className = 'hr-legend-dot ' + (dotClasses[value] || '');
+                    dot.style.display = value === 'all' ? 'none' : '';
+                    options.querySelectorAll('.hr-custom-option').forEach(function(o) {
+                        o.classList.toggle('selected', o.getAttribute('data-value') === value);
+                    });
+                    options.classList.remove('show');
+                });
+            });
+            document.addEventListener('click', function() { options.classList.remove('show'); });
+        }
+    })();
+
+    /* 条件選択モーダル */
+    function showHrConditionModal() {
+        var modal = new bootstrap.Modal(document.getElementById('hrConditionModal'));
+        modal.show();
+    }
+    function applyHrCondition() {
+        var modal = bootstrap.Modal.getInstance(document.getElementById('hrConditionModal'));
+        modal.hide();
+    }
+    function loadHrCondition() { alert('条件取得'); }
+    function saveHrCondition() { alert('条件保存'); }
+    function browseBackup() { alert('バックアップデータ参照'); }
+    function browsePersonal() { alert('個人指定参照'); }
+    function browseDepartment() { alert('所属指定参照'); }
+    function browseCategory() { alert('区分指定参照'); }
+    function browseGate() { alert('ゲート指定参照'); }
+    function browseHistory() { alert('履歴データ指定参照'); }
+    </script>
 <script type="text/javascript" src="/resources/static/js/historyReport.js"></script>
 </body>
 </html>

@@ -69,7 +69,7 @@ function generateSampleData() {
 
         personalData.push({
             id: i,
-            sendStatus: Math.random() > 0.3 ? '送信済' : '未送信',
+            sendStatus: Math.random() > 0.3 ? '済' : '未',
             registrationStatus: Math.random() > 0.8 ? '削除' : '登録',
             personalCode: `kojin${String(i).padStart(4, '0')}`,
             issueCount: Math.random() > 0.5 ? '1' : '2',
@@ -1063,7 +1063,7 @@ function sendPersonalData() {
         setTimeout(() => {
             // Mark as sent
             selectedPeople.forEach(person => {
-                person.sendStatus = '送信済';
+                person.sendStatus = '済';
             });
             applyFiltersAndDisplay();
             showOperationStatus(`${selectedPeople.length}件のデータ送信が完了しました。`, 'success');
@@ -1072,7 +1072,7 @@ function sendPersonalData() {
 }
 
 function sendUnsentData() {
-    const unsentCount = personalData.filter(person => person.sendStatus === '未送信').length;
+    const unsentCount = personalData.filter(person => person.sendStatus === '未').length;
     if (unsentCount > 0) {
         if (confirm(`未送信データ ${unsentCount}件 を送信しますか？`)) {
             showOperationStatus(`未送信データ ${unsentCount}件 を送信しています...`, 'info');
@@ -1080,8 +1080,8 @@ function sendUnsentData() {
             setTimeout(() => {
                 // 未送信データを送信済みに変更
                 personalData.forEach(person => {
-                    if (person.sendStatus === '未送信') {
-                        person.sendStatus = '送信済';
+                    if (person.sendStatus === '未') {
+                        person.sendStatus = '済';
                     }
                 });
                 

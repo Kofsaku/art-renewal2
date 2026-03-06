@@ -14,6 +14,7 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
 	<title>TRIDENT</title>
 	<script type="text/javascript" src="/resources/static/js/jquery/3.7.1/jquery.min.js"></script>
 	<script type="text/javascript" src="/resources/static/js/common.js"></script>
@@ -61,18 +62,22 @@
             font-family: inherit;
         }
         .pr-btn:hover { filter: brightness(0.92); }
-        .pr-btn-blue   { background: #007bff; color: #fff; border-color: #007bff; }
-        .pr-btn-green  { background: #28a745; color: #fff; border-color: #28a745; }
-        .pr-btn-red    { background: #dc3545; color: #fff; border-color: #dc3545; }
-        .pr-btn-dark   { background: #343a40; color: #fff; border-color: #343a40; }
-        .pr-btn-gray   { background: #6c757d; color: #fff; border-color: #6c757d; }
-        .pr-btn-yellow { background: #ffc107; color: #333; border-color: #ffc107; }
+        .pr-btn-blue   { background: #fff; color: #007bff; border-color: #007bff; }
+        .pr-btn-blue i { color: #007bff; }
+        .pr-btn-green  { background: #fff; color: #007bff; border-color: #007bff; }
+        .pr-btn-green i { color: #007bff; }
+        .pr-btn-red    { background: #fff; color: #dc3545; border-color: #dc3545; }
+        .pr-btn-red i  { color: #dc3545; }
+        .pr-btn-orange { background: #fff; color: #e67e22; border: 1px solid #e67e22; }
+        .pr-btn-orange i { color: #e67e22; }
+        .pr-btn-gray   { background: #fff; color: #6c757d; border-color: #adb5bd; }
+        .pr-btn-gray i { color: #6c757d; }
 
         /* ---- 3カラムグリッド ---- */
         .pr-body {
             flex: 1;
             display: grid;
-            grid-template-columns: 1fr auto 1fr;
+            grid-template-columns: minmax(500px, 560px) auto minmax(640px, 1fr);
             gap: 0;
             overflow: hidden;
         }
@@ -80,23 +85,26 @@
         /* ---- 左カラム ---- */
         .pr-col-left {
             overflow-y: auto;
-            padding: 10px 14px;
+            padding: 16px 18px;
             border-right: 1px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         /* ---- フォーム行 ---- */
         .pr-form-row {
             display: flex;
             align-items: center;
-            margin-bottom: 4px;
-            min-height: 28px;
+            margin-bottom: 0;
+            min-height: 36px;
         }
         .pr-form-label {
-            width: 90px;
-            min-width: 90px;
+            width: 82px;
+            min-width: 82px;
             text-align: right;
-            padding-right: 8px;
-            font-size: 0.78rem;
+            padding-right: 12px;
+            font-size: 0.8rem;
             font-weight: 500;
             color: #495057;
             white-space: nowrap;
@@ -105,16 +113,18 @@
             flex: 1;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 10px;
+            min-width: 0;
+            max-width: 360px;
         }
         .pr-form-value input[type="text"],
         .pr-form-value input[type="password"],
         .pr-form-value select {
-            height: 26px;
-            padding: 0 6px;
+            height: 30px;
+            padding: 0 8px;
             border: 1px solid #ced4da;
             border-radius: 3px;
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             font-family: inherit;
             box-sizing: border-box;
         }
@@ -124,18 +134,10 @@
             outline: none;
             box-shadow: 0 0 0 2px rgba(0,123,255,0.15);
         }
-        .pr-input-wide { flex: 1; min-width: 0; }
-        .pr-input-code { width: 90px; }
+        .pr-input-wide { flex: 1 1 340px; max-width: 340px; min-width: 0; }
+        .pr-input-code { width: 100px; }
         .pr-input-narrow { width: 60px; text-align: center; }
-        .pr-input-mid { width: 120px; }
-
-        .pr-form-row-double {
-            display: flex;
-            gap: 0;
-        }
-        .pr-form-row-double .pr-form-row {
-            flex: 0 0 auto;
-        }
+        .pr-input-mid { width: 132px; }
 
         .pr-form-ref-btn {
             height: 26px;
@@ -155,24 +157,28 @@
             border: none;
             border-top: 1px solid #dee2e6;
             border-bottom: 1px solid #dee2e6;
-            padding: 10px 0;
+            padding: 16px 0;
             margin: 10px 0;
         }
         .pr-bordered-section .pr-form-row {
-            margin-bottom: 2px;
+            min-height: 38px;
+        }
+        .pr-bordered-section .pr-form-row + .pr-form-row {
+            margin-top: 6px;
         }
         .pr-bordered-section .pr-form-value input.pr-input-code {
-            width: 160px;
+            width: 180px;
         }
 
         .pr-checkbox-row {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, max-content));
             align-items: center;
-            gap: 5px;
-            margin-bottom: 4px;
-            padding: 2px 0;
-            margin-left: 90px;
-            flex-wrap: wrap;
+            column-gap: 10px;
+            row-gap: 8px;
+            margin-bottom: 10px;
+            padding: 4px 0;
+            margin-left: 82px;
         }
         .pr-checkbox-item {
             display: flex;
@@ -183,7 +189,8 @@
             background: #f8f9fa;
             border: 1px solid #e0e3e6;
             border-radius: 4px;
-            padding: 2px 8px;
+            padding: 4px 10px;
+            min-width: 0;
         }
         .pr-checkbox-item input[type="checkbox"] {
             width: 14px;
@@ -195,6 +202,23 @@
             cursor: pointer;
             margin: 0;
         }
+        .pr-inline-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.76rem;
+            white-space: nowrap;
+            margin-right: 4px;
+        }
+        .pr-inline-toggle input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            accent-color: #007bff;
+            cursor: pointer;
+        }
+        .pr-alt-disabled {
+            opacity: 0.6;
+        }
 
         /* ---- 日付グループ ---- */
         .pr-date-group {
@@ -202,6 +226,7 @@
             align-items: center;
             gap: 1px;
             position: relative;
+            flex-wrap: wrap;
         }
         .pr-date-group input[type="text"] {
             text-align: center;
@@ -231,11 +256,12 @@
         /* ---- 備考 ---- */
         .pr-form-value textarea {
             flex: 1;
-            height: 50px;
-            padding: 4px 6px;
+            min-height: 124px;
+            height: 100%;
+            padding: 6px 8px;
             border: 1px solid #ced4da;
             border-radius: 3px;
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             font-family: inherit;
             resize: vertical;
         }
@@ -479,6 +505,37 @@
             background: #6c757d;
             color: #fff;
         }
+
+        .pr-remarks-row {
+            align-items: stretch;
+            padding-top: 4px;
+        }
+        .pr-remarks-row .pr-form-label {
+            padding-top: 6px;
+        }
+        .pr-remarks-row .pr-form-value {
+            align-items: stretch;
+            max-width: 100%;
+        }
+
+        @media (max-width: 1400px) {
+            .pr-body {
+                grid-template-columns: minmax(440px, 520px) auto minmax(520px, 1fr);
+            }
+
+            .pr-form-value {
+                max-width: 330px;
+            }
+
+            .pr-input-wide {
+                flex-basis: 320px;
+                max-width: 320px;
+            }
+
+            .pr-checkbox-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
     </style>
 </head>
 
@@ -508,28 +565,28 @@
 			<i class="fas fa-bars"></i>
 		</button>
 
-		<!-- システムロゴ（TODO: 正式ロゴ画像に差し替え） -->
-		<span class="td-logo">プレースホルダー</span>
+		<!-- ページアイコン＋ページ名 -->
+		<span class="td-page-icon">
+        <i class="fas fa-user-plus"></i>
+    </span>
+		<span class="td-page-title">個人情報登録</span>
 
 		<!-- ページ固有コントロール（各ページで上書き） -->
 		<div class="td-header-controls">
         <button class="pr-btn pr-btn-blue" id="sendBtn">
-            <i class="fas fa-paper-plane"></i> 送信
+            <span class="material-symbols-outlined">send</span> 送信
         </button>
         <button class="pr-btn pr-btn-green" id="saveBtn">
-            <i class="fas fa-save"></i> 登録
+            <span class="material-symbols-outlined">upload_file</span> 登録
         </button>
         <button class="pr-btn pr-btn-red" id="deleteBtn">
-            <i class="fas fa-trash-alt"></i> 削除
+            <span class="material-symbols-outlined">delete_forever</span> DB削除
         </button>
-        <button class="pr-btn pr-btn-dark" id="eraseBtn">
-            <i class="fas fa-eraser"></i> 消去
+        <button class="pr-btn pr-btn-orange" id="revokeBtn">
+            <span class="material-symbols-outlined">key_off</span> 権限失効
         </button>
-        <button class="pr-btn pr-btn-gray" id="cancelBtn">
-            <i class="fas fa-arrow-left"></i> キャンセル
-        </button>
-        <button class="pr-btn pr-btn-yellow" id="clearBtn">
-            クリア
+        <button class="pr-btn pr-btn-gray" id="clearBtn">
+            <span class="material-symbols-outlined">cleaning_services</span> クリア
         </button>
     </div>
 
@@ -555,19 +612,19 @@
                             </div>
                         </div>
 
-                        <!-- 発行回数 + 暗証番号 -->
-                        <div class="pr-form-row-double">
-                            <div class="pr-form-row">
-                                <div class="pr-form-label">発行回数</div>
-                                <div class="pr-form-value">
-                                    <input type="text" id="issueCount" class="pr-input-narrow" value="0">
-                                </div>
+                        <!-- 発行回数 -->
+                        <div class="pr-form-row">
+                            <div class="pr-form-label">発行回数</div>
+                            <div class="pr-form-value">
+                                <input type="text" id="issueCount" class="pr-input-narrow" value="0">
                             </div>
-                            <div class="pr-form-row">
-                                <div class="pr-form-label">暗証番号</div>
-                                <div class="pr-form-value">
-                                    <input type="password" id="tenkeyNumber" class="pr-input-code" value="0000" autocomplete="off" inputmode="numeric">
-                                </div>
+                        </div>
+
+                        <!-- 暗証番号 -->
+                        <div class="pr-form-row">
+                            <div class="pr-form-label">暗証番号</div>
+                            <div class="pr-form-value">
+                                <input type="text" id="tenkeyNumber" class="pr-input-code" value="0000" autocomplete="off" inputmode="numeric">
                             </div>
                         </div>
 
@@ -600,6 +657,7 @@
                             <div class="pr-form-label">所属</div>
                             <div class="pr-form-value">
                                 <input type="text" id="department" class="pr-input-code" value="000">
+                                <button type="button" class="pr-form-ref-btn" id="departmentRefBtn">参照</button>
                             </div>
                         </div>
 
@@ -608,6 +666,7 @@
                             <div class="pr-form-label">区分</div>
                             <div class="pr-form-value">
                                 <input type="text" id="category" class="pr-input-code" value="001">
+                                <button type="button" class="pr-form-ref-btn" id="categoryRefBtn">参照</button>
                             </div>
                         </div>
 
@@ -683,6 +742,9 @@
                             <div class="pr-form-row">
                                 <div class="pr-form-label">代替コード</div>
                                 <div class="pr-form-value">
+                                    <label class="pr-inline-toggle" for="altEnabled">
+                                        <input type="checkbox" id="altEnabled">
+                                    </label>
                                     <input type="text" id="altCode" class="pr-input-code">
                                 </div>
                             </div>
@@ -716,8 +778,8 @@
                         </div>
 
                         <!-- 備考 -->
-                        <div class="pr-form-row" style="align-items:flex-start;">
-                            <div class="pr-form-label" style="padding-top:4px;">備考</div>
+                        <div class="pr-form-row pr-remarks-row">
+                            <div class="pr-form-label">備考</div>
                             <div class="pr-form-value">
                                 <textarea id="remarks"></textarea>
                             </div>

@@ -14,6 +14,7 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
 	<title>TRIDENT</title>
 	<script type="text/javascript" src="/resources/static/js/jquery/3.7.1/jquery.min.js"></script>
 	<script type="text/javascript" src="/resources/static/js/common.js"></script>
@@ -45,11 +46,11 @@
             overflow: hidden;
         }
 
-        /* ---- ヘッダーボタン ---- */
+        /* ---- ヘッダーボタン共通 ---- */
         .pl-btn {
             height: 28px;
             padding: 0 10px;
-            border: 1px solid #ced4da;
+            border: 1px solid #007bff;
             border-radius: 4px;
             font-size: 0.8rem;
             cursor: pointer;
@@ -59,23 +60,84 @@
             gap: 4px;
             transition: background 0.15s, filter 0.15s;
             font-family: inherit;
+            background: #fff;
+            color: #007bff;
         }
-        .pl-btn:hover { filter: brightness(0.92); }
-        .pl-btn-green  { background: #28a745; color: #fff; border-color: #28a745; }
-        .pl-btn-orange { background: #fd7e14; color: #fff; border-color: #fd7e14; }
-        .pl-btn-red    { background: #dc3545; color: #fff; border-color: #dc3545; }
-        .pl-btn-blue   { background: #007bff; color: #fff; border-color: #007bff; }
-        .pl-btn-gray   { background: #6c757d; color: #fff; border-color: #6c757d; }
-        .pl-btn-outline-orange { background: #fff; color: #fd7e14; border: 2px solid #fd7e14; }
-        .pl-btn-outline-orange:hover { background: #fd7e14; color: #fff; }
-        .pl-btn-outline-green  { background: #fff; color: #28a745; border: 2px solid #28a745; }
-        .pl-btn-outline-green:hover { background: #28a745; color: #fff; }
+        .pl-btn:hover { background: #e8f0fe; }
+        .pl-btn i { color: #007bff; }
+
+        /* DB削除: 赤アウトライン */
+        .pl-btn-red    { background: #fff; color: #dc3545; border-color: #dc3545; }
+        .pl-btn-red:hover { filter: brightness(0.92); }
+        .pl-btn-red i  { color: #dc3545; }
+
+        /* 権限失効: オレンジアウトライン */
+        .pl-btn-orange { background: #fff; color: #e67e22; border-color: #e67e22; }
+        .pl-btn-orange:hover { filter: brightness(0.92); }
+        .pl-btn-orange i { color: #e67e22; }
+
+        /* グレーアウトライン */
+        .pl-btn-gray { background: #fff; color: #6c757d; border-color: #adb5bd; }
+        .pl-btn-gray:hover { filter: brightness(0.92); }
+        .pl-btn-gray i { color: #6c757d; }
+
+        /* 管理機能ボタン: オレンジアウトライン */
+        .pl-btn-outline-orange {
+            background: #fff;
+            color: #e67e22;
+            border: 1px solid #e67e22;
+        }
+        .pl-btn-outline-orange:hover { background: #fef5ec; }
+        .pl-btn-outline-orange i { color: #e67e22; }
+
         .pl-header-sep {
             width: 1px;
             height: 20px;
-            background: rgba(255,255,255,0.3);
+            background: rgba(0,0,0,0.2);
             margin: 0 4px;
         }
+
+        /* ---- 管理機能ドロップダウン ---- */
+        .pl-manage-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 4px;
+            min-width: 220px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 200;
+            padding: 4px 0;
+        }
+        .pl-manage-menu.show { display: block; }
+        .pl-manage-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            color: #e67e22;
+            text-decoration: none;
+            font-size: 0.82rem;
+            transition: background 0.12s;
+            white-space: nowrap;
+        }
+        .pl-manage-item:hover {
+            background: #fef5ec;
+            color: #e67e22;
+            text-decoration: none;
+        }
+        .pl-manage-item i {
+            width: 16px;
+            text-align: center;
+            color: #e67e22;
+            font-size: 0.85rem;
+        }
+        .pl-manage-item.green { color: #28a745; }
+        .pl-manage-item.green i { color: #28a745; }
+        .pl-manage-item.green:hover { background: #eaf7ed; }
 
         /* ---- ツールバー ---- */
         .pl-toolbar {
@@ -477,39 +539,59 @@
 			<i class="fas fa-bars"></i>
 		</button>
 
-		<!-- システムロゴ（TODO: 正式ロゴ画像に差し替え） -->
-		<span class="td-logo">プレースホルダー</span>
+		<!-- ページアイコン＋ページ名 -->
+		<span class="td-page-icon">
+        <i class="fas fa-users"></i>
+    </span>
+		<span class="td-page-title">個人情報一覧</span>
 
 		<!-- ページ固有コントロール（各ページで上書き） -->
 		<div class="td-header-controls">
-        <button class="pl-btn pl-btn-green">
-            <i class="fas fa-plus"></i> 新規登録
+        <button class="pl-btn" onclick="sendPersonalData()">
+            <span class="material-symbols-outlined">send</span> 送信
         </button>
-        <button class="pl-btn pl-btn-orange" onclick="bulkDelete()">
-            <i class="fas fa-trash-alt"></i> 削除
+        <button class="pl-btn" onclick="sendUnsentData()">
+            <span class="material-symbols-outlined">replay</span> 未送再送
         </button>
-        <button class="pl-btn pl-btn-red" onclick="bulkErase()">
-            <i class="fas fa-eraser"></i> 消去
+        <button class="pl-btn">
+            <span class="material-symbols-outlined">upload_file</span> 登録
         </button>
-        <button class="pl-btn pl-btn-green" onclick="uploadData()">
-            <i class="fas fa-upload"></i> インポート
+        <button class="pl-btn pl-btn-red" onclick="bulkDelete()">
+            <span class="material-symbols-outlined">delete_forever</span> DB削除
         </button>
-        <button class="pl-btn pl-btn-blue" onclick="downloadData()">
-            <i class="fas fa-download"></i> エクスポート
+        <button class="pl-btn pl-btn-orange" onclick="revokePermission()">
+            <span class="material-symbols-outlined">key_off</span> 権限失効
         </button>
-        <button class="pl-btn pl-btn-blue" onclick="sendPersonalData()">
-            <i class="fas fa-paper-plane"></i> 送信
+        <button class="pl-btn pl-btn-gray" onclick="uploadData()">
+            <span class="material-symbols-outlined">upload_file</span> 取込
         </button>
-        <button class="pl-btn pl-btn-gray" onclick="sendUnsentData()">
-            <i class="fas fa-paper-plane"></i> 未送信データの送信
+        <button class="pl-btn pl-btn-gray" onclick="downloadData()">
+            <span class="material-symbols-outlined">file_download</span> 出力
         </button>
         <div class="pl-header-sep"></div>
-        <button class="pl-btn pl-btn-outline-orange" onclick="alert('通門権限の一括変更画面に遷移します')">
-            <i class="fas fa-users-cog"></i> 通門権限の一括変更
-        </button>
-        <button class="pl-btn pl-btn-outline-green" onclick="alert('入退室制限時間帯の管理画面に遷移します')">
-            <i class="fas fa-clock"></i> 入退室制限時間帯の管理
-        </button>
+        <!-- 管理機能ドロップダウン -->
+        <div class="pl-manage-dropdown" style="position: relative;">
+            <button class="pl-btn pl-btn-outline-orange" id="manageDropdownBtn" onclick="toggleManageMenu()">
+                <i class="fas fa-cogs"></i> 管理機能 <i class="fas fa-caret-down" style="font-size:0.7rem;"></i>
+            </button>
+            <div class="pl-manage-menu" id="manageMenu">
+                <a class="pl-manage-item" href="javascript:void(0)" onclick="alert('所属の管理画面に遷移します')">
+                    <span class="material-symbols-outlined">groups</span> 所属の管理
+                </a>
+                <a class="pl-manage-item" href="javascript:void(0)" onclick="alert('区分の管理画面に遷移します')">
+                    <span class="material-symbols-outlined">groups</span> 区分の管理
+                </a>
+                <a class="pl-manage-item" href="javascript:void(0)" onclick="alert('通行権限(鍵)の管理画面に遷移します')">
+                    <span class="material-symbols-outlined">groups</span> 通行権限(鍵)の管理
+                </a>
+                <a class="pl-manage-item" href="javascript:void(0)" onclick="alert('通行権限の一括変更画面に遷移します')">
+                    <span class="material-symbols-outlined">groups</span> 通行権限の一括変更
+                </a>
+                <a class="pl-manage-item green" href="javascript:void(0)" onclick="alert('入退室制限時間帯の管理画面に遷移します')">
+                    <span class="material-symbols-outlined">schedule</span> 入退室制限時間帯の管理
+                </a>
+            </div>
+        </div>
     </div>
 
 		<!-- 設定ボタン -->
@@ -524,6 +606,8 @@
             <div class="pl-inner">
                 <!-- ツールバー -->
                 <div class="pl-toolbar">
+                    <span class="pl-count">現条件: <span id="currentCountValue">0</span>件</span>
+
                     <div class="pl-select-group">
                         <span>表示件数:</span>
                         <select class="pl-select" id="itemsPerPage" onchange="changeItemsPerPage()">
@@ -532,8 +616,6 @@
                             <option value="100">100件</option>
                         </select>
                     </div>
-
-                    <span class="pl-count">現条件: <span id="currentCountValue">0</span>件</span>
 
                     <div class="pl-spacer"></div>
 
@@ -605,5 +687,21 @@
 	})();
 	</script>
 <script type="text/javascript" src="/resources/static/js/personallist-renew.js"></script>
+<script>
+        /* 管理機能ドロップダウン */
+        function toggleManageMenu() {
+            document.getElementById('manageMenu').classList.toggle('show');
+        }
+        document.addEventListener('click', function(e) {
+            var dropdown = document.querySelector('.pl-manage-dropdown');
+            if (dropdown && !dropdown.contains(e.target)) {
+                document.getElementById('manageMenu').classList.remove('show');
+            }
+        });
+        /* 権限失効（プレースホルダー） */
+        function revokePermission() {
+            alert('権限失効を実行します');
+        }
+        </script>
 </body>
 </html>

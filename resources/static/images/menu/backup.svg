@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Database cylinder top -->
+  <ellipse cx="24" cy="10" rx="16" ry="5"/>
+  <!-- Database body -->
+  <path d="M8 10v28c0 2.8 7.2 5 16 5s16-2.2 16-5V10"/>
+  <!-- Middle ring -->
+  <path d="M8 24c0 2.8 7.2 5 16 5s16-2.2 16-5"/>
+  <!-- Indicator light -->
+  <circle cx="36" cy="36" r="2" fill="currentColor" stroke="none"/>
+</svg>
