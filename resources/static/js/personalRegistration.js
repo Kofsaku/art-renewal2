@@ -19,23 +19,44 @@ class PersonalRegistration {
         this.bindEvents();
         this.initGateTable();
         this.initializeForm();
+        this.toggleAlternativeFields();
     }
 
     bindEvents() {
+        const bindClick = (id, handler) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('click', handler);
+            }
+        };
+
         // ヘッダーボタン
-        document.getElementById('sendBtn').addEventListener('click', () => this.sendData());
-        document.getElementById('saveBtn').addEventListener('click', () => this.savePerson());
-        document.getElementById('deleteBtn').addEventListener('click', () => this.deletePerson());
-        document.getElementById('eraseBtn').addEventListener('click', () => this.eraseData());
-        document.getElementById('cancelBtn').addEventListener('click', () => this.cancelEdit());
-        document.getElementById('clearBtn').addEventListener('click', () => this.clearForm());
+        bindClick('sendBtn', () => this.sendData());
+        bindClick('saveBtn', () => this.savePerson());
+        bindClick('deleteBtn', () => this.deletePerson());
+        bindClick('eraseBtn', () => this.eraseData());
+        bindClick('cancelBtn', () => this.cancelEdit());
+        bindClick('clearBtn', () => this.clearForm());
 
         // 写真
-        document.getElementById('photoRefBtn').addEventListener('click', () => {
-            document.getElementById('photoUpload').click();
+        bindClick('photoRefBtn', () => {
+            const photoUpload = document.getElementById('photoUpload');
+            if (photoUpload) {
+                photoUpload.click();
+            }
         });
-        document.getElementById('photoUpload').addEventListener('change', (e) => this.handlePhotoUpload(e));
-        document.getElementById('photoDeleteBtn').addEventListener('click', () => this.deletePhoto());
+
+        const photoUpload = document.getElementById('photoUpload');
+        if (photoUpload) {
+            photoUpload.addEventListener('change', (e) => this.handlePhotoUpload(e));
+        }
+
+        bindClick('photoDeleteBtn', () => this.deletePhoto());
+
+        const altEnabled = document.getElementById('altEnabled');
+        if (altEnabled) {
+            altEnabled.addEventListener('change', () => this.toggleAlternativeFields());
+        }
 
         // カレンダーボタン
         document.querySelectorAll('.pr-date-cal-btn').forEach(btn => {
@@ -85,6 +106,31 @@ class PersonalRegistration {
         document.getElementById('personCode').value = '';
         document.getElementById('issueCount').value = '0';
         document.getElementById('tenkeyNumber').value = '0000';
+        const altEnabled = document.getElementById('altEnabled');
+        if (altEnabled) {
+            altEnabled.checked = false;
+        }
+    }
+
+    toggleAlternativeFields() {
+        const altEnabled = document.getElementById('altEnabled');
+        const altCode = document.getElementById('altCode');
+        const altYear = document.getElementById('altYear');
+        const altMonth = document.getElementById('altMonth');
+        const altDay = document.getElementById('altDay');
+        const altDateButton = document.querySelector('[data-calendar="alt"]');
+        const altRows = [altCode, altYear, altMonth, altDay].filter(Boolean);
+        const enabled = !!(altEnabled && altEnabled.checked);
+
+        altRows.forEach((element) => {
+            element.disabled = !enabled;
+            element.classList.toggle('pr-alt-disabled', !enabled);
+        });
+
+        if (altDateButton) {
+            altDateButton.disabled = !enabled;
+            altDateButton.classList.toggle('pr-alt-disabled', !enabled);
+        }
     }
 
     // ゲートテーブル初期化
@@ -337,6 +383,7 @@ class PersonalRegistration {
         document.querySelectorAll('.pr-col-left textarea').forEach(el => el.value = '');
         this.deletePhoto();
         this.setDefaultValues();
+        this.toggleAlternativeFields();
     }
 
     collectFormData() {
@@ -356,6 +403,7 @@ class PersonalRegistration {
             startDate:        { year: document.getElementById('startYear').value, month: document.getElementById('startMonth').value, day: document.getElementById('startDay').value },
             endDate:          { year: document.getElementById('endYear').value,   month: document.getElementById('endMonth').value,   day: document.getElementById('endDay').value },
             bioIndex:         document.getElementById('bioIndex').value.trim(),
+            altEnabled:       document.getElementById('altEnabled').checked,
             altCode:          document.getElementById('altCode').value.trim(),
             altEndDate:       { year: document.getElementById('altYear').value,   month: document.getElementById('altMonth').value,   day: document.getElementById('altDay').value },
             bioId:            document.getElementById('bioId').value.trim(),
@@ -382,6 +430,7 @@ class PersonalRegistration {
         document.getElementById('antiPassback').checked      = !!data.antiPassback;
         document.getElementById('securityOpDisable').checked = !!data.securityOpDisable;
         document.getElementById('monitoringCard').checked    = !!data.monitoringCard;
+        document.getElementById('altEnabled').checked        = !!data.altEnabled;
 
         if (data.startDate) {
             set('startYear',  data.startDate.year);
@@ -404,6 +453,7 @@ class PersonalRegistration {
         set('bioId',           data.bioId);
         set('remarks',         data.remarks);
         set('gateDefaultCode', data.gateDefaultCode);
+        this.toggleAlternativeFields();
     }
 
     loadPersonData(personId) {
@@ -423,6 +473,7 @@ class PersonalRegistration {
             startDate: { year: '2024', month: '01', day: '01' },
             endDate:   { year: '2025', month: '12', day: '31' },
             bioIndex: '',
+            altEnabled: false,
             altCode: '',
             altEndDate: { year: '0000', month: '00', day: '00' },
             bioId: '',

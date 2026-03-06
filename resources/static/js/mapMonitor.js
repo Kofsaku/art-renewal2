@@ -3,25 +3,35 @@
  * ゲート状態をマップ上で視覚的に表示・管理
  */
 
+const MAP_STATE_PRESETS = {
+    'closed-locked':   { doorState: 'closed', lockState: 'locked',   alarmState: 'normal', securityState: 'unset' },
+    'closed-unlocked': { doorState: 'closed', lockState: 'unlocked', alarmState: 'normal', securityState: 'unset' },
+    'abnormal':        { doorState: 'closed', lockState: 'locked',   alarmState: 'error',  securityState: 'unset' },
+    'open-locked':     { doorState: 'open',   lockState: 'locked',   alarmState: 'normal', securityState: 'unset' },
+    'open-unlocked':   { doorState: 'open',   lockState: 'unlocked', alarmState: 'normal', securityState: 'unset' },
+    'security-set':    { doorState: 'closed', lockState: 'locked',   alarmState: 'normal', securityState: 'set' }
+};
+
+const MAP_STATE_LABELS = {
+    'closed-locked': '閉扉施錠',
+    'closed-unlocked': '閉扉解錠',
+    'abnormal': '異常',
+    'open-locked': '開扉施錠',
+    'open-unlocked': '開扉解錠',
+    'security-set': '警備セット'
+};
+
 // グローバル変数
 let mapMonitor = {
-    gateData: [
-        { id: 1, code: '0001', name: 'ゲートA', status: 'normal', position: { x: 110, y: 60 }, lastUpdate: new Date() },
-        { id: 2, code: '0002', name: 'ゲートB', status: 'warning', position: { x: 210, y: 60 }, lastUpdate: new Date() },
-        { id: 3, code: '0003', name: 'ゲートC', status: 'normal', position: { x: 310, y: 60 }, lastUpdate: new Date() },
-        { id: 4, code: '0004', name: 'ゲートD', status: 'error', position: { x: 210, y: 110 }, lastUpdate: new Date() },
-        { id: 5, code: '0005', name: 'ゲートE', status: 'normal', position: { x: 330, y: 110 }, lastUpdate: new Date() },
-        { id: 6, code: '0006', name: 'ゲートF', status: 'offline', position: { x: 110, y: 170 }, lastUpdate: new Date() },
-        { id: 7, code: '0007', name: 'ゲートG', status: 'normal', position: { x: 110, y: 270 }, lastUpdate: new Date() },
-        { id: 8, code: '0008', name: 'ゲートH', status: 'warning', position: { x: 110, y: 240 }, lastUpdate: new Date() }
-    ],
+    gateData: createFloorOneGateData(),
 
     zoomLevel: 1,
+    defaultZoomLevel: 1,
     maxZoom: 3,
     minZoom: 0.5,
     updateInterval: 5000,
     currentFloor: 1,
-    statusFilters: ['normal', 'warning', 'error', 'offline']
+    statusFilters: Object.keys(MAP_STATE_PRESETS)
 };
 
 /**
@@ -38,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function initializeMapMonitor() {
     renderGateIndicators();
+    resetMapView();
 }
 
 /**
@@ -97,8 +108,10 @@ function renderGateIndicators() {
     existing.forEach(function(el) { el.remove(); });
 
     mapMonitor.gateData.forEach(function(gate) {
-        // フィルター判定: 非選択ステータスは非表示
-        if (mapMonitor.statusFilters.indexOf(gate.status) === -1) return;
+        var gateState = getGateVisualState(gate);
+
+        // フィルター判定: 非選択状態は非表示
+        if (mapMonitor.statusFilters.indexOf(gateState) === -1) return;
 
         var pointer = document.createElement('div');
         pointer.className = 'gate-pointer';
@@ -107,19 +120,16 @@ function renderGateIndicators() {
         pointer.dataset.gate = gate.id;
 
         var circle = document.createElement('div');
-        circle.className = 'pointer-circle status-' + gate.status;
-
-        var validStatuses = ['normal', 'warning', 'error', 'offline'];
-        var safeStatus = validStatuses.indexOf(gate.status) !== -1 ? gate.status : 'offline';
+        circle.className = 'pointer-circle state-' + gateState;
 
         var tooltip = document.createElement('div');
-        tooltip.className = 'gate-tooltip status-' + safeStatus;
+        tooltip.className = 'gate-tooltip state-' + gateState;
 
         var header = document.createElement('div');
         header.className = 'tooltip-header';
         var dot = document.createElement('div');
-        dot.className = 'status-dot status-' + safeStatus;
-        dot.style.background = getStatusColorHex(safeStatus);
+        dot.className = 'status-dot';
+        dot.style.background = getStatusColorHex(gateState);
         var label = document.createElement('span');
         label.textContent = gate.name + '(' + gate.code + ')';
         header.appendChild(dot);
@@ -127,9 +137,9 @@ function renderGateIndicators() {
 
         var iconsGrid = document.createElement('div');
         iconsGrid.className = 'tooltip-icons-grid';
-        ['door', 'lock', 'security', 'comm'].forEach(function(icon) {
+        ['door', 'lock', 'alarm', 'security'].forEach(function(icon) {
             var item = document.createElement('div');
-            item.className = 'tooltip-icon-item tooltip-icon-' + icon;
+            item.className = 'tooltip-icon-item ' + getTooltipIconClass(gate, icon);
             iconsGrid.appendChild(item);
         });
 
@@ -152,12 +162,71 @@ function renderGateIndicators() {
  */
 function getStatusColorHex(status) {
     var colorMap = {
-        normal: '#28a745',
-        warning: '#ffc107',
-        error: '#dc3545',
-        offline: '#6c757d'
+        'closed-locked': '#1f5fbf',
+        'closed-unlocked': '#28a745',
+        'abnormal': '#dc3545',
+        'open-locked': '#6ec6ff',
+        'open-unlocked': '#90ee90',
+        'security-set': '#ffc107'
     };
-    return colorMap[status] || '#6c757d';
+    return colorMap[status] || '#1f5fbf';
+}
+
+function getGateVisualState(gate) {
+    if (gate.alarmState === 'error') return 'abnormal';
+    if (gate.securityState === 'set') return 'security-set';
+    if (gate.doorState === 'open' && gate.lockState === 'locked') return 'open-locked';
+    if (gate.doorState === 'open' && gate.lockState === 'unlocked') return 'open-unlocked';
+    if (gate.doorState === 'closed' && gate.lockState === 'unlocked') return 'closed-unlocked';
+    return 'closed-locked';
+}
+
+function getGateStateLabel(gate) {
+    return MAP_STATE_LABELS[getGateVisualState(gate)] || MAP_STATE_LABELS['closed-locked'];
+}
+
+function getTooltipIconClass(gate, iconType) {
+    if (iconType === 'door') {
+        return gate.doorState === 'open' ? 'tooltip-icon-door-open' : 'tooltip-icon-door-closed';
+    }
+    if (iconType === 'lock') {
+        return gate.lockState === 'unlocked' ? 'tooltip-icon-lock-unlocked' : 'tooltip-icon-lock-locked';
+    }
+    if (iconType === 'alarm') {
+        return gate.alarmState === 'error' ? 'tooltip-icon-alarm-error' : 'tooltip-icon-empty';
+    }
+    if (iconType === 'security') {
+        return gate.securityState === 'set' ? 'tooltip-icon-security-set' : 'tooltip-icon-empty';
+    }
+    return 'tooltip-icon-empty';
+}
+
+function createGateFromState(id, code, name, position, stateKey) {
+    var preset = MAP_STATE_PRESETS[stateKey] || MAP_STATE_PRESETS['closed-locked'];
+    return {
+        id: id,
+        code: code,
+        name: name,
+        position: position,
+        lastUpdate: new Date(),
+        doorState: preset.doorState,
+        lockState: preset.lockState,
+        alarmState: preset.alarmState,
+        securityState: preset.securityState
+    };
+}
+
+function createFloorOneGateData() {
+    return [
+        createGateFromState(1, '0001', 'ゲートA', { x: 110, y: 60 }, 'closed-locked'),
+        createGateFromState(2, '0002', 'ゲートB', { x: 210, y: 60 }, 'closed-unlocked'),
+        createGateFromState(3, '0003', 'ゲートC', { x: 310, y: 60 }, 'security-set'),
+        createGateFromState(4, '0004', 'ゲートD', { x: 210, y: 110 }, 'abnormal'),
+        createGateFromState(5, '0005', 'ゲートE', { x: 330, y: 110 }, 'open-locked'),
+        createGateFromState(6, '0006', 'ゲートF', { x: 110, y: 170 }, 'open-unlocked'),
+        createGateFromState(7, '0007', 'ゲートG', { x: 110, y: 270 }, 'closed-unlocked'),
+        createGateFromState(8, '0008', 'ゲートH', { x: 110, y: 240 }, 'closed-locked')
+    ];
 }
 
 /**
@@ -198,8 +267,19 @@ function zoomOut() {
  * ズームリセット
  */
 function resetZoom() {
-    mapMonitor.zoomLevel = 1;
+    mapMonitor.zoomLevel = mapMonitor.defaultZoomLevel;
     applyZoom();
+}
+
+/**
+ * マップ表示を初期状態へ戻す
+ */
+function resetMapView() {
+    resetZoom();
+
+    window.requestAnimationFrame(function() {
+        centerMapViewport();
+    });
 }
 
 /**
@@ -222,6 +302,18 @@ function applyZoom() {
 }
 
 /**
+ * ビューポートのスクロール位置を中央へ戻す
+ */
+function centerMapViewport() {
+    var viewport = document.getElementById('mapViewport');
+    if (!viewport) return;
+
+    var left = Math.max(0, (viewport.scrollWidth - viewport.clientWidth) / 2);
+    var top = Math.max(0, (viewport.scrollHeight - viewport.clientHeight) / 2);
+    viewport.scrollTo(left, top);
+}
+
+/**
  * フロア切り替え
  */
 function switchFloor(floor) {
@@ -234,16 +326,7 @@ function switchFloor(floor) {
 
     // ゲートの再配置（フロア2/3はランダム）
     if (floor === 1) {
-        mapMonitor.gateData = [
-            { id: 1, code: '0001', name: 'ゲートA', status: 'normal', position: { x: 110, y: 60 }, lastUpdate: new Date() },
-            { id: 2, code: '0002', name: 'ゲートB', status: 'normal', position: { x: 210, y: 60 }, lastUpdate: new Date() },
-            { id: 3, code: '0003', name: 'ゲートC', status: 'warning', position: { x: 310, y: 60 }, lastUpdate: new Date() },
-            { id: 4, code: '0004', name: 'ゲートD', status: 'error', position: { x: 210, y: 110 }, lastUpdate: new Date() },
-            { id: 5, code: '0005', name: 'ゲートE', status: 'error', position: { x: 330, y: 110 }, lastUpdate: new Date() },
-            { id: 6, code: '0006', name: 'ゲートF', status: 'normal', position: { x: 110, y: 170 }, lastUpdate: new Date() },
-            { id: 7, code: '0007', name: 'ゲートG', status: 'normal', position: { x: 110, y: 270 }, lastUpdate: new Date() },
-            { id: 8, code: '0008', name: 'ゲートH', status: 'offline', position: { x: 110, y: 240 }, lastUpdate: new Date() }
-        ];
+        mapMonitor.gateData = createFloorOneGateData();
     } else {
         mapMonitor.gateData.forEach(function(gate) {
             gate.position = {
@@ -262,10 +345,7 @@ function switchFloor(floor) {
 function showGateControlModal(element) {
     var gateId = parseInt(element.getAttribute('data-gate'), 10);
     var gateData = mapMonitor.gateData.find(function(g) { return g.id === gateId; });
-    var className = element.querySelector('.pointer-circle').className;
-    var gateStatus = className.indexOf('status-normal') !== -1 ? '正常' :
-                     className.indexOf('status-warning') !== -1 ? '警告' :
-                     className.indexOf('status-error') !== -1 ? '異常' : 'オフライン';
+    var gateStatus = gateData ? getGateStateLabel(gateData) : '-';
 
     var displayName = gateData ? gateData.name + '(' + gateData.code + ')' : 'ゲート' + gateId;
     document.getElementById('modalGateNumber').textContent = displayName;
@@ -340,10 +420,15 @@ function executeGroupControl() {
  * ゲートデータ更新（ダミー）
  */
 function refreshGateData() {
-    var statuses = ['normal', 'warning', 'error', 'offline'];
+    var statuses = Object.keys(MAP_STATE_PRESETS);
     mapMonitor.gateData.forEach(function(gate) {
         if (Math.random() < 0.3) {
-            gate.status = statuses[Math.floor(Math.random() * statuses.length)];
+            var nextState = statuses[Math.floor(Math.random() * statuses.length)];
+            var nextPreset = MAP_STATE_PRESETS[nextState];
+            gate.doorState = nextPreset.doorState;
+            gate.lockState = nextPreset.lockState;
+            gate.alarmState = nextPreset.alarmState;
+            gate.securityState = nextPreset.securityState;
             gate.lastUpdate = new Date();
         }
     });

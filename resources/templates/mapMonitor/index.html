@@ -50,33 +50,33 @@
 
         /* ---- 左サイドバー（フロアタブ） ---- */
         .mm-sidebar {
-            width: 160px;
+            width: 120px;
             flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            padding: 8px;
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: repeat(30, minmax(0, 1fr));
+            gap: 2px;
+            padding: 4px;
             background: var(--td-header-bg);
-            overflow-y: auto;
-            scrollbar-width: none; /* Firefox */
-        }
-        .mm-sidebar::-webkit-scrollbar {
-            display: none; /* Chrome / Safari */
+            overflow: hidden;
         }
         .mm-floor-btn {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             width: 100%;
-            padding: 10px 14px;
-            border: 2px solid var(--td-border);
-            border-radius: 8px;
+            min-height: 0;
+            padding: 0 6px;
+            border: 1px solid var(--td-border);
+            border-radius: 6px;
             background: #fff;
-            font-size: 0.95rem;
+            font-size: 0.78rem;
             font-weight: 500;
+            line-height: 1.1;
             color: #333;
             cursor: pointer;
             transition: all 0.2s ease;
+            white-space: nowrap;
         }
         .mm-floor-btn:hover {
             background: #e9ecef;
@@ -85,21 +85,6 @@
             background: var(--td-accent);
             border-color: var(--td-accent);
             color: #fff;
-        }
-        .mm-floor-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 22px;
-            height: 22px;
-            padding: 0 6px;
-            border-radius: 12px;
-            background: rgba(0,0,0,0.1);
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .mm-floor-btn.active .mm-floor-badge {
-            background: rgba(255,255,255,0.25);
         }
 
         /* ---- マップエリア ---- */
@@ -153,10 +138,12 @@
             border: 2px solid white;
             box-shadow: 0 0 0 2px rgba(0,0,0,0.2);
         }
-        .pointer-circle.status-normal  { background: #28a745; box-shadow: 0 0 0 2px #28a745; }
-        .pointer-circle.status-warning { background: #ffc107; box-shadow: 0 0 0 2px #ffc107; }
-        .pointer-circle.status-error   { background: #dc3545; box-shadow: 0 0 0 2px #dc3545; }
-        .pointer-circle.status-offline { background: #6c757d; box-shadow: 0 0 0 2px #6c757d; }
+        .pointer-circle.state-closed-locked   { background: #1f5fbf; box-shadow: 0 0 0 2px #1f5fbf; }
+        .pointer-circle.state-closed-unlocked { background: #28a745; box-shadow: 0 0 0 2px #28a745; }
+        .pointer-circle.state-abnormal        { background: #dc3545; box-shadow: 0 0 0 2px #dc3545; }
+        .pointer-circle.state-open-locked     { background: #6ec6ff; box-shadow: 0 0 0 2px #6ec6ff; }
+        .pointer-circle.state-open-unlocked   { background: #90ee90; box-shadow: 0 0 0 2px #90ee90; }
+        .pointer-circle.state-security-set    { background: #ffc107; box-shadow: 0 0 0 2px #ffc107; }
 
         /* ---- ツールチップ ---- */
         .gate-tooltip {
@@ -177,10 +164,12 @@
             transform-origin: bottom center;
         }
         .gate-pointer:hover .gate-tooltip { opacity: 1; transform: scale(1); }
-        .gate-tooltip.status-normal  { border-color: #28a745; }
-        .gate-tooltip.status-warning { border-color: #ffc107; }
-        .gate-tooltip.status-error   { border-color: #dc3545; }
-        .gate-tooltip.status-offline { border-color: #6c757d; }
+        .gate-tooltip.state-closed-locked   { border-color: #1f5fbf; }
+        .gate-tooltip.state-closed-unlocked { border-color: #28a745; }
+        .gate-tooltip.state-abnormal        { border-color: #dc3545; }
+        .gate-tooltip.state-open-locked     { border-color: #6ec6ff; }
+        .gate-tooltip.state-open-unlocked   { border-color: #90ee90; }
+        .gate-tooltip.state-security-set    { border-color: #ffc107; }
 
         .tooltip-header {
             display: flex;
@@ -222,10 +211,13 @@
             min-height: 45px;
         }
         .tooltip-icon-item:last-child { border-right: none; }
-        .tooltip-icon-door     { background-image: url('/resources/static/images/gate/1_door_state/door_closed.png'); }
-        .tooltip-icon-lock     { background-image: url('/resources/static/images/gate/2_lock_state/door_locking.png'); }
-        .tooltip-icon-security { background-image: url('/resources/static/images/gate/4_security_state/gate_sec_set.png'); }
-        .tooltip-icon-comm     { background-image: url('/resources/static/images/gate/1_door_state/door_opening.png'); }
+        .tooltip-icon-door-closed  { background-image: url('/resources/static/images/gate/1_door_state/door_closed.png'); }
+        .tooltip-icon-door-open    { background-image: url('/resources/static/images/gate/1_door_state/door_opening.png'); }
+        .tooltip-icon-lock-locked  { background-image: url('/resources/static/images/gate/2_lock_state/door_locking.png'); }
+        .tooltip-icon-lock-unlocked{ background-image: url('/resources/static/images/gate/2_lock_state/door_unlocking.png'); }
+        .tooltip-icon-alarm-error  { background-image: url('/resources/static/images/gate/3_alarm_state/alarm_abnormal.png'); }
+        .tooltip-icon-security-set { background-image: url('/resources/static/images/gate/4_security_state/gate_sec_set.png'); }
+        .tooltip-icon-empty        { background-image: none; }
 
         /* ---- 一斉制御ボタン ---- */
         .mm-batch-ctrl-btn {
@@ -301,10 +293,10 @@
         <button class="td-layout-btn" onclick="zoomOut()" title="ズームアウト">
             <i class="fas fa-minus"></i>
         </button>
+        <button class="td-layout-btn" onclick="resetMapView()" title="リセット">
+            <i class="fas fa-undo-alt"></i>
+        </button>
         <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
-            <button class="td-layout-btn" title="通知">
-                <i class="fas fa-bell"></i>
-            </button>
             <button class="td-page-btn mm-batch-ctrl-btn" onclick="showGroupControlModal()">
                 一斉遠隔操作
             </button>
@@ -317,36 +309,36 @@
             <div class="mm-layout">
                 <!-- 左サイドバー: フロアタブ -->
                 <div class="mm-sidebar">
-                    <button class="mm-floor-btn active" data-floor="1">フロア1 <span class="mm-floor-badge">8</span></button>
-                    <button class="mm-floor-btn" data-floor="2">フロア2 <span class="mm-floor-badge">6</span></button>
-                    <button class="mm-floor-btn" data-floor="3">フロア3 <span class="mm-floor-badge">4</span></button>
-                    <button class="mm-floor-btn" data-floor="4">フロア4 <span class="mm-floor-badge">5</span></button>
-                    <button class="mm-floor-btn" data-floor="5">フロア5 <span class="mm-floor-badge">7</span></button>
-                    <button class="mm-floor-btn" data-floor="6">フロア6 <span class="mm-floor-badge">3</span></button>
-                    <button class="mm-floor-btn" data-floor="7">フロア7 <span class="mm-floor-badge">9</span></button>
-                    <button class="mm-floor-btn" data-floor="8">フロア8 <span class="mm-floor-badge">6</span></button>
-                    <button class="mm-floor-btn" data-floor="9">フロア9 <span class="mm-floor-badge">4</span></button>
-                    <button class="mm-floor-btn" data-floor="10">フロア10 <span class="mm-floor-badge">8</span></button>
-                    <button class="mm-floor-btn" data-floor="11">フロア11 <span class="mm-floor-badge">5</span></button>
-                    <button class="mm-floor-btn" data-floor="12">フロア12 <span class="mm-floor-badge">7</span></button>
-                    <button class="mm-floor-btn" data-floor="13">フロア13 <span class="mm-floor-badge">3</span></button>
-                    <button class="mm-floor-btn" data-floor="14">フロア14 <span class="mm-floor-badge">6</span></button>
-                    <button class="mm-floor-btn" data-floor="15">フロア15 <span class="mm-floor-badge">8</span></button>
-                    <button class="mm-floor-btn" data-floor="16">フロア16 <span class="mm-floor-badge">4</span></button>
-                    <button class="mm-floor-btn" data-floor="17">フロア17 <span class="mm-floor-badge">9</span></button>
-                    <button class="mm-floor-btn" data-floor="18">フロア18 <span class="mm-floor-badge">5</span></button>
-                    <button class="mm-floor-btn" data-floor="19">フロア19 <span class="mm-floor-badge">7</span></button>
-                    <button class="mm-floor-btn" data-floor="20">フロア20 <span class="mm-floor-badge">6</span></button>
-                    <button class="mm-floor-btn" data-floor="21">フロア21 <span class="mm-floor-badge">3</span></button>
-                    <button class="mm-floor-btn" data-floor="22">フロア22 <span class="mm-floor-badge">8</span></button>
-                    <button class="mm-floor-btn" data-floor="23">フロア23 <span class="mm-floor-badge">4</span></button>
-                    <button class="mm-floor-btn" data-floor="24">フロア24 <span class="mm-floor-badge">7</span></button>
-                    <button class="mm-floor-btn" data-floor="25">フロア25 <span class="mm-floor-badge">5</span></button>
-                    <button class="mm-floor-btn" data-floor="26">フロア26 <span class="mm-floor-badge">9</span></button>
-                    <button class="mm-floor-btn" data-floor="27">フロア27 <span class="mm-floor-badge">6</span></button>
-                    <button class="mm-floor-btn" data-floor="28">フロア28 <span class="mm-floor-badge">3</span></button>
-                    <button class="mm-floor-btn" data-floor="29">フロア29 <span class="mm-floor-badge">8</span></button>
-                    <button class="mm-floor-btn" data-floor="30">フロア30 <span class="mm-floor-badge">5</span></button>
+                    <button class="mm-floor-btn active" data-floor="1">フロア1</button>
+                    <button class="mm-floor-btn" data-floor="2">フロア2</button>
+                    <button class="mm-floor-btn" data-floor="3">フロア3</button>
+                    <button class="mm-floor-btn" data-floor="4">フロア4</button>
+                    <button class="mm-floor-btn" data-floor="5">フロア5</button>
+                    <button class="mm-floor-btn" data-floor="6">フロア6</button>
+                    <button class="mm-floor-btn" data-floor="7">フロア7</button>
+                    <button class="mm-floor-btn" data-floor="8">フロア8</button>
+                    <button class="mm-floor-btn" data-floor="9">フロア9</button>
+                    <button class="mm-floor-btn" data-floor="10">フロア10</button>
+                    <button class="mm-floor-btn" data-floor="11">フロア11</button>
+                    <button class="mm-floor-btn" data-floor="12">フロア12</button>
+                    <button class="mm-floor-btn" data-floor="13">フロア13</button>
+                    <button class="mm-floor-btn" data-floor="14">フロア14</button>
+                    <button class="mm-floor-btn" data-floor="15">フロア15</button>
+                    <button class="mm-floor-btn" data-floor="16">フロア16</button>
+                    <button class="mm-floor-btn" data-floor="17">フロア17</button>
+                    <button class="mm-floor-btn" data-floor="18">フロア18</button>
+                    <button class="mm-floor-btn" data-floor="19">フロア19</button>
+                    <button class="mm-floor-btn" data-floor="20">フロア20</button>
+                    <button class="mm-floor-btn" data-floor="21">フロア21</button>
+                    <button class="mm-floor-btn" data-floor="22">フロア22</button>
+                    <button class="mm-floor-btn" data-floor="23">フロア23</button>
+                    <button class="mm-floor-btn" data-floor="24">フロア24</button>
+                    <button class="mm-floor-btn" data-floor="25">フロア25</button>
+                    <button class="mm-floor-btn" data-floor="26">フロア26</button>
+                    <button class="mm-floor-btn" data-floor="27">フロア27</button>
+                    <button class="mm-floor-btn" data-floor="28">フロア28</button>
+                    <button class="mm-floor-btn" data-floor="29">フロア29</button>
+                    <button class="mm-floor-btn" data-floor="30">フロア30</button>
                 </div>
 
                 <!-- マップエリア -->
@@ -507,24 +499,34 @@
             </div>
             <div class="legend-divider"></div>
             <div class="legend-item">
-                <input type="checkbox" class="status-filter-checkbox" value="normal" checked>
+                <input type="checkbox" class="status-filter-checkbox" value="closed-locked" checked>
+                <div class="legend-dot" style="background:#1f5fbf;"></div>
+                <span>閉扉施錠</span>
+            </div>
+            <div class="legend-item">
+                <input type="checkbox" class="status-filter-checkbox" value="closed-unlocked" checked>
                 <div class="legend-dot" style="background:#28a745;"></div>
-                <span>正常</span>
+                <span>閉扉解錠</span>
             </div>
             <div class="legend-item">
-                <input type="checkbox" class="status-filter-checkbox" value="warning" checked>
-                <div class="legend-dot" style="background:#e07b00;"></div>
-                <span>警告</span>
-            </div>
-            <div class="legend-item">
-                <input type="checkbox" class="status-filter-checkbox" value="error" checked>
+                <input type="checkbox" class="status-filter-checkbox" value="abnormal" checked>
                 <div class="legend-dot" style="background:#dc3545;"></div>
                 <span>異常</span>
             </div>
             <div class="legend-item">
-                <input type="checkbox" class="status-filter-checkbox" value="offline" checked>
-                <div class="legend-dot" style="background:#6c757d;"></div>
-                <span>オフライン</span>
+                <input type="checkbox" class="status-filter-checkbox" value="open-locked" checked>
+                <div class="legend-dot" style="background:#6ec6ff;"></div>
+                <span>開扉施錠</span>
+            </div>
+            <div class="legend-item">
+                <input type="checkbox" class="status-filter-checkbox" value="open-unlocked" checked>
+                <div class="legend-dot" style="background:#90ee90;"></div>
+                <span>開扉解錠</span>
+            </div>
+            <div class="legend-item">
+                <input type="checkbox" class="status-filter-checkbox" value="security-set" checked>
+                <div class="legend-dot" style="background:#ffc107;"></div>
+                <span>警備セット</span>
             </div>
         </div>
     </div>

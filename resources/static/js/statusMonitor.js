@@ -14,6 +14,9 @@ class StatusMonitor {
         this.selectedGateGroup = null; // 選択されたゲートグループ
         this.sidebarCollapsed = false;
         this.statusFilters = ['normal', 'warning', 'error', 'offline']; // フィルター設定
+        this.layoutFrameId = null;
+        this.layoutTimeoutId = null;
+        this.gridResizeObserver = null;
         this.init();
     }
 
@@ -23,10 +26,12 @@ class StatusMonitor {
         this.generateGateGroups();
         this.renderGateButtons();
         this.renderGates();
+        this.observeGridContainer();
         this.startAutoRefresh();
         this.handleResize();
-        // 初回描画後にコンテナ高さ確定してから再計算
-        requestAnimationFrame(() => this.updateGridLayout());
+        // 初回表示はフォント・凡例描画で高さが変わるため、読み込み完了後にも再計算する
+        window.addEventListener('load', () => this.scheduleGridLayoutUpdate(), { once: true });
+        this.scheduleGridLayoutUpdate();
     }
 
     setupEventListeners() {
@@ -164,8 +169,37 @@ class StatusMonitor {
             renderGateGroupDropdown();
         }
         
-        this.updateGridLayout();
         this.renderGates();
+    }
+
+    observeGridContainer() {
+        const container = document.querySelector('.gate-grid-container');
+        if (!container || typeof ResizeObserver === 'undefined') return;
+
+        this.gridResizeObserver = new ResizeObserver(() => {
+            this.scheduleGridLayoutUpdate();
+        });
+        this.gridResizeObserver.observe(container);
+    }
+
+    scheduleGridLayoutUpdate() {
+        if (this.layoutFrameId) {
+            cancelAnimationFrame(this.layoutFrameId);
+        }
+        if (this.layoutTimeoutId) {
+            clearTimeout(this.layoutTimeoutId);
+        }
+
+        this.layoutFrameId = requestAnimationFrame(() => {
+            this.layoutFrameId = null;
+            this.updateGridLayout();
+
+            // 初回描画直後の遅延リフローも拾う
+            this.layoutTimeoutId = window.setTimeout(() => {
+                this.layoutTimeoutId = null;
+                this.updateGridLayout();
+            }, 120);
+        });
     }
 
     updateGridLayout() {
@@ -249,6 +283,8 @@ class StatusMonitor {
             const gateCard = this.createGateCard(gate);
             grid.appendChild(gateCard);
         });
+
+        this.scheduleGridLayoutUpdate();
     }
 
     renderGateButtons() {
@@ -721,7 +757,7 @@ class StatusMonitor {
     }
 
     handleResize() {
-        this.updateGridLayout();
+        this.scheduleGridLayoutUpdate();
     }
 }
 
