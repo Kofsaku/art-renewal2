@@ -225,16 +225,24 @@ class StatusMonitor {
         let cols = Math.max(1, Math.floor((containerWidth + config.gap) / (config.minCardWidth + config.gap)));
         cols = Math.min(cols, config.maxCols);
 
-        // 表示カード数からビューポート高さに合わせて行高さを動的計算
+        // ビューポートから利用可能な高さを計算（container.clientHeightに依存しない）
         const rows = Math.ceil(this.currentLayout / cols);
-        const availableHeight = container.clientHeight - containerPad;
+        const headerH = document.querySelector('.td-header')?.offsetHeight || 48;
+        const legendEl = document.querySelector('.sm-legend');
+        const footerEl = document.querySelector('.td-footer');
+        const legendH = legendEl ? legendEl.offsetHeight : 0;
+        const footerH = footerEl ? footerEl.offsetHeight : 0;
+        const smOuter = document.querySelector('.sm-outer');
+        const smInner = document.querySelector('.sm-inner');
+        const outerPad = smOuter ? (parseFloat(getComputedStyle(smOuter).paddingTop) + parseFloat(getComputedStyle(smOuter).paddingBottom)) : 8;
+        const innerBorder = smInner ? (parseFloat(getComputedStyle(smInner).borderTopWidth) + parseFloat(getComputedStyle(smInner).borderBottomWidth)) : 2;
+        const availableHeight = window.innerHeight - headerH - legendH - footerH - outerPad - innerBorder - containerPad;
 
         let rowHeight;
         if (availableHeight > 0) {
             rowHeight = Math.floor((availableHeight - (rows - 1) * config.gap) / rows);
             rowHeight = Math.max(config.minRowH, Math.min(config.maxRowH, rowHeight));
         } else {
-            // 初回描画時など高さ未確定の場合はフォールバック
             rowHeight = config.minRowH;
         }
 

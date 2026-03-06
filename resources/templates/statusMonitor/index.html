@@ -189,6 +189,18 @@
             height: 16px;
             background: #ccc;
         }
+
+        /* ---- ページ内スクロール抑止（グリッド内部でのみスクロール） ---- */
+        body.td-body {
+            height: 100vh;
+            overflow: hidden;
+        }
+        .td-main {
+            min-height: 0;
+        }
+        .sm-outer {
+            min-height: 0;
+        }
     </style>
 </head>
 
