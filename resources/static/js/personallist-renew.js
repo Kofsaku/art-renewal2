@@ -49,7 +49,38 @@ document.addEventListener('DOMContentLoaded', function () {
             var menu = document.getElementById('columnManagerMenu');
             if (menu) menu.classList.remove('show');
         }
+        // 管理機能ドロップダウンを閉じる
+        var dropdown = document.querySelector('.pl-manage-dropdown');
+        if (dropdown && !dropdown.contains(e.target)) {
+            var manageMenu = document.getElementById('manageMenu');
+            if (manageMenu) manageMenu.classList.remove('show');
+        }
     });
+
+    // ヘッダーボタン群
+    document.getElementById('plSendBtn')?.addEventListener('click', sendPersonalData);
+    document.getElementById('plResendBtn')?.addEventListener('click', sendUnsentData);
+    var regBtn = document.getElementById('plRegisterBtn');
+    if (regBtn) {
+        regBtn.addEventListener('click', function () {
+            var href = this.dataset.href || '/personalRegistration';
+            window.location.href = href;
+        });
+    }
+    document.getElementById('plDeleteBtn')?.addEventListener('click', bulkDelete);
+    document.getElementById('plRevokeBtn')?.addEventListener('click', revokePermission);
+    document.getElementById('plUploadBtn')?.addEventListener('click', uploadData);
+    document.getElementById('plDownloadBtn')?.addEventListener('click', downloadData);
+    document.getElementById('manageDropdownBtn')?.addEventListener('click', toggleManageMenu);
+    document.getElementById('itemsPerPage')?.addEventListener('change', changeItemsPerPage);
+    document.getElementById('plFilterResetBtn')?.addEventListener('click', resetFilters);
+
+    // 管理メニュー項目
+    document.getElementById('plManageDept')?.addEventListener('click', function () { alert('所属の管理画面に遷移します'); });
+    document.getElementById('plManageCat')?.addEventListener('click', function () { alert('区分の管理画面に遷移します'); });
+    document.getElementById('plManageKey')?.addEventListener('click', function () { alert('通行権限(鍵)の管理画面に遷移します'); });
+    document.getElementById('plManageBulk')?.addEventListener('click', function () { alert('通行権限の一括変更画面に遷移します'); });
+    document.getElementById('plManageTime')?.addEventListener('click', function () { alert('入退室制限時間帯の管理画面に遷移します'); });
 });
 
 // Generate sample data for testing
@@ -1050,6 +1081,14 @@ function downloadData() {
     alert('データダウンロード機能');
 }
 
+function toggleManageMenu() {
+    document.getElementById('manageMenu').classList.toggle('show');
+}
+
+function revokePermission() {
+    alert('権限失効を実行します');
+}
+
 // New functions for No.1
 function sendPersonalData() {
     const selectedPeople = personalData.filter(p => p.selected);
@@ -1203,6 +1242,10 @@ function showHistorySettingsModal(person) {
                                 <input class="form-check-input" type="radio" name="histPeriod" id="p3" value="1week">
                                 <label class="form-check-label" for="p3">1週間前～</label>
                             </div>
+                            <div class="form-check small">
+                                <input class="form-check-input" type="radio" name="histPeriod" id="p4" value="1month">
+                                <label class="form-check-label" for="p4">1ヵ月前～</label>
+                            </div>
                         </div>
                         <div class="col-6">
                             <div class="fw-bold small border-bottom pb-1 mb-2"><i class="fas fa-filter me-1"></i>履歴種類</div>
@@ -1211,22 +1254,22 @@ function showHistorySettingsModal(person) {
                                 <label class="form-check-label" for="t1">全て</label>
                             </div>
                             <div class="form-check small">
-                                <input class="form-check-input" type="radio" name="histDataType" id="t2" value="warning">
-                                <label class="form-check-label" for="t2">軽エラー</label>
+                                <input class="form-check-input" type="radio" name="histDataType" id="t2" value="normal">
+                                <label class="form-check-label" for="t2">正常データのみ</label>
                             </div>
                             <div class="form-check small">
-                                <input class="form-check-input" type="radio" name="histDataType" id="t3" value="error">
-                                <label class="form-check-label" for="t3">重エラー</label>
+                                <input class="form-check-input" type="radio" name="histDataType" id="t3" value="warning">
+                                <label class="form-check-label" for="t3">軽エラーデータのみ</label>
                             </div>
                             <div class="form-check small">
-                                <input class="form-check-input" type="radio" name="histDataType" id="t4" value="recovery">
-                                <label class="form-check-label" for="t4">重エラー＋復旧</label>
+                                <input class="form-check-input" type="radio" name="histDataType" id="t4" value="error">
+                                <label class="form-check-label" for="t4">重エラーデータのみ</label>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer py-2">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="button" class="btn btn-outline-dark btn-sm" data-bs-dismiss="modal">キャンセル</button>
                     <button type="button" class="btn btn-primary btn-sm" id="navigateReportBtn">
                         <i class="fas fa-arrow-right me-1"></i>報告書画面へ遷移
                     </button>

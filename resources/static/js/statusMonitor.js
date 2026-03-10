@@ -24,6 +24,7 @@ class StatusMonitor {
         this.setupEventListeners();
         this.generateGateData();
         this.generateGateGroups();
+        this.renderGateGroupDropdown();
         this.renderGateButtons();
         this.renderGates();
         this.observeGridContainer();
@@ -142,6 +143,38 @@ class StatusMonitor {
         }
     }
 
+    renderGateGroupDropdown() {
+        var dropdown = document.getElementById('gateListDropdown');
+        if (!dropdown) return;
+        dropdown.innerHTML = '';
+        this.gateGroups.forEach((group) => {
+            var li = document.createElement('li');
+            var a = document.createElement('a');
+            a.className = 'dropdown-item d-flex align-items-center justify-content-between';
+            a.href = '#';
+            a.style.fontSize = '0.85rem';
+
+            var label = document.createElement('span');
+            label.textContent = group.name;
+
+            var dot = document.createElement('span');
+            dot.className = 'gate-group-dot gate-group-' + group.status;
+
+            a.appendChild(label);
+            a.appendChild(dot);
+            a.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.selectedGateGroup = group.id;
+                this.renderGates();
+                // ドロップダウンを閉じる
+                var btn = document.querySelector('.td-gate-list-btn');
+                if (btn) btn.click();
+            });
+            li.appendChild(a);
+            dropdown.appendChild(li);
+        });
+    }
+
     getGroupStatus(range) {
         // IDは1始まりなので、インデックスは-1
         const gatesInRange = this.gates.slice(range[0] - 1, range[1]);
@@ -165,9 +198,7 @@ class StatusMonitor {
         this.renderGateButtons();
 
         // ドロップダウンも更新
-        if (typeof renderGateGroupDropdown === 'function') {
-            renderGateGroupDropdown();
-        }
+        this.renderGateGroupDropdown();
         
         this.renderGates();
     }
@@ -649,6 +680,10 @@ class StatusMonitor {
                                     <input class="form-check-input" type="radio" name="histPeriod" id="p3" value="1week">
                                     <label class="form-check-label" for="p3">1週間前～</label>
                                 </div>
+                                <div class="form-check small">
+                                    <input class="form-check-input" type="radio" name="histPeriod" id="p4" value="1month">
+                                    <label class="form-check-label" for="p4">1ヵ月前～</label>
+                                </div>
                             </div>
                             <div class="col-6">
                                 <div class="fw-bold small border-bottom pb-1 mb-2"><i class="fas fa-filter me-1"></i>履歴種類</div>
@@ -658,15 +693,15 @@ class StatusMonitor {
                                 </div>
                                 <div class="form-check small">
                                     <input class="form-check-input" type="checkbox" id="t2">
-                                    <label class="form-check-label" for="t2">軽エラー</label>
+                                    <label class="form-check-label" for="t2">正常データのみ</label>
                                 </div>
                                 <div class="form-check small">
                                     <input class="form-check-input" type="checkbox" id="t3">
-                                    <label class="form-check-label" for="t3">重エラー</label>
+                                    <label class="form-check-label" for="t3">軽エラーデータのみ</label>
                                 </div>
                                 <div class="form-check small">
                                     <input class="form-check-input" type="checkbox" id="t4">
-                                    <label class="form-check-label" for="t4">重エラー〜復旧</label>
+                                    <label class="form-check-label" for="t4">重エラーデータのみ</label>
                                 </div>
                             </div>
                         </div>
@@ -687,20 +722,20 @@ class StatusMonitor {
             var periodRadio = modal.querySelector('input[name="histPeriod"]:checked');
             var period = periodRadio ? periodRadio.value : '1day';
             var t1 = modal.querySelector('#t1'); // 全て
-            var t2 = modal.querySelector('#t2'); // 軽エラー
-            var t3 = modal.querySelector('#t3'); // 重エラー
-            var t4 = modal.querySelector('#t4'); // 重エラー〜復旧
+            var t2 = modal.querySelector('#t2'); // 正常データのみ
+            var t3 = modal.querySelector('#t3'); // 軽エラーデータのみ
+            var t4 = modal.querySelector('#t4'); // 重エラーデータのみ
 
             // データ種別を判定
             var dataType = 'all';
             if (t1 && t1.checked) {
                 dataType = 'all';
             } else if (t2 && t2.checked) {
-                dataType = 'warning';
+                dataType = 'normal';
             } else if (t3 && t3.checked) {
-                dataType = 'error';
+                dataType = 'warning';
             } else if (t4 && t4.checked) {
-                dataType = 'recovery';
+                dataType = 'error';
             }
 
             // URLパラメータで報告書画面に遷移

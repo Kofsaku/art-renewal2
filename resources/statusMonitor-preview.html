@@ -361,57 +361,5 @@
 	})();
 	</script>
 <script type="text/javascript" src="/resources/static/js/statusMonitor.js"></script>
-<script>
-        document.addEventListener('DOMContentLoaded', function () {
-            setTimeout(function () {
-                if (!window.statusMonitor) return;
-
-                // フィルターチェックボックス
-                document.querySelectorAll('.status-filter-checkbox').forEach(function (cb) {
-                    cb.onclick = function () {
-                        window.statusMonitor.updateStatusFilters();
-                    };
-                });
-
-                // ゲートグループドロップダウンを描画
-                renderGateGroupDropdown();
-
-                statusMonitor.generateGateGroups();
-                statusMonitor.renderGates();
-            }, 100);
-        });
-
-        function renderGateGroupDropdown() {
-            var dropdown = document.getElementById('gateListDropdown');
-            if (!dropdown || !window.statusMonitor) return;
-            dropdown.innerHTML = '';
-            window.statusMonitor.gateGroups.forEach(function (group) {
-                var li = document.createElement('li');
-                var a = document.createElement('a');
-                a.className = 'dropdown-item d-flex align-items-center justify-content-between';
-                a.href = '#';
-                a.style.fontSize = '0.85rem';
-
-                var label = document.createElement('span');
-                label.textContent = group.name;
-
-                var dot = document.createElement('span');
-                dot.className = 'gate-group-dot gate-group-' + group.status;
-
-                a.appendChild(label);
-                a.appendChild(dot);
-                a.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    window.statusMonitor.selectedGateGroup = group.id;
-                    window.statusMonitor.renderGates();
-                    // ドロップダウンを閉じる
-                    var btn = document.querySelector('.td-gate-list-btn');
-                    if (btn) btn.click();
-                });
-                li.appendChild(a);
-                dropdown.appendChild(li);
-            });
-        }
-    </script>
 </body>
 </html>

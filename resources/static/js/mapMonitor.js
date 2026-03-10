@@ -70,6 +70,14 @@ function setupEventListeners() {
         });
     });
 
+    // ヘッダーボタン
+    document.getElementById('mmZoomInBtn')?.addEventListener('click', zoomIn);
+    document.getElementById('mmZoomOutBtn')?.addEventListener('click', zoomOut);
+    document.getElementById('mmResetViewBtn')?.addEventListener('click', resetMapView);
+    document.getElementById('mmBatchCtrlBtn')?.addEventListener('click', showGroupControlModal);
+    document.getElementById('mmGroupExecBtn')?.addEventListener('click', executeGroupControl);
+    document.getElementById('mmSingleExecBtn')?.addEventListener('click', executeSingleRemoteCommand);
+
     // キーボードショートカット
     document.addEventListener('keydown', function(e) {
         if (['INPUT', 'TEXTAREA', 'SELECT'].indexOf(e.target.tagName) !== -1) return;
@@ -151,6 +159,14 @@ function renderGateIndicators() {
 
         pointer.addEventListener('click', function() {
             showGateControlModal(this);
+        });
+
+        // 右クリックで履歴表示設定モーダル（ステータスモニター同仕様）
+        pointer.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            var gateId = parseInt(this.getAttribute('data-gate'), 10);
+            var gateData = mapMonitor.gateData.find(function(g) { return g.id === gateId; });
+            if (gateData) showHistorySettingsModal(gateData);
         });
 
         floorPlan.appendChild(pointer);
@@ -478,6 +494,120 @@ function mapToScreenCoordinate(x, y) {
         x: rect.left + (x * mapMonitor.zoomLevel),
         y: rect.top + (y * mapMonitor.zoomLevel)
     };
+}
+
+/**
+ * 履歴表示設定モーダル（ステータスモニター同仕様）
+ */
+function showHistorySettingsModal(gate) {
+    var existing = document.getElementById('historySettingsModal');
+    if (existing) existing.remove();
+
+    var displayName = gate.name + '(' + gate.code + ')';
+
+    var modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'historySettingsModal';
+    modal.tabIndex = -1;
+    modal.setAttribute('aria-hidden', 'true');
+
+    modal.innerHTML =
+        '<div class="modal-dialog modal-dialog-centered">' +
+            '<div class="modal-content">' +
+                '<div class="modal-header py-2">' +
+                    '<h6 class="modal-title mb-0">' +
+                        '<i class="fas fa-history text-info me-2"></i>履歴表示設定 - ' + displayName +
+                    '</h6>' +
+                    '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>' +
+                '</div>' +
+                '<div class="modal-body">' +
+                    '<div class="alert alert-info py-2 mb-3" style="font-size: 0.9em;">' +
+                        displayName + 'の報告書を抽出します。' +
+                    '</div>' +
+                    '<div class="row g-3">' +
+                        '<div class="col-6">' +
+                            '<div class="fw-bold small border-bottom pb-1 mb-2"><i class="fas fa-calendar-alt me-1"></i>期間</div>' +
+                            '<div class="form-check small">' +
+                                '<input class="form-check-input" type="radio" name="histPeriod" id="mmP1" value="1day" checked>' +
+                                '<label class="form-check-label" for="mmP1">当日</label>' +
+                            '</div>' +
+                            '<div class="form-check small">' +
+                                '<input class="form-check-input" type="radio" name="histPeriod" id="mmP2" value="2day">' +
+                                '<label class="form-check-label" for="mmP2">前日～</label>' +
+                            '</div>' +
+                            '<div class="form-check small">' +
+                                '<input class="form-check-input" type="radio" name="histPeriod" id="mmP3" value="1week">' +
+                                '<label class="form-check-label" for="mmP3">1週間前～</label>' +
+                            '</div>' +
+                            '<div class="form-check small">' +
+                                '<input class="form-check-input" type="radio" name="histPeriod" id="mmP4" value="1month">' +
+                                '<label class="form-check-label" for="mmP4">1ヵ月前～</label>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="col-6">' +
+                            '<div class="fw-bold small border-bottom pb-1 mb-2"><i class="fas fa-filter me-1"></i>履歴種類</div>' +
+                            '<div class="form-check small">' +
+                                '<input class="form-check-input" type="checkbox" id="mmT1" checked>' +
+                                '<label class="form-check-label" for="mmT1">全て</label>' +
+                            '</div>' +
+                            '<div class="form-check small">' +
+                                '<input class="form-check-input" type="checkbox" id="mmT2">' +
+                                '<label class="form-check-label" for="mmT2">正常データのみ</label>' +
+                            '</div>' +
+                            '<div class="form-check small">' +
+                                '<input class="form-check-input" type="checkbox" id="mmT3">' +
+                                '<label class="form-check-label" for="mmT3">軽エラーデータのみ</label>' +
+                            '</div>' +
+                            '<div class="form-check small">' +
+                                '<input class="form-check-input" type="checkbox" id="mmT4">' +
+                                '<label class="form-check-label" for="mmT4">重エラーデータのみ</label>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="modal-footer py-2">' +
+                    '<button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">キャンセル</button>' +
+                    '<button type="button" class="btn btn-primary btn-sm" id="mmNavigateReportBtn">' +
+                        '<i class="fas fa-arrow-right me-1"></i>報告書画面へ遷移' +
+                    '</button>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+
+    document.body.appendChild(modal);
+
+    modal.querySelector('#mmNavigateReportBtn').addEventListener('click', function() {
+        var periodRadio = modal.querySelector('input[name="histPeriod"]:checked');
+        var period = periodRadio ? periodRadio.value : '1day';
+        var t1 = modal.querySelector('#mmT1');
+        var t2 = modal.querySelector('#mmT2');
+        var t3 = modal.querySelector('#mmT3');
+        var t4 = modal.querySelector('#mmT4');
+
+        var dataType = 'all';
+        if (t1 && t1.checked) {
+            dataType = 'all';
+        } else if (t2 && t2.checked) {
+            dataType = 'normal';
+        } else if (t3 && t3.checked) {
+            dataType = 'warning';
+        } else if (t4 && t4.checked) {
+            dataType = 'error';
+        }
+
+        var params = new URLSearchParams();
+        params.set('gate', gate.code);
+        params.set('period', period);
+        params.set('dataType', dataType);
+        var basePath = window.location.pathname.indexOf('-preview.html') !== -1
+            ? '/resources/historyReport-preview.html'
+            : '/historyReport';
+        window.location.href = basePath + '?' + params.toString();
+    });
+
+    var bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+    modal.addEventListener('hidden.bs.modal', function() { modal.remove(); });
 }
 
 // デバッグ用

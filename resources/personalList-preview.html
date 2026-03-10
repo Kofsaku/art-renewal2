@@ -547,47 +547,47 @@
 
 		<!-- ページ固有コントロール（各ページで上書き） -->
 		<div class="td-header-controls">
-        <button class="pl-btn" onclick="sendPersonalData()">
+        <button class="pl-btn" id="plSendBtn">
             <span class="material-symbols-outlined">send</span> 送信
         </button>
-        <button class="pl-btn" onclick="sendUnsentData()">
+        <button class="pl-btn" id="plResendBtn">
             <span class="material-symbols-outlined">replay</span> 未送再送
         </button>
-        <button class="pl-btn">
+        <button class="pl-btn" id="plRegisterBtn" th:data-href="@{/personalRegistration}">
             <span class="material-symbols-outlined">upload_file</span> 登録
         </button>
-        <button class="pl-btn pl-btn-red" onclick="bulkDelete()">
+        <button class="pl-btn pl-btn-red" id="plDeleteBtn">
             <span class="material-symbols-outlined">delete_forever</span> DB削除
         </button>
-        <button class="pl-btn pl-btn-orange" onclick="revokePermission()">
+        <button class="pl-btn pl-btn-orange" id="plRevokeBtn">
             <span class="material-symbols-outlined">key_off</span> 権限失効
         </button>
-        <button class="pl-btn pl-btn-gray" onclick="uploadData()">
+        <button class="pl-btn pl-btn-gray" id="plUploadBtn">
             <span class="material-symbols-outlined">upload_file</span> 取込
         </button>
-        <button class="pl-btn pl-btn-gray" onclick="downloadData()">
+        <button class="pl-btn pl-btn-gray" id="plDownloadBtn">
             <span class="material-symbols-outlined">file_download</span> 出力
         </button>
         <div class="pl-header-sep"></div>
         <!-- 管理機能ドロップダウン -->
         <div class="pl-manage-dropdown" style="position: relative;">
-            <button class="pl-btn pl-btn-outline-orange" id="manageDropdownBtn" onclick="toggleManageMenu()">
+            <button class="pl-btn pl-btn-outline-orange" id="manageDropdownBtn">
                 <i class="fas fa-cogs"></i> 管理機能 <i class="fas fa-caret-down" style="font-size:0.7rem;"></i>
             </button>
             <div class="pl-manage-menu" id="manageMenu">
-                <a class="pl-manage-item" href="javascript:void(0)" onclick="alert('所属の管理画面に遷移します')">
+                <a class="pl-manage-item" href="javascript:void(0)" id="plManageDept">
                     <span class="material-symbols-outlined">groups</span> 所属の管理
                 </a>
-                <a class="pl-manage-item" href="javascript:void(0)" onclick="alert('区分の管理画面に遷移します')">
+                <a class="pl-manage-item" href="javascript:void(0)" id="plManageCat">
                     <span class="material-symbols-outlined">groups</span> 区分の管理
                 </a>
-                <a class="pl-manage-item" href="javascript:void(0)" onclick="alert('通行権限(鍵)の管理画面に遷移します')">
+                <a class="pl-manage-item" href="javascript:void(0)" id="plManageKey">
                     <span class="material-symbols-outlined">groups</span> 通行権限(鍵)の管理
                 </a>
-                <a class="pl-manage-item" href="javascript:void(0)" onclick="alert('通行権限の一括変更画面に遷移します')">
+                <a class="pl-manage-item" href="javascript:void(0)" id="plManageBulk">
                     <span class="material-symbols-outlined">groups</span> 通行権限の一括変更
                 </a>
-                <a class="pl-manage-item green" href="javascript:void(0)" onclick="alert('入退室制限時間帯の管理画面に遷移します')">
+                <a class="pl-manage-item green" href="javascript:void(0)" id="plManageTime">
                     <span class="material-symbols-outlined">schedule</span> 入退室制限時間帯の管理
                 </a>
             </div>
@@ -610,7 +610,7 @@
 
                     <div class="pl-select-group">
                         <span>表示件数:</span>
-                        <select class="pl-select" id="itemsPerPage" onchange="changeItemsPerPage()">
+                        <select class="pl-select" id="itemsPerPage">
                             <option value="25" selected>25件</option>
                             <option value="50">50件</option>
                             <option value="100">100件</option>
@@ -619,7 +619,7 @@
 
                     <div class="pl-spacer"></div>
 
-                    <button class="pl-toolbar-btn" onclick="resetFilters()">
+                    <button class="pl-toolbar-btn" id="plFilterResetBtn">
                         <i class="fas fa-times-circle"></i>フィルターリセット
                     </button>
                     <div style="position: relative;">
@@ -687,21 +687,5 @@
 	})();
 	</script>
 <script type="text/javascript" src="/resources/static/js/personallist-renew.js"></script>
-<script>
-        /* 管理機能ドロップダウン */
-        function toggleManageMenu() {
-            document.getElementById('manageMenu').classList.toggle('show');
-        }
-        document.addEventListener('click', function(e) {
-            var dropdown = document.querySelector('.pl-manage-dropdown');
-            if (dropdown && !dropdown.contains(e.target)) {
-                document.getElementById('manageMenu').classList.remove('show');
-            }
-        });
-        /* 権限失効（プレースホルダー） */
-        function revokePermission() {
-            alert('権限失効を実行します');
-        }
-        </script>
 </body>
 </html>
