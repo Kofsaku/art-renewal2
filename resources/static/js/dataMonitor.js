@@ -1,707 +1,567 @@
 /**
- * 入退室データモニター JavaScript
- * リアルタイムでの入退室履歴監視機能
+ * データモニター JavaScript
+ * 入退室データのリアルタイム監視
  */
-class DataMonitor {
-    constructor() {
-        this.isAutoScrollEnabled = true;
-        this.dataBuffer = [];
-        this.maxBufferSize = 500;
-        this.currentFilters = {
-            dataType: 'all',
-            selectedGates: [],
-            selectedStatuses: ['normal', 'warning', 'error', 'recovery'],
-            visibleColumns: ['occurredDate', 'personalCode', 'name', 'departmentCode', 'departmentName', 'gateNumber', 'gateName', 'historyDetails']
-        };
-        this.excelFilters = {};
-        this.sortConfig = {
-            column: null,
-            direction: 'asc'
-        };
-        
-        this.init();
-    }
+(function () {
+    'use strict';
 
-    init() {
-        this.setupEventListeners();
-        this.loadInitialData();
-        this.renderTable();
-        // this.startAutoRefresh(); // 一時無効化
-    }
+    // data-column属性 → デモデータキーのマッピング
+    var columnAttrToKey = {
+        occurredDate: 'date',
+        personalCode: 'code',
+        name: 'name',
+        departmentCode: 'deptCode',
+        departmentName: 'dept',
+        gateNumber: 'gate',
+        gateName: 'gateName',
+        historyDetails: 'detail'
+    };
+    var columnDisplayNames = {
+        occurredDate: '発生日付',
+        personalCode: '個人コード',
+        name: '氏名',
+        departmentCode: '所属コード',
+        departmentName: '所属名称',
+        gateNumber: 'ゲート番号',
+        gateName: 'ゲート名称',
+        historyDetails: '履歴詳細'
+    };
 
-    setupEventListeners() {
-        // 自動スクロール停止/開始ボタン
-        document.getElementById('toggleAutoScroll')?.addEventListener('click', () => {
-            this.toggleAutoScroll();
-        });
+    // Excelフィルター状態: { colAttr: Set of selected values } (未設定=全選択)
+    var excelFilters = {};
+    var selectedRowData = null;
+    var dataTypeValue = 'all';
 
-        // データ種別フィルタ
-        document.getElementById('dataTypeFilter')?.addEventListener('change', (e) => {
-            this.currentFilters.dataType = e.target.value;
-            this.applyFilters();
-        });
+    var dataTypeDotClasses = { all: 'dot-all', normal: 'dot-normal', warning: 'dot-warning', error: 'dot-error' };
+    var dataTypeLabels = { all: '全データ表示', normal: '正常データ表示', warning: '軽エラーデータ表示', error: '重エラーデータ表示' };
 
-        // ゲートフィルタ
-        document.querySelectorAll('.gate-filter-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', () => {
-                this.updateGateFilters();
-            });
-        });
-
-        // ステータスフィルタ
-        document.querySelectorAll('.status-filter-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', () => {
-                this.updateStatusFilters();
-            });
-        });
-
-        // 列表示/非表示フィルタ
-        document.querySelectorAll('.column-filter-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', () => {
-                this.updateColumnVisibility();
-            });
-        });
-        
-        // Close Excel filter menus when clicking outside (No.14)
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.excel-filter-trigger') && !e.target.closest('.excel-filter-menu')) {
-                this.hideAllExcelFilters();
-            }
-        });
-        
-        // テーブルヘッダーのソート機能
-        document.querySelectorAll('.data-table th').forEach((th, index) => {
-            th.addEventListener('click', (e) => {
-                // フィルタートリガーをクリックした場合はソートしない
-                if (e.target.closest('.excel-filter-trigger')) {
-                    return;
-                }
-                
-                const columnKeys = ['occurredDate', 'personalCode', 'name', 'departmentCode', 'departmentName', 'gateNumber', 'gateName', 'historyDetails'];
-                const columnKey = columnKeys[index];
-                
-                if (columnKey) {
-                    this.sortTable(columnKey);
-                }
-            });
-        });
-    }
-
-    loadInitialData() {
-        // デモ用データ生成
-        this.generateDemoData();
-    }
-
-    generateDemoData() {
-        const dataTypes = [
-            { type: 'normal', color: 'normal', remarks: ['入室', '退室'] },
-            { type: 'warning', color: 'warning', remarks: ['通信異常復旧', 'カードリーダー警告', 'バッテリー低下'] },
-            { type: 'error', color: 'error', remarks: ['通信異常発生', 'ドア開放異常', 'セキュリティ違反'] },
-            { type: 'recovery', color: 'info', remarks: ['システム開始', 'メンテナンス完了'] }
-        ];
-
-        const gates = [
-            { number: '0001', name: 'XA0001', location: 'エントランス' },
-            { number: '0002', name: 'XA0002', location: 'サーバールーム' },
-            { number: '0003', name: 'XA0003', location: '会議室' },
-            { number: '0004', name: 'XA0004', location: '役員室' }
-        ];
-
-        const departments = ['所属001', '所属002', '所属003', '管理部', '開発部'];
-        const departmentCodes = ['001', '002', '003', '004', '005'];
-
-        // 過去30件のデータを生成
-        for (let i = 30; i >= 1; i--) {
-            const dataType = dataTypes[Math.floor(Math.random() * dataTypes.length)];
-            const gate = gates[Math.floor(Math.random() * gates.length)];
-            const remark = dataType.remarks[Math.floor(Math.random() * dataType.remarks.length)];
-            
-            const baseTime = new Date();
-            baseTime.setMinutes(baseTime.getMinutes() - i * 2);
-
-            const departmentIndex = Math.floor(Math.random() * departments.length);
-            
-            const data = {
-                occurredDate: this.formatDateTime(baseTime),
-                personalCode: dataType.type === 'normal' ? String(Math.floor(Math.random() * 999) + 1).padStart(6, '0') : '',
-                name: dataType.type === 'normal' ? `個人${String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')}` : '',
-                departmentCode: dataType.type === 'normal' ? departmentCodes[departmentIndex] : '',
-                departmentName: dataType.type === 'normal' ? departments[departmentIndex] : '',
-                gateNumber: gate.number,
-                gateName: dataType.type === 'normal' ? gate.name : `H = ${gate.number.substring(2)} A = ${Math.floor(Math.random() * 99) + 1}`,
-                historyDetails: remark,
-                statusClass: dataType.color,
-                timestamp: baseTime.getTime()
-            };
-            
-            
-
-            this.dataBuffer.push(data);
-        }
-    }
-
-    startAutoRefresh() {
-        setInterval(() => {
-            if (this.isAutoScrollEnabled) {
-                this.addNewData();
-            }
-        }, 3000); // 3秒間隔で新データ追加
-    }
-
-    addNewData() {
-        const dataTypes = [
-            { type: 'normal', color: 'normal', remarks: ['入室', '退室'], probability: 0.7 },
-            { type: 'warning', color: 'warning', remarks: ['通信異常復旧', 'カードリーダー警告'], probability: 0.2 },
-            { type: 'error', color: 'error', remarks: ['通信異常発生', 'ドア開放異常'], probability: 0.1 }
-        ];
-
-        // 確率に基づいてデータタイプを選択
-        const rand = Math.random();
-        let selectedType = dataTypes[0];
-        let cumulative = 0;
-        for (const type of dataTypes) {
-            cumulative += type.probability;
-            if (rand <= cumulative) {
-                selectedType = type;
-                break;
+    function updateDataTypeDisplay(value) {
+        var selected = document.getElementById('dataTypeSelected');
+        var label = document.getElementById('dataTypeLabel');
+        if (!selected || !label) return;
+        var dot = document.getElementById('dataTypeDot');
+        if (dot) {
+            if (value === 'all') {
+                dot.style.display = 'none';
+                dot.className = 'status-dot';
+            } else {
+                dot.style.display = '';
+                dot.className = 'status-dot ' + (dataTypeDotClasses[value] || '');
             }
         }
-
-        const gates = [
-            { number: '0001', name: 'XA0001' },
-            { number: '0002', name: 'XA0002' },
-            { number: '0003', name: 'XA0003' },
-            { number: '0004', name: 'XA0004' }
-        ];
-
-        const gate = gates[Math.floor(Math.random() * gates.length)];
-        const remark = selectedType.remarks[Math.floor(Math.random() * selectedType.remarks.length)];
-        const departments = ['所属001', '所属002', '所属003', '管理部', '開発部'];
-        const departmentCodes = ['001', '002', '003', '004', '005'];
-        const departmentIndex = Math.floor(Math.random() * departments.length);
-
-        const newData = {
-            occurredDate: this.formatDateTime(new Date()),
-            personalCode: selectedType.type === 'normal' ? String(Math.floor(Math.random() * 999) + 1).padStart(6, '0') : '',
-            name: selectedType.type === 'normal' ? `個人${String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')}` : '',
-            departmentCode: selectedType.type === 'normal' ? departmentCodes[departmentIndex] : '',
-            departmentName: selectedType.type === 'normal' ? departments[departmentIndex] : '',
-            gateNumber: gate.number,
-            gateName: selectedType.type === 'normal' ? gate.name : `H = ${gate.number.substring(2)} A = ${Math.floor(Math.random() * 99) + 1}`,
-            historyDetails: remark,
-            statusClass: selectedType.color,
-            timestamp: new Date().getTime()
-        };
-
-        // バッファーの先頭に追加（最新データが上に表示）
-        this.dataBuffer.unshift(newData);
-
-        // バッファーサイズ制限
-        if (this.dataBuffer.length > this.maxBufferSize) {
-            this.dataBuffer = this.dataBuffer.slice(0, this.maxBufferSize);
-        }
-
-        this.applyFilters();
-    }
-
-    toggleAutoScroll() {
-        this.isAutoScrollEnabled = !this.isAutoScrollEnabled;
-        const button = document.getElementById('toggleAutoScroll');
-        if (button) {
-            button.textContent = this.isAutoScrollEnabled ? '停止' : '開始';
-            button.className = this.isAutoScrollEnabled ? 'btn btn-warning' : 'btn btn-success';
+        label.textContent = dataTypeLabels[value] || value;
+        var options = document.getElementById('dataTypeOptions');
+        if (options) {
+            options.querySelectorAll('.dm-custom-option').forEach(function (opt) {
+                opt.classList.toggle('selected', opt.getAttribute('data-value') === value);
+            });
         }
     }
 
-    updateGateFilters() {
-        this.currentFilters.selectedGates = [];
-        document.querySelectorAll('.gate-filter-checkbox:checked').forEach(checkbox => {
-            this.currentFilters.selectedGates.push(checkbox.value);
-        });
-        this.applyFilters();
+    // デモデータ
+    var demoData = [
+        { type: 'normal',  date: '2026/01/27 09:44:50', code: '000680', name: '個人678', deptCode: '002', dept: '所属002', gate: '0004', gateName: 'XA0004',      detail: '退室' },
+        { type: 'warning', date: '2026/01/27 09:44:47', code: '',       name: '',       deptCode: '',    dept: '',       gate: '0003', gateName: 'H=03 A=68',    detail: 'カードリーダー警告' },
+        { type: 'normal',  date: '2026/01/27 09:44:44', code: '000341', name: '個人567', deptCode: '004', dept: '管理部', gate: '0003', gateName: 'XA0003',      detail: '入室' },
+        { type: 'normal',  date: '2026/01/27 09:44:41', code: '000502', name: '個人888', deptCode: '003', dept: '所属003', gate: '0003', gateName: 'XA0003',     detail: '退室' },
+        { type: 'warning', date: '2026/01/27 09:44:38', code: '',       name: '',       deptCode: '',    dept: '',       gate: '0003', gateName: 'H=03 A=42',    detail: '通信異常復旧' },
+        { type: 'normal',  date: '2026/01/27 09:44:35', code: '000709', name: '個人724', deptCode: '001', dept: '所属001', gate: '0002', gateName: 'XA0002',     detail: '入室' },
+        { type: 'normal',  date: '2026/01/27 09:44:32', code: '000982', name: '個人993', deptCode: '004', dept: '管理部', gate: '0003', gateName: 'XA0003',      detail: '入室' },
+        { type: 'warning', date: '2026/01/27 09:44:29', code: '',       name: '',       deptCode: '',    dept: '',       gate: '0002', gateName: 'H=02 A=83',    detail: '通信異常復旧' },
+        { type: 'normal',  date: '2026/01/27 09:44:26', code: '000601', name: '個人144', deptCode: '002', dept: '所属002', gate: '0002', gateName: 'XA0002',     detail: '退室' },
+        { type: 'normal',  date: '2026/01/27 09:44:23', code: '000878', name: '個人446', deptCode: '002', dept: '所属002', gate: '0003', gateName: 'XA0003',     detail: '退室' },
+        { type: 'normal',  date: '2026/01/27 09:44:20', code: '000994', name: '個人530', deptCode: '005', dept: '開発部', gate: '0003', gateName: 'XA0003',      detail: '退室' },
+        { type: 'normal',  date: '2026/01/27 09:44:17', code: '000408', name: '個人744', deptCode: '005', dept: '開発部', gate: '0002', gateName: 'XA0002',      detail: '入室' },
+        { type: 'normal',  date: '2026/01/27 09:44:14', code: '000872', name: '個人193', deptCode: '003', dept: '所属003', gate: '0001', gateName: 'XA0001',     detail: '退室' },
+        { type: 'normal',  date: '2026/01/27 09:44:11', code: '000698', name: '個人363', deptCode: '004', dept: '管理部', gate: '0001', gateName: 'XA0001',      detail: '入室' },
+        { type: 'normal',  date: '2026/01/27 09:44:08', code: '000681', name: '個人332', deptCode: '004', dept: '管理部', gate: '0001', gateName: 'XA0001',      detail: '退室' },
+        { type: 'normal',  date: '2026/01/27 09:44:05', code: '000811', name: '個人085', deptCode: '001', dept: '所属001', gate: '0001', gateName: 'XA0001',     detail: '入室' },
+        { type: 'error',   date: '2026/01/27 09:44:02', code: '',       name: '',       deptCode: '',    dept: '',       gate: '0001', gateName: 'H=01 A=99',    detail: 'ドア開放異常' },
+        { type: 'error',   date: '2026/01/27 08:45:59', code: '',       name: '',       deptCode: '',    dept: '',       gate: '0002', gateName: 'H=02 A=4',     detail: '通信異常発生' }
+    ];
+
+    function escapeHtml(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    updateStatusFilters() {
-        this.currentFilters.selectedStatuses = [];
-        document.querySelectorAll('.status-filter-checkbox:checked').forEach(checkbox => {
-            this.currentFilters.selectedStatuses.push(checkbox.value);
-        });
-        this.applyFilters();
-    }
-
-    updateColumnVisibility() {
-        this.currentFilters.visibleColumns = [];
-        document.querySelectorAll('.column-filter-checkbox:checked').forEach(checkbox => {
-            this.currentFilters.visibleColumns.push(checkbox.value);
-        });
-        
-        
-        this.renderTable();
-    }
-
-    applyFilters() {
-        let filteredData = [...this.dataBuffer];
-
-        // データ種別フィルタ
-        if (this.currentFilters.dataType !== 'all') {
-            filteredData = filteredData.filter(data => data.statusClass === this.currentFilters.dataType);
-        }
-
-        // ゲートフィルタ
-        if (this.currentFilters.selectedGates.length > 0) {
-            filteredData = filteredData.filter(data => 
-                this.currentFilters.selectedGates.includes(data.gateNumber)
-            );
-        }
-
-        // ステータスフィルタ
-        if (this.currentFilters.selectedStatuses.length > 0) {
-            filteredData = filteredData.filter(data => 
-                this.currentFilters.selectedStatuses.includes(data.statusClass)
-            );
-        }
-        
-        // Excel-like filters (No.14)
-        for (const [columnKey, filterValues] of Object.entries(this.excelFilters)) {
-            if (filterValues && filterValues.length > 0) {
-                filteredData = filteredData.filter(data => {
-                    if (filterValues.includes('__NONE__')) {
-                        return false;
-                    }
-                    return filterValues.includes(data[columnKey]);
+    function renderTable(data) {
+        var tbody = document.getElementById('dataTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        data.forEach(function (row) {
+            var tr = document.createElement('tr');
+            tr.className = row.type === 'warning' ? 'row-warning' : row.type === 'error' ? 'row-error' : '';
+            tr.innerHTML =
+                '<td><div class="date-cell"><span class="status-dot dot-' + escapeHtml(row.type) + '"></span>' + escapeHtml(row.date) + '</div></td>' +
+                '<td>' + escapeHtml(row.code) + '</td>' +
+                '<td>' + escapeHtml(row.name) + '</td>' +
+                '<td>' + escapeHtml(row.deptCode) + '</td>' +
+                '<td>' + escapeHtml(row.dept) + '</td>' +
+                '<td>' + escapeHtml(row.gate) + '</td>' +
+                '<td>' + escapeHtml(row.gateName) + '</td>' +
+                '<td>' + escapeHtml(row.detail) + '</td>';
+            tr.style.cursor = 'pointer';
+            tr.addEventListener('click', function () {
+                tbody.querySelectorAll('tr.row-selected').forEach(function (r) {
+                    r.classList.remove('row-selected');
                 });
-            }
-        }
-
-        // ソートを適用
-        if (this.sortConfig.column) {
-            filteredData = this.applySorting(filteredData);
-        }
-
-        this.renderTable(filteredData);
-        this.updateFilteredColumnHeaders();
-    }
-
-    renderTable(data = null) {
-        const tableBody = document.querySelector('#dataTableBody');
-        if (!tableBody) return;
-
-        const renderData = data || this.dataBuffer;
-        
-        // 表示件数制限（画面表示は30件まで）
-        const displayData = renderData.slice(0, 30);
-
-        tableBody.innerHTML = '';
-
-        displayData.forEach(row => {
-            const tr = document.createElement('tr');
-            tr.className = `row-${row.statusClass}`;
-
-            // 表示する列のみレンダリング
-            // 履歴詳細を強制的に確実に設定
-            let historyDetailsValue = row.historyDetails;
-            if (!historyDetailsValue || historyDetailsValue === '') {
-                // 履歴詳細が空の場合、ステータスに応じてデフォルト値を設定
-                if (row.statusClass === 'normal') {
-                    historyDetailsValue = '入室';
-                } else if (row.statusClass === 'warning') {
-                    historyDetailsValue = 'バッテリー低下';
-                } else if (row.statusClass === 'error') {
-                    historyDetailsValue = '通信異常発生';
-                } else {
-                    historyDetailsValue = 'システム開始';
-                }
-            }
-            
-            const columns = [
-                { key: 'occurredDate', html: `<span class="status-indicator status-${row.statusClass}"></span>${row.occurredDate}` },
-                { key: 'personalCode', html: row.personalCode || '' },
-                { key: 'name', html: row.name || '' },
-                { key: 'departmentCode', html: row.departmentCode || '' },
-                { key: 'departmentName', html: row.departmentName || '' },
-                { key: 'gateNumber', html: row.gateNumber || '' },
-                { key: 'gateName', html: row.gateName || '' },
-                { key: 'historyDetails', html: historyDetailsValue }
-            ];
-
-            columns.forEach((col, colIndex) => {
-                // Check if corresponding header is hidden by CSS class
-                const header = document.querySelector(`th[data-column="${col.key}"]`);
-                const isHiddenByClass = header && header.classList.contains('column-hidden');
-                
-                // Only show column if it's in visibleColumns AND not hidden by CSS class
-                if (this.currentFilters.visibleColumns.includes(col.key) && !isHiddenByClass) {
-                    const td = document.createElement('td');
-                    
-                    // 履歴詳細の場合は確実にデータを表示
-                    if (col.key === 'historyDetails') {
-                        td.innerHTML = historyDetailsValue;
-                    } else {
-                        td.innerHTML = col.html || '';
-                    }
-                    
-                    tr.appendChild(td);
-                }
+                tr.classList.add('row-selected');
+                selectedRowData = row;
             });
-
-            tableBody.appendChild(tr);
+            tr.addEventListener('contextmenu', function (e) {
+                e.preventDefault();
+                tbody.querySelectorAll('tr.row-selected').forEach(function (r) {
+                    r.classList.remove('row-selected');
+                });
+                tr.classList.add('row-selected');
+                selectedRowData = row;
+                showContextMenu(e.clientX, e.clientY);
+            });
+            tbody.appendChild(tr);
         });
-
-        // ヘッダーの表示/非表示も更新
-        this.updateTableHeaders();
-        this.updateFilterStatusDisplay();
+        selectedRowData = null;
     }
-    
-    // No.14: Excel-like filter functionality
-    showDataFilter(event, columnKey) {
+
+    function showContextMenu(x, y) {
+        var menu = document.getElementById('contextMenu');
+        menu.style.left = x + 'px';
+        menu.style.top = y + 'px';
+        menu.style.display = 'block';
+        // 画面外にはみ出す場合は補正
+        var rect = menu.getBoundingClientRect();
+        if (rect.right > window.innerWidth) menu.style.left = (x - rect.width) + 'px';
+        if (rect.bottom > window.innerHeight) menu.style.top = (y - rect.height) + 'px';
+    }
+
+    function hideContextMenu() {
+        document.getElementById('contextMenu').style.display = 'none';
+    }
+
+    function openRegistrationPage() {
+        if (!selectedRowData) return;
+        hideContextMenu();
+        var params = new URLSearchParams();
+        params.set('personalCode', selectedRowData.code);
+        if (selectedRowData.name) {
+            params.set('name', selectedRowData.name);
+        }
+        var basePath = window.location.pathname.includes('-preview.html')
+            ? '/resources/personalRegistration-preview.html'
+            : '/personalRegistration';
+        window.open(basePath + '?' + params.toString(), '_blank');
+    }
+
+    function openAntiPassbackPage() {
+        if (!selectedRowData) return;
+        hideContextMenu();
+        var params = new URLSearchParams();
+        params.set('personalCode', selectedRowData.code);
+        if (selectedRowData.name) {
+            params.set('name', selectedRowData.name);
+        }
+        var basePath = window.location.pathname.includes('-preview.html')
+            ? '#'
+            : '/antiPassback';
+        if (basePath === '#') {
+            alert('アンチパスフリー画面（実装予定）');
+            return;
+        }
+        window.open(basePath + '?' + params.toString(), '_blank');
+    }
+
+    // ---- フィルターロジック ----
+
+    function getFilteredBase(excludeCol) {
+        return demoData.filter(function (row) {
+            if (dataTypeValue !== 'all' && row.type !== dataTypeValue) return false;
+            for (var colAttr in excelFilters) {
+                if (colAttr === excludeCol) continue;
+                if (excelFilters.hasOwnProperty(colAttr)) {
+                    var key = columnAttrToKey[colAttr];
+                    var val = (row[key] || '').toString();
+                    if (!excelFilters[colAttr].has(val)) return false;
+                }
+            }
+            return true;
+        });
+    }
+
+    function getUniqueValues(colAttr) {
+        var key = columnAttrToKey[colAttr];
+        var baseData = getFilteredBase(colAttr);
+        var seen = {};
+        var values = [];
+        baseData.forEach(function (row) {
+            var v = (row[key] || '').toString();
+            if (!seen[v]) { seen[v] = true; values.push(v); }
+        });
+        values.sort();
+        return values;
+    }
+
+    function hideDmFilters() {
+        document.querySelectorAll('.excel-filter-menu.show').forEach(function (m) {
+            m.classList.remove('show');
+        });
+    }
+
+    function showDmFilter(event, colAttr) {
         event.stopPropagation();
-        this.hideAllExcelFilters();
-        
-        const filterMenu = document.getElementById(`filter-${columnKey}`);
-        if (!filterMenu) return;
-        
-        // Get unique values for this column
-        const uniqueValues = [...new Set(this.dataBuffer.map(item => item[columnKey]))]
-            .filter(val => val && val.toString().trim() !== '')
-            .sort();
-        
-        const currentFilterValues = this.excelFilters[columnKey] || [];
-        const isFiltered = currentFilterValues.length > 0 && currentFilterValues.length < uniqueValues.length;
-        
-        filterMenu.innerHTML = `
-            <div class="excel-filter-header">
-                ${this.getColumnDisplayName(columnKey)} のフィルター
-            </div>
-            
-            <div class="excel-search-section">
-                <input type="text" class="excel-search-box" placeholder="検索テキストを入力" 
-                       oninput="dataMonitor.filterExcelOptions('${columnKey}', this.value)">
-            </div>
-            
-            <div class="excel-filter-actions">
-                <button class="excel-action-btn" onclick="dataMonitor.selectAllExcelFilter('${columnKey}')">すべて選択</button>
-                <button class="excel-action-btn" onclick="dataMonitor.clearAllExcelFilter('${columnKey}')">すべてクリア</button>
-                <button class="excel-action-btn primary" onclick="dataMonitor.applyExcelFilter('${columnKey}')">OK</button>
-            </div>
-            
-            <div class="excel-filter-list" id="excel-options-${columnKey}">
-                <div class="excel-filter-item select-all" onclick="dataMonitor.toggleExcelSelectAll('${columnKey}')">
-                    <input type="checkbox" id="select-all-${columnKey}" ${!isFiltered ? 'checked' : ''}>
-                    <span>（すべて選択）</span>
-                </div>
-                ${uniqueValues.map(value => {
-                    const isChecked = currentFilterValues.length === 0 || currentFilterValues.includes(value);
-                    return `
-                        <div class="excel-filter-item" onclick="dataMonitor.toggleExcelOption('${columnKey}', '${value}')">
-                            <input type="checkbox" ${isChecked ? 'checked' : ''}>
-                            <span>${value}</span>
-                        </div>
-                    `;
-                }).join('')}
-            </div>
-        `;
-        
-        filterMenu.classList.add('show');
-    }
-    
-    hideAllExcelFilters() {
-        document.querySelectorAll('.excel-filter-menu').forEach(menu => {
-            menu.classList.remove('show');
+        var menuId = 'excel-filter-' + colAttr;
+        var menu = document.getElementById(menuId);
+        if (!menu) return;
+
+        var wasOpen = menu.classList.contains('show');
+        hideDmFilters();
+        if (wasOpen) return;
+
+        var allValues = getUniqueValues(colAttr);
+        var selected = excelFilters[colAttr] || null; // null = 全選択
+
+        var html = '';
+        html += '<div class="excel-filter-header">' + escapeHtml(columnDisplayNames[colAttr] || colAttr) + ' のフィルター</div>';
+        html += '<div class="excel-search-section"><input type="text" class="excel-search-box" placeholder="検索..."></div>';
+        html += '<div class="excel-filter-actions">';
+        html += '<button class="excel-action-btn dm-select-all-btn">すべて選択</button>';
+        html += '<button class="excel-action-btn dm-clear-all-btn">すべてクリア</button>';
+        html += '<button class="excel-action-btn ok-btn dm-apply-btn">OK</button>';
+        html += '</div>';
+        html += '<div class="excel-filter-list" id="excel-list-' + colAttr + '">';
+        allValues.forEach(function (val) {
+            var checked = !selected || selected.has(val) ? 'checked' : '';
+            var displayVal = val === '' ? '(空白)' : escapeHtml(val);
+            html += '<div class="excel-filter-item" data-value="' + escapeHtml(val) + '">';
+            html += '<input type="checkbox" ' + checked + '>';
+            html += '<label>' + displayVal + '</label>';
+            html += '</div>';
         });
-    }
-    
-    toggleExcelSelectAll(columnKey) {
-        const selectAllCheckbox = document.getElementById(`select-all-${columnKey}`);
-        const allCheckboxes = document.querySelectorAll(`#excel-options-${columnKey} .excel-filter-item:not(.select-all) input[type="checkbox"]`);
-        
-        selectAllCheckbox.checked = !selectAllCheckbox.checked;
-        
-        allCheckboxes.forEach(checkbox => {
-            checkbox.checked = selectAllCheckbox.checked;
-        });
-    }
-    
-    toggleExcelOption(columnKey, value) {
-        const item = event.currentTarget;
-        const checkbox = item.querySelector('input[type="checkbox"]');
-        checkbox.checked = !checkbox.checked;
-        
-        this.updateExcelSelectAllState(columnKey);
-    }
-    
-    updateExcelSelectAllState(columnKey) {
-        const selectAllCheckbox = document.getElementById(`select-all-${columnKey}`);
-        const allCheckboxes = document.querySelectorAll(`#excel-options-${columnKey} .excel-filter-item:not(.select-all) input[type="checkbox"]`);
-        const checkedBoxes = document.querySelectorAll(`#excel-options-${columnKey} .excel-filter-item:not(.select-all) input[type="checkbox"]:checked`);
-        
-        if (checkedBoxes.length === 0) {
-            selectAllCheckbox.checked = false;
-            selectAllCheckbox.indeterminate = false;
-        } else if (checkedBoxes.length === allCheckboxes.length) {
-            selectAllCheckbox.checked = true;
-            selectAllCheckbox.indeterminate = false;
-        } else {
-            selectAllCheckbox.checked = false;
-            selectAllCheckbox.indeterminate = true;
+        html += '</div>';
+
+        menu.innerHTML = html;
+
+        // Bind events on dynamically generated elements
+        var searchBox = menu.querySelector('.excel-search-box');
+        if (searchBox) {
+            searchBox.addEventListener('input', function () {
+                filterDmOptions(colAttr, this.value);
+            });
         }
+        menu.querySelector('.dm-select-all-btn').addEventListener('click', function () {
+            selectAllDmFilter(colAttr);
+        });
+        menu.querySelector('.dm-clear-all-btn').addEventListener('click', function () {
+            clearAllDmFilter(colAttr);
+        });
+        menu.querySelector('.dm-apply-btn').addEventListener('click', function () {
+            applyDmFilter(colAttr);
+        });
+        menu.querySelectorAll('.excel-filter-item').forEach(function (item) {
+            item.addEventListener('click', function (e) {
+                toggleDmOption(e, item);
+            });
+        });
+
+        menu.classList.add('show');
     }
-    
-    selectAllExcelFilter(columnKey) {
-        const allCheckboxes = document.querySelectorAll(`#excel-options-${columnKey} input[type="checkbox"]`);
-        allCheckboxes.forEach(checkbox => checkbox.checked = true);
+
+    function toggleDmOption(e, itemEl) {
+        if (e.target.tagName === 'INPUT') return;
+        var cb = itemEl.querySelector('input[type="checkbox"]');
+        if (cb) cb.checked = !cb.checked;
     }
-    
-    clearAllExcelFilter(columnKey) {
-        const allCheckboxes = document.querySelectorAll(`#excel-options-${columnKey} input[type="checkbox"]`);
-        allCheckboxes.forEach(checkbox => checkbox.checked = false);
-    }
-    
-    filterExcelOptions(columnKey, searchTerm) {
-        const items = document.querySelectorAll(`#excel-options-${columnKey} .excel-filter-item:not(.select-all)`);
-        items.forEach(item => {
-            const text = item.textContent.toLowerCase();
-            if (text.includes(searchTerm.toLowerCase())) {
-                item.style.display = 'flex';
-            } else {
-                item.style.display = 'none';
+
+    function selectAllDmFilter(colAttr) {
+        var list = document.getElementById('excel-list-' + colAttr);
+        if (!list) return;
+        list.querySelectorAll('.excel-filter-item').forEach(function (item) {
+            if (item.style.display !== 'none') {
+                var cb = item.querySelector('input[type="checkbox"]');
+                if (cb) cb.checked = true;
             }
         });
     }
-    
-    applyExcelFilter(columnKey) {
-        const checkedItems = document.querySelectorAll(`#excel-options-${columnKey} .excel-filter-item:not(.select-all) input[type="checkbox"]:checked`);
-        const selectedValues = Array.from(checkedItems).map(checkbox => {
-            return checkbox.parentElement.querySelector('span').textContent;
-        });
-        
-        if (selectedValues.length === 0) {
-            this.excelFilters[columnKey] = ['__NONE__'];
-        } else {
-            const allValues = [...new Set(this.dataBuffer.map(item => item[columnKey]))]
-                .filter(val => val && val.toString().trim() !== '');
-            
-            if (selectedValues.length === allValues.length) {
-                delete this.excelFilters[columnKey];
-            } else {
-                this.excelFilters[columnKey] = selectedValues;
+
+    function clearAllDmFilter(colAttr) {
+        var list = document.getElementById('excel-list-' + colAttr);
+        if (!list) return;
+        list.querySelectorAll('.excel-filter-item').forEach(function (item) {
+            if (item.style.display !== 'none') {
+                var cb = item.querySelector('input[type="checkbox"]');
+                if (cb) cb.checked = false;
             }
-        }
-        
-        this.hideAllExcelFilters();
-        this.applyFilters();
+        });
     }
-    
-    updateFilteredColumnHeaders() {
-        document.querySelectorAll('.data-table th').forEach(th => {
-            th.classList.remove('filtered');
-            const trigger = th.querySelector('.excel-filter-trigger');
-            if (trigger) {
+
+    function filterDmOptions(colAttr, searchText) {
+        var list = document.getElementById('excel-list-' + colAttr);
+        if (!list) return;
+        var lower = searchText.toLowerCase();
+        list.querySelectorAll('.excel-filter-item').forEach(function (item) {
+            var val = (item.getAttribute('data-value') || '').toLowerCase();
+            var display = val === '' ? '(空白)' : val;
+            item.style.display = (lower === '' || display.indexOf(lower) >= 0) ? '' : 'none';
+        });
+    }
+
+    function applyDmFilter(colAttr) {
+        var list = document.getElementById('excel-list-' + colAttr);
+        if (!list) return;
+
+        var allValues = getUniqueValues(colAttr);
+        var selectedSet = new Set();
+        list.querySelectorAll('.excel-filter-item').forEach(function (item) {
+            var cb = item.querySelector('input[type="checkbox"]');
+            if (cb && cb.checked) {
+                selectedSet.add(item.getAttribute('data-value'));
+            }
+        });
+
+        if (selectedSet.size === allValues.length) {
+            delete excelFilters[colAttr];
+        } else {
+            excelFilters[colAttr] = selectedSet;
+        }
+
+        hideDmFilters();
+        applyAllFilters();
+        updateFilterTriggerStates();
+    }
+
+    function applyAllFilters() {
+        var filtered = demoData.filter(function (row) {
+            if (dataTypeValue !== 'all' && row.type !== dataTypeValue) return false;
+            for (var colAttr in excelFilters) {
+                if (excelFilters.hasOwnProperty(colAttr)) {
+                    var key = columnAttrToKey[colAttr];
+                    var val = (row[key] || '').toString();
+                    if (!excelFilters[colAttr].has(val)) return false;
+                }
+            }
+            return true;
+        });
+
+        renderTable(filtered);
+    }
+
+    function updateFilterTriggerStates() {
+        document.querySelectorAll('.excel-filter-trigger').forEach(function (trigger) {
+            var th = trigger.closest('th');
+            if (!th) return;
+            var colAttr = th.getAttribute('data-column');
+            if (excelFilters[colAttr]) {
+                trigger.classList.add('active');
+            } else {
                 trigger.classList.remove('active');
             }
         });
-        
-        for (const columnKey of Object.keys(this.excelFilters)) {
-            const th = document.querySelector(`th[data-column="${columnKey}"]`);
-            if (th) {
-                th.classList.add('filtered');
-                const trigger = th.querySelector('.excel-filter-trigger');
-                if (trigger) {
-                    trigger.classList.add('active');
-                }
-            }
-        }
-    }
-    
-    updateFilterStatusDisplay() {
-        const hasFilters = Object.keys(this.excelFilters).length > 0 || 
-                          this.currentFilters.dataType !== 'all' || 
-                          this.currentFilters.selectedGates.length > 0 ||
-                          this.currentFilters.selectedStatuses.length < 4;
-        
-        if (hasFilters) {
-            const filterContainer = document.querySelector('.filter-panel');
-            if (!document.querySelector('.filter-status-display')) {
-                const statusDiv = document.createElement('div');
-                statusDiv.className = 'filter-status-display';
-                statusDiv.innerHTML = `
-                    <span class="filter-active-badge">フィルター実行中 ▼</span>
-                    <span class="filter-details" id="filterDetails"></span>
-                `;
-                filterContainer.parentNode.insertBefore(statusDiv, filterContainer.nextSibling);
-            }
-            
-            this.updateFilterDetails();
-        } else {
-            const statusDisplay = document.querySelector('.filter-status-display');
-            if (statusDisplay) {
-                statusDisplay.remove();
-            }
-        }
-    }
-    
-    updateFilterDetails() {
-        const filterDetails = document.getElementById('filterDetails');
-        if (!filterDetails) return;
-        
-        const descriptions = [];
-        
-        if (this.currentFilters.dataType !== 'all') {
-            descriptions.push(`データ種別: ${this.currentFilters.dataType}`);
-        }
-        
-        if (this.currentFilters.selectedGates.length > 0) {
-            descriptions.push(`ゲート: ${this.currentFilters.selectedGates.join(', ')}`);
-        }
-        
-        if (this.currentFilters.selectedStatuses.length < 4) {
-            const statusNames = {
-                'normal': '正常',
-                'warning': '警告', 
-                'error': '異常',
-                'recovery': 'オフライン'
-            };
-            const selectedStatusNames = this.currentFilters.selectedStatuses.map(status => statusNames[status]);
-            descriptions.push(`ステータス: ${selectedStatusNames.join(', ')}`);
-        }
-        
-        for (const [columnKey, filterValues] of Object.entries(this.excelFilters)) {
-            if (filterValues && filterValues.length > 0) {
-                const columnName = this.getColumnDisplayName(columnKey);
-                descriptions.push(`${columnName}: ${filterValues.join(', ')}`);
-            }
-        }
-        
-        filterDetails.textContent = descriptions.join(' | ');
-    }
-    
-    getColumnDisplayName(columnKey) {
-        const names = {
-            'occurredDate': '発生日付',
-            'personalCode': '個人コード',
-            'name': '氏名',
-            'departmentCode': '所属コード',
-            'departmentName': '所属名称',
-            'gateNumber': 'ゲート番号',
-            'gateName': 'ゲート名称',
-            'historyDetails': '履歴詳細'
-        };
-        return names[columnKey] || columnKey;
     }
 
-    updateTableHeaders() {
-        const headers = document.querySelectorAll('.data-table th');
-        const headerMapping = {
-            0: 'occurredDate',
-            1: 'personalCode', 
-            2: 'name',
-            3: 'departmentCode',
-            4: 'departmentName',
-            5: 'gateNumber',
-            6: 'gateName',
-            7: 'historyDetails'
+    // ---- 自動更新 ----
+    var autoUpdateTimer = null;
+
+    function toggleAutoUpdate() {
+        var btn = document.getElementById('autoUpdateBtn');
+        if (!btn) return;
+        if (autoUpdateTimer) {
+            clearInterval(autoUpdateTimer);
+            autoUpdateTimer = null;
+            btn.innerHTML = '<span class="material-symbols-outlined">sync</span> 自動更新';
+            btn.classList.remove('running');
+        } else {
+            btn.innerHTML = '<span class="material-symbols-outlined">sync_disabled</span> 自動更新';
+            btn.classList.add('running');
+            autoUpdateTimer = setInterval(function () {
+                addNewDemoRow();
+            }, 3000);
+        }
+    }
+
+    function addNewDemoRow() {
+        var types = [
+            { type: 'normal', details: ['入室', '退室'], prob: 0.7 },
+            { type: 'warning', details: ['通信異常復旧', 'カードリーダー警告', 'バッテリー低下'], prob: 0.2 },
+            { type: 'error', details: ['通信異常発生', 'ドア開放異常', 'セキュリティ違反'], prob: 0.1 }
+        ];
+        var gates = [
+            { num: '0001', name: 'XA0001' },
+            { num: '0002', name: 'XA0002' },
+            { num: '0003', name: 'XA0003' },
+            { num: '0004', name: 'XA0004' }
+        ];
+        var depts = ['所属001', '所属002', '所属003', '管理部', '開発部'];
+        var deptCodes = ['001', '002', '003', '004', '005'];
+
+        var rand = Math.random(), cumulative = 0, sel = types[0];
+        for (var i = 0; i < types.length; i++) {
+            cumulative += types[i].prob;
+            if (rand <= cumulative) { sel = types[i]; break; }
+        }
+
+        var gate = gates[Math.floor(Math.random() * gates.length)];
+        var detail = sel.details[Math.floor(Math.random() * sel.details.length)];
+        var di = Math.floor(Math.random() * depts.length);
+        var now = new Date();
+        var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+        var dateStr = now.getFullYear() + '/' + pad(now.getMonth() + 1) + '/' + pad(now.getDate()) + ' ' +
+                      pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+
+        var row = {
+            type: sel.type,
+            date: dateStr,
+            code: sel.type === 'normal' ? String(Math.floor(Math.random() * 999) + 1).padStart(6, '0') : '',
+            name: sel.type === 'normal' ? '個人' + String(Math.floor(Math.random() * 999) + 1).padStart(3, '0') : '',
+            deptCode: sel.type === 'normal' ? deptCodes[di] : '',
+            dept: sel.type === 'normal' ? depts[di] : '',
+            gate: gate.num,
+            gateName: sel.type === 'normal' ? gate.name : 'H=' + gate.num.substring(2) + ' A=' + (Math.floor(Math.random() * 99) + 1),
+            detail: detail
         };
 
-        headers.forEach((header, index) => {
-            const columnKey = headerMapping[index];
-            if (columnKey) {
-                // CSS class-based column hiding takes priority over filter-based visibility
-                if (!header.classList.contains('column-hidden')) {
-                    // Only apply filter-based visibility if not hidden by CSS class
-                    if (columnKey === 'historyDetails') {
-                        header.style.display = '';
-                    } else {
-                        header.style.display = this.currentFilters.visibleColumns.includes(columnKey) ? '' : 'none';
-                    }
-                }
-                // If column has 'column-hidden' class, leave it as is (CSS will handle hiding)
-            }
+        demoData.unshift(row);
+        if (demoData.length > 500) demoData = demoData.slice(0, 500);
+        applyAllFilters();
+    }
+
+    // ---- 列表示管理 ----
+    var columnVisibility = {};
+    var allColumns = ['occurredDate', 'personalCode', 'name', 'departmentCode', 'departmentName', 'gateNumber', 'gateName', 'historyDetails'];
+    allColumns.forEach(function (col) { columnVisibility[col] = true; });
+
+    function buildColumnManagerMenu() {
+        var menu = document.getElementById('columnManagerMenu');
+        if (!menu) return;
+        menu.innerHTML = '';
+        allColumns.forEach(function (col) {
+            var item = document.createElement('div');
+            item.className = 'column-manager-item';
+            var cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.checked = columnVisibility[col];
+            cb.setAttribute('data-col', col);
+            cb.addEventListener('change', function () {
+                columnVisibility[col] = this.checked;
+                applyColumnVisibility();
+            });
+            var lbl = document.createElement('label');
+            lbl.textContent = columnDisplayNames[col] || col;
+            lbl.addEventListener('click', function () { cb.click(); });
+            item.appendChild(cb);
+            item.appendChild(lbl);
+            menu.appendChild(item);
         });
     }
 
-    formatDateTime(date) {
-        return `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
+    function applyColumnVisibility() {
+        // ヘッダー
+        document.querySelectorAll('.data-table th[data-column]').forEach(function (th) {
+            var col = th.getAttribute('data-column');
+            th.style.display = columnVisibility[col] ? '' : 'none';
+        });
+        // ボディ行
+        document.querySelectorAll('.data-table tbody tr').forEach(function (tr) {
+            var tds = tr.querySelectorAll('td');
+            allColumns.forEach(function (col, idx) {
+                if (tds[idx]) {
+                    tds[idx].style.display = columnVisibility[col] ? '' : 'none';
+                }
+            });
+        });
     }
 
-    sortTable(columnKey) {
-        // 同じ列をクリックした場合は方向を切り替え、違う列の場合は昇順から開始
-        if (this.sortConfig.column === columnKey) {
-            this.sortConfig.direction = this.sortConfig.direction === 'asc' ? 'desc' : 'asc';
+    function toggleColumnManagerMenu() {
+        var menu = document.getElementById('columnManagerMenu');
+        if (!menu) return;
+        if (menu.classList.contains('show')) {
+            menu.classList.remove('show');
         } else {
-            this.sortConfig.column = columnKey;
-            this.sortConfig.direction = 'asc';
-        }
-
-        this.updateSortHeaders();
-        this.applyFilters(); // フィルターとソートを再適用
-    }
-
-    applySorting(data) {
-        const { column, direction } = this.sortConfig;
-        
-        return data.sort((a, b) => {
-            let aValue = a[column] || '';
-            let bValue = b[column] || '';
-
-            // 日付列の場合は特別な処理
-            if (column === 'occurredDate') {
-                aValue = a.timestamp || 0;
-                bValue = b.timestamp || 0;
-            } else {
-                // 文字列として比較（数値は文字列として扱う）
-                aValue = aValue.toString().toLowerCase();
-                bValue = bValue.toString().toLowerCase();
-            }
-
-            let result = 0;
-            if (aValue < bValue) result = -1;
-            else if (aValue > bValue) result = 1;
-
-            return direction === 'desc' ? -result : result;
-        });
-    }
-
-    updateSortHeaders() {
-        // すべてのヘッダーからソート表示をクリア
-        document.querySelectorAll('.data-table th').forEach(th => {
-            th.classList.remove('sort-asc', 'sort-desc');
-            const existingSortIcon = th.querySelector('.sort-indicator');
-            if (existingSortIcon) {
-                existingSortIcon.remove();
-            }
-        });
-
-        // 現在のソート列にソート表示を追加
-        if (this.sortConfig.column) {
-            const columnKeys = ['occurredDate', 'personalCode', 'name', 'departmentCode', 'departmentName', 'gateNumber', 'gateName', 'historyDetails'];
-            const columnIndex = columnKeys.indexOf(this.sortConfig.column);
-            
-            if (columnIndex >= 0) {
-                const th = document.querySelectorAll('.data-table th')[columnIndex];
-                if (th) {
-                    th.classList.add(`sort-${this.sortConfig.direction}`);
-                    
-                    // ソートインジケーターを追加
-                    const sortIndicator = document.createElement('span');
-                    sortIndicator.className = 'sort-indicator';
-                    sortIndicator.innerHTML = this.sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
-                    th.appendChild(sortIndicator);
-                }
-            }
+            buildColumnManagerMenu();
+            menu.classList.add('show');
         }
     }
-}
 
-// Global variable for access from HTML
-let dataMonitor;
+    // renderTable をラップして列非表示を反映
+    var originalRenderTable = renderTable;
+    renderTable = function (data) {
+        originalRenderTable(data);
+        applyColumnVisibility();
+    };
 
-// ページ読み込み時に初期化
-document.addEventListener('DOMContentLoaded', () => {
-    dataMonitor = new DataMonitor();
-});
+    document.addEventListener('DOMContentLoaded', function () {
+        renderTable(demoData);
 
-// Global functions for HTML onclick handlers (No.14)
-function showDataFilter(event, columnKey) {
-    if (dataMonitor) {
-        dataMonitor.showDataFilter(event, columnKey);
-    }
-}
+        // 自動更新ボタン
+        var autoBtn = document.getElementById('autoUpdateBtn');
+        if (autoBtn) {
+            autoBtn.addEventListener('click', toggleAutoUpdate);
+        }
+
+        // 列表示管理ボタン
+        var colMgrBtn = document.getElementById('columnManager');
+        if (colMgrBtn) {
+            colMgrBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                toggleColumnManagerMenu();
+            });
+        }
+
+        // データ種別カスタムドロップダウン
+        var dataTypeSelected = document.getElementById('dataTypeSelected');
+        var dataTypeOptions = document.getElementById('dataTypeOptions');
+        if (dataTypeSelected && dataTypeOptions) {
+            dataTypeSelected.addEventListener('click', function (e) {
+                e.stopPropagation();
+                dataTypeOptions.classList.toggle('show');
+            });
+            dataTypeOptions.querySelectorAll('.dm-custom-option').forEach(function (opt) {
+                opt.addEventListener('click', function () {
+                    dataTypeValue = this.getAttribute('data-value');
+                    updateDataTypeDisplay(dataTypeValue);
+                    dataTypeOptions.classList.remove('show');
+                    applyAllFilters();
+                });
+            });
+        }
+
+        // フィルターリセット
+        var resetBtn = document.getElementById('filterReset');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function () {
+                dataTypeValue = 'all';
+                updateDataTypeDisplay('all');
+                excelFilters = {};
+                updateFilterTriggerStates();
+                applyAllFilters();
+            });
+        }
+
+        // Excelフィルタートリガー（data-column属性から列名を取得）
+        document.querySelectorAll('.excel-filter-trigger').forEach(function (trigger) {
+            trigger.addEventListener('click', function (e) {
+                var th = trigger.closest('th');
+                if (!th) return;
+                var colAttr = th.getAttribute('data-column');
+                if (colAttr) showDmFilter(e, colAttr);
+            });
+        });
+
+        // コンテキストメニュー
+        document.getElementById('ctxPersonalReg').addEventListener('click', openRegistrationPage);
+        document.getElementById('ctxAntiPassback').addEventListener('click', openAntiPassbackPage);
+        document.addEventListener('click', function () { hideContextMenu(); });
+
+        // 外側クリックでメニューを閉じる
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.excel-filter-menu') && !e.target.closest('.excel-filter-trigger')) {
+                hideDmFilters();
+            }
+            if (!e.target.closest('#columnManager') && !e.target.closest('.column-manager-menu')) {
+                var menu = document.getElementById('columnManagerMenu');
+                if (menu) menu.classList.remove('show');
+            }
+            if (!e.target.closest('#dataTypeDropdown')) {
+                var dtOptions = document.getElementById('dataTypeOptions');
+                if (dtOptions) dtOptions.classList.remove('show');
+            }
+        });
+    });
+})();

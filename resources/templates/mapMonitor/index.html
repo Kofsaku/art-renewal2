@@ -315,17 +315,17 @@
 
     <!-- ヘッダー固有コントロール -->
     <div layout:fragment="header-controls" class="td-header-controls">
-        <button class="td-layout-btn" onclick="zoomIn()" title="ズームイン">
+        <button class="td-layout-btn" id="mmZoomInBtn" title="ズームイン">
             <i class="fas fa-plus"></i>
         </button>
-        <button class="td-layout-btn" onclick="zoomOut()" title="ズームアウト">
+        <button class="td-layout-btn" id="mmZoomOutBtn" title="ズームアウト">
             <i class="fas fa-minus"></i>
         </button>
-        <button class="td-layout-btn" onclick="resetMapView()" title="リセット">
+        <button class="td-layout-btn" id="mmResetViewBtn" title="リセット">
             <i class="fas fa-undo-alt"></i>
         </button>
         <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
-            <button class="td-page-btn mm-batch-ctrl-btn" onclick="showGroupControlModal()">
+            <button class="td-page-btn mm-batch-ctrl-btn" id="mmBatchCtrlBtn">
                 <span class="material-symbols-outlined">support_agent</span> 一斉遠隔操作
             </button>
         </div>
@@ -437,7 +437,7 @@
                             <button type="button" class="mm-modal-btn mm-modal-btn-red" data-bs-dismiss="modal">
                                 <span class="material-symbols-outlined">cancel</span> 中止
                             </button>
-                            <button type="button" class="mm-modal-btn mm-modal-btn-green" onclick="executeGroupControl()">
+                            <button type="button" class="mm-modal-btn mm-modal-btn-green" id="mmGroupExecBtn">
                                 <span class="material-symbols-outlined">play_arrow</span> 実行
                             </button>
                         </div>
@@ -495,7 +495,7 @@
                         <button type="button" class="mm-modal-btn mm-modal-btn-red" data-bs-dismiss="modal">
                             <span class="material-symbols-outlined">cancel</span> 中止
                         </button>
-                        <button type="button" class="mm-modal-btn mm-modal-btn-green" onclick="executeSingleRemoteCommand()">
+                        <button type="button" class="mm-modal-btn mm-modal-btn-green" id="mmSingleExecBtn">
                             <span class="material-symbols-outlined">play_arrow</span> 実行
                         </button>
                     </div>

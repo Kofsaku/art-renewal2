@@ -184,9 +184,9 @@
             white-space: nowrap;
         }
         .data-table tbody tr { background: #fff; }
-        .data-table tbody tr.row-warning  { background: #fff8e1; }
-        .data-table tbody tr.row-error    { background: #fdecea; color: #c62828; }
-        .data-table tbody tr.row-recovery { background: #d1ecf1; color: #00695c; }
+        .data-table tbody tr.row-normal   { background: rgba(40, 167, 69, 0.10); }
+        .data-table tbody tr.row-warning  { background: rgba(255, 193, 7, 0.12); }
+        .data-table tbody tr.row-error    { background: rgba(220, 53, 69, 0.10); color: #dc3545; }
         .data-table tbody tr:hover { filter: brightness(0.96); }
 
         /* ---- ソート表示 ---- */
@@ -519,16 +519,13 @@
 
 		<!-- ページ固有コントロール（各ページで上書き） -->
 		<div class="td-header-controls">
-        <button class="hr-btn hr-btn-orange">
-            <span class="material-symbols-outlined">key_off</span> 権限失効
-        </button>
         <button class="hr-btn hr-btn-gray">
             <span class="material-symbols-outlined">file_download</span> 出力
         </button>
-        <button class="hr-btn hr-btn-gray" onclick="showHrPeriodModal()">
+        <button class="hr-btn hr-btn-gray" id="hrPeriodBtn">
             <span class="material-symbols-outlined">event</span> 期間抽出
         </button>
-        <button class="hr-btn hr-btn-gray" onclick="showHrConditionModal()">
+        <button class="hr-btn hr-btn-gray" id="hrConditionBtn">
             <span class="material-symbols-outlined">filter_alt</span> 条件抽出
         </button>
     </div>
@@ -605,19 +602,19 @@
                     <table class="data-table" id="hrTable">
                         <thead>
                             <tr>
-                                <th data-column="occurredDate">発生日時<div class="excel-filter-trigger" onclick="showHrFilter(event, 'occurredDate')"></div><div class="excel-filter-menu" id="excel-filter-occurredDate"></div></th>
-                                <th data-column="personalCode">個人コード<div class="excel-filter-trigger" onclick="showHrFilter(event, 'personalCode')"></div><div class="excel-filter-menu" id="excel-filter-personalCode"></div></th>
-                                <th data-column="issueCount">発行回数<div class="excel-filter-trigger" onclick="showHrFilter(event, 'issueCount')"></div><div class="excel-filter-menu" id="excel-filter-issueCount"></div></th>
-                                <th data-column="managementNumber">管理番号<div class="excel-filter-trigger" onclick="showHrFilter(event, 'managementNumber')"></div><div class="excel-filter-menu" id="excel-filter-managementNumber"></div></th>
-                                <th data-column="name">氏名<div class="excel-filter-trigger" onclick="showHrFilter(event, 'name')"></div><div class="excel-filter-menu" id="excel-filter-name"></div></th>
-                                <th data-column="departmentCode">所属コード<div class="excel-filter-trigger" onclick="showHrFilter(event, 'departmentCode')"></div><div class="excel-filter-menu" id="excel-filter-departmentCode"></div></th>
-                                <th data-column="departmentName">所属名称<div class="excel-filter-trigger" onclick="showHrFilter(event, 'departmentName')"></div><div class="excel-filter-menu" id="excel-filter-departmentName"></div></th>
-                                <th data-column="categoryCode">区分コード<div class="excel-filter-trigger" onclick="showHrFilter(event, 'categoryCode')"></div><div class="excel-filter-menu" id="excel-filter-categoryCode"></div></th>
-                                <th data-column="categoryName">区分名称<div class="excel-filter-trigger" onclick="showHrFilter(event, 'categoryName')"></div><div class="excel-filter-menu" id="excel-filter-categoryName"></div></th>
-                                <th data-column="alternativeCode">代替コード<div class="excel-filter-trigger" onclick="showHrFilter(event, 'alternativeCode')"></div><div class="excel-filter-menu" id="excel-filter-alternativeCode"></div></th>
-                                <th data-column="gateNumber">ゲート番号<div class="excel-filter-trigger" onclick="showHrFilter(event, 'gateNumber')"></div><div class="excel-filter-menu" id="excel-filter-gateNumber"></div></th>
-                                <th data-column="gateName">ゲート名称<div class="excel-filter-trigger" onclick="showHrFilter(event, 'gateName')"></div><div class="excel-filter-menu" id="excel-filter-gateName"></div></th>
-                                <th data-column="historyDetails">履歴詳細<div class="excel-filter-trigger" onclick="showHrFilter(event, 'historyDetails')"></div><div class="excel-filter-menu" id="excel-filter-historyDetails"></div></th>
+                                <th data-column="occurredDate">発生日時<div class="excel-filter-trigger"></div><div class="excel-filter-menu" id="excel-filter-occurredDate"></div></th>
+                                <th data-column="personalCode">個人コード<div class="excel-filter-trigger"></div><div class="excel-filter-menu" id="excel-filter-personalCode"></div></th>
+                                <th data-column="issueCount">発行回数<div class="excel-filter-trigger"></div><div class="excel-filter-menu" id="excel-filter-issueCount"></div></th>
+                                <th data-column="managementNumber">管理番号<div class="excel-filter-trigger"></div><div class="excel-filter-menu" id="excel-filter-managementNumber"></div></th>
+                                <th data-column="name">氏名<div class="excel-filter-trigger"></div><div class="excel-filter-menu" id="excel-filter-name"></div></th>
+                                <th data-column="departmentCode">所属コード<div class="excel-filter-trigger"></div><div class="excel-filter-menu" id="excel-filter-departmentCode"></div></th>
+                                <th data-column="departmentName">所属名称<div class="excel-filter-trigger"></div><div class="excel-filter-menu" id="excel-filter-departmentName"></div></th>
+                                <th data-column="categoryCode">区分コード<div class="excel-filter-trigger"></div><div class="excel-filter-menu" id="excel-filter-categoryCode"></div></th>
+                                <th data-column="categoryName">区分名称<div class="excel-filter-trigger"></div><div class="excel-filter-menu" id="excel-filter-categoryName"></div></th>
+                                <th data-column="alternativeCode">代替コード<div class="excel-filter-trigger"></div><div class="excel-filter-menu" id="excel-filter-alternativeCode"></div></th>
+                                <th data-column="gateNumber">ゲート番号<div class="excel-filter-trigger"></div><div class="excel-filter-menu" id="excel-filter-gateNumber"></div></th>
+                                <th data-column="gateName">ゲート名称<div class="excel-filter-trigger"></div><div class="excel-filter-menu" id="excel-filter-gateName"></div></th>
+                                <th data-column="historyDetails">履歴詳細<div class="excel-filter-trigger"></div><div class="excel-filter-menu" id="excel-filter-historyDetails"></div></th>
                             </tr>
                         </thead>
                         <tbody id="hrTableBody">
@@ -641,7 +638,7 @@
 
         <!-- 条件選択モーダル -->
         <div class="modal fade" id="hrConditionModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">
@@ -649,10 +646,10 @@
                             条件選択
                         </h5>
                         <div class="d-flex gap-2 ms-3">
-                            <button type="button" class="hr-btn hr-btn-gray" onclick="loadHrCondition()">
+                            <button type="button" class="hr-btn hr-btn-gray" id="hrCondLoadBtn">
                                 <span class="material-symbols-outlined">folder_open</span> 読込
                             </button>
-                            <button type="button" class="hr-btn hr-btn-gray" onclick="saveHrCondition()">
+                            <button type="button" class="hr-btn hr-btn-gray" id="hrCondSaveBtn">
                                 <span class="material-symbols-outlined">save</span> 保存
                             </button>
                         </div>
@@ -670,7 +667,7 @@
                                 <div class="form-check d-flex align-items-center gap-3">
                                     <input class="form-check-input" type="radio" name="hrSource" id="hrSourceBackup" value="backup">
                                     <label class="form-check-label" for="hrSourceBackup">バックアップデータ</label>
-                                    <button type="button" class="btn btn-primary btn-sm" onclick="browseBackup()">参照</button>
+                                    <button type="button" class="btn btn-primary btn-sm" id="hrBrowseBackupBtn">参照</button>
                                 </div>
                             </div>
                         </div>
@@ -703,17 +700,17 @@
                                 <div class="form-check d-flex align-items-center gap-3">
                                     <input class="form-check-input" type="radio" name="hrCondPerson" id="hrCondPersonIndiv" value="individual">
                                     <label class="form-check-label" for="hrCondPersonIndiv">個人指定</label>
-                                    <button type="button" class="btn btn-primary btn-sm" onclick="browsePersonal()">参照</button>
+                                    <button type="button" class="btn btn-primary btn-sm" id="hrBrowsePersonalBtn">参照</button>
                                 </div>
                                 <div class="form-check d-flex align-items-center gap-3">
                                     <input class="form-check-input" type="radio" name="hrCondPerson" id="hrCondPersonDept" value="department">
                                     <label class="form-check-label" for="hrCondPersonDept">所属指定</label>
-                                    <button type="button" class="btn btn-primary btn-sm" onclick="browseDepartment()">参照</button>
+                                    <button type="button" class="btn btn-primary btn-sm" id="hrBrowseDeptBtn">参照</button>
                                 </div>
                                 <div class="form-check d-flex align-items-center gap-3">
                                     <input class="form-check-input" type="radio" name="hrCondPerson" id="hrCondPersonCat" value="category">
                                     <label class="form-check-label" for="hrCondPersonCat">区分指定</label>
-                                    <button type="button" class="btn btn-primary btn-sm" onclick="browseCategory()">参照</button>
+                                    <button type="button" class="btn btn-primary btn-sm" id="hrBrowseCatBtn">参照</button>
                                 </div>
                             </div>
                         </div>
@@ -729,7 +726,7 @@
                                 <div class="form-check d-flex align-items-center gap-3">
                                     <input class="form-check-input" type="radio" name="hrCondGate" id="hrCondGateSelect" value="select">
                                     <label class="form-check-label" for="hrCondGateSelect">ゲート指定</label>
-                                    <button type="button" class="btn btn-primary btn-sm" onclick="browseGate()">参照</button>
+                                    <button type="button" class="btn btn-primary btn-sm" id="hrBrowseGateBtn">参照</button>
                                 </div>
                             </div>
                         </div>
@@ -745,7 +742,7 @@
                                 <div class="form-check d-flex align-items-center gap-3">
                                     <input class="form-check-input" type="radio" name="hrCondHistory" id="hrCondHistorySelect" value="select">
                                     <label class="form-check-label" for="hrCondHistorySelect">履歴データ指定</label>
-                                    <button type="button" class="btn btn-primary btn-sm" onclick="browseHistory()">参照</button>
+                                    <button type="button" class="btn btn-primary btn-sm" id="hrBrowseHistoryBtn">参照</button>
                                 </div>
                             </div>
                         </div>
@@ -754,7 +751,7 @@
                         <button type="button" class="hr-modal-btn hr-modal-btn-red" data-bs-dismiss="modal">
                             <span class="material-symbols-outlined">cancel</span> 中止
                         </button>
-                        <button type="button" class="hr-modal-btn hr-modal-btn-green" onclick="applyHrCondition()">
+                        <button type="button" class="hr-modal-btn hr-modal-btn-green" id="hrCondApplyBtn">
                             <span class="material-symbols-outlined">play_arrow</span> 実行
                         </button>
                     </div>
@@ -817,7 +814,7 @@
                         <button type="button" class="hr-modal-btn hr-modal-btn-red" data-bs-dismiss="modal">
                             <span class="material-symbols-outlined">cancel</span> 中止
                         </button>
-                        <button type="button" class="hr-modal-btn hr-modal-btn-green" onclick="applyHrPeriod()">
+                        <button type="button" class="hr-modal-btn hr-modal-btn-green" id="hrPeriodApplyBtn">
                             <span class="material-symbols-outlined">play_arrow</span> 実行
                         </button>
                     </div>
@@ -860,54 +857,6 @@
 		overlay.addEventListener('click', hide);
 	})();
 	</script>
-<script>
-    /* データ種別カスタムドロップダウン */
-    (function() {
-        var dotClasses = { all: '', normal: 'hr-dot-normal', warning: 'hr-dot-warning', error: 'hr-dot-error' };
-        var labels = { all: '全データ表示', normal: '正常データ表示', warning: '軽エラーデータ表示', error: '重エラーデータ表示' };
-        var selected = document.getElementById('hrDataTypeSelected');
-        var options = document.getElementById('hrDataTypeOptions');
-        var dot = document.getElementById('hrDataTypeDot');
-        var label = document.getElementById('hrDataTypeLabel');
-        if (selected && options) {
-            selected.addEventListener('click', function(e) {
-                e.stopPropagation();
-                options.classList.toggle('show');
-            });
-            options.querySelectorAll('.hr-custom-option').forEach(function(opt) {
-                opt.addEventListener('click', function() {
-                    var value = this.getAttribute('data-value');
-                    label.textContent = labels[value];
-                    dot.className = 'hr-legend-dot ' + (dotClasses[value] || '');
-                    dot.style.display = value === 'all' ? 'none' : '';
-                    options.querySelectorAll('.hr-custom-option').forEach(function(o) {
-                        o.classList.toggle('selected', o.getAttribute('data-value') === value);
-                    });
-                    options.classList.remove('show');
-                });
-            });
-            document.addEventListener('click', function() { options.classList.remove('show'); });
-        }
-    })();
-
-    /* 条件選択モーダル */
-    function showHrConditionModal() {
-        var modal = new bootstrap.Modal(document.getElementById('hrConditionModal'));
-        modal.show();
-    }
-    function applyHrCondition() {
-        var modal = bootstrap.Modal.getInstance(document.getElementById('hrConditionModal'));
-        modal.hide();
-    }
-    function loadHrCondition() { alert('条件取得'); }
-    function saveHrCondition() { alert('条件保存'); }
-    function browseBackup() { alert('バックアップデータ参照'); }
-    function browsePersonal() { alert('個人指定参照'); }
-    function browseDepartment() { alert('所属指定参照'); }
-    function browseCategory() { alert('区分指定参照'); }
-    function browseGate() { alert('ゲート指定参照'); }
-    function browseHistory() { alert('履歴データ指定参照'); }
-    </script>
 <script type="text/javascript" src="/resources/static/js/historyReport.js"></script>
 </body>
 </html>

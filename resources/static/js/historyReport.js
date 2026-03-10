@@ -40,6 +40,7 @@
     var sortState = { col: null, dir: 'asc' };
     var excelFilters = {};      // { colAttr: Set }
     var columnVisibility = {};  // { colAttr: true/false }
+    var hrDataTypeValue = 'all'; // データ種別ドロップダウン内部状態
 
     ALL_COLUMNS.forEach(function (c) {
         columnVisibility[c] = DEFAULT_HIDDEN.indexOf(c) === -1;
@@ -71,8 +72,7 @@
         var statusDefs = [
             { id: 'normal',   weight: 70, details: ['入室', '退室'] },
             { id: 'warning',  weight: 15, details: ['バッテリー低下', 'カード読取警告', '通信異常復旧'] },
-            { id: 'error',    weight: 10, details: ['通信異常発生', 'ドア開放異常', '不正入室'] },
-            { id: 'recovery', weight: 5,  details: ['システム復旧', '通信復旧'] }
+            { id: 'error',    weight: 15, details: ['通信異常発生', 'ドア開放異常', '不正入室'] }
         ];
         var totalWeight = 100;
 
@@ -143,8 +143,7 @@
     }
 
     function getDataTypeValue() {
-        var el = document.getElementById('hrDataType');
-        return el ? el.value : 'all';
+        return hrDataTypeValue;
     }
 
     function applyAllFilters() {
@@ -200,9 +199,9 @@
         for (var i = start; i < end; i++) {
             var row = filteredData[i];
             var tr = document.createElement('tr');
+            if (row._type === 'normal')   tr.className = 'row-normal';
             if (row._type === 'warning')  tr.className = 'row-warning';
             if (row._type === 'error')    tr.className = 'row-error';
-            if (row._type === 'recovery') tr.className = 'row-recovery';
 
             ALL_COLUMNS.forEach(function (col) {
                 var td = document.createElement('td');
@@ -389,17 +388,17 @@
 
         var html = '';
         html += '<div class="excel-filter-header">' + escapeHtml(COLUMN_NAMES[colAttr] || colAttr) + ' のフィルター</div>';
-        html += '<div class="excel-search-section"><input type="text" class="excel-search-box" placeholder="検索..." oninput="filterHrOptions(\'' + colAttr + '\', this.value)"></div>';
+        html += '<div class="excel-search-section"><input type="text" class="excel-search-box" placeholder="検索..."></div>';
         html += '<div class="excel-filter-actions">';
-        html += '<button class="excel-action-btn" onclick="selectAllHrFilter(\'' + colAttr + '\')">すべて選択</button>';
-        html += '<button class="excel-action-btn" onclick="clearAllHrFilter(\'' + colAttr + '\')">すべてクリア</button>';
-        html += '<button class="excel-action-btn ok-btn" onclick="applyHrFilter(\'' + colAttr + '\')">OK</button>';
+        html += '<button class="excel-action-btn hr-select-all-btn">すべて選択</button>';
+        html += '<button class="excel-action-btn hr-clear-all-btn">すべてクリア</button>';
+        html += '<button class="excel-action-btn ok-btn hr-apply-btn">OK</button>';
         html += '</div>';
         html += '<div class="excel-filter-list" id="hr-filter-list-' + colAttr + '">';
         allValues.forEach(function (val) {
             var checked = !selected || selected.has(val) ? 'checked' : '';
             var displayVal = val === '' ? '(空白)' : escapeHtml(val);
-            html += '<div class="excel-filter-item" data-value="' + escapeHtml(val) + '" onclick="toggleHrOption(event, this)">';
+            html += '<div class="excel-filter-item" data-value="' + escapeHtml(val) + '">';
             html += '<input type="checkbox" ' + checked + '>';
             html += '<label>' + displayVal + '</label>';
             html += '</div>';
@@ -407,6 +406,29 @@
         html += '</div>';
 
         menu.innerHTML = html;
+
+        // Bind events on dynamically generated elements
+        var searchBox = menu.querySelector('.excel-search-box');
+        if (searchBox) {
+            searchBox.addEventListener('input', function () {
+                filterHrOptions(colAttr, this.value);
+            });
+        }
+        menu.querySelector('.hr-select-all-btn')?.addEventListener('click', function () {
+            selectAllHrFilter(colAttr);
+        });
+        menu.querySelector('.hr-clear-all-btn')?.addEventListener('click', function () {
+            clearAllHrFilter(colAttr);
+        });
+        menu.querySelector('.hr-apply-btn')?.addEventListener('click', function () {
+            applyHrFilter(colAttr);
+        });
+        menu.querySelectorAll('.excel-filter-item').forEach(function (item) {
+            item.addEventListener('click', function (e) {
+                toggleHrOption(e, item);
+            });
+        });
+
         menu.classList.add('show');
     }
 
@@ -528,8 +550,7 @@
         generateData(startDate, endDate);
         excelFilters = {};
         sortState = { col: null, dir: 'asc' };
-        var typeEl = document.getElementById('hrDataType');
-        if (typeEl) typeEl.value = 'all';
+        hrDataTypeValue = 'all';
         filteredData = masterData.slice();
         currentPage = 1;
         render();
@@ -547,14 +568,78 @@
     /* ====== フィルターリセット ====== */
     function resetHrFilters() {
         excelFilters = {};
-        var typeEl = document.getElementById('hrDataType');
-        if (typeEl) typeEl.value = 'all';
+        hrDataTypeValue = 'all';
+        // UI表示も更新
+        var dtDot = document.getElementById('hrDataTypeDot');
+        var dtLabel = document.getElementById('hrDataTypeLabel');
+        if (dtDot) { dtDot.style.display = 'none'; dtDot.className = 'hr-legend-dot'; }
+        if (dtLabel) dtLabel.textContent = '全データ表示';
+        var dtOptions = document.getElementById('hrDataTypeOptions');
+        if (dtOptions) {
+            dtOptions.querySelectorAll('.hr-custom-option').forEach(function (o) {
+                o.classList.toggle('selected', o.getAttribute('data-value') === 'all');
+            });
+        }
         updateFilterTriggerStates();
         applyAllFilters();
     }
 
+    /* ====== 条件選択モーダル ====== */
+    function showHrConditionModal() {
+        var el = document.getElementById('hrConditionModal');
+        if (el) {
+            var modal = new bootstrap.Modal(el);
+            modal.show();
+        }
+    }
+    function applyHrCondition() {
+        var el = document.getElementById('hrConditionModal');
+        if (el) {
+            var modal = bootstrap.Modal.getInstance(el);
+            if (modal) modal.hide();
+        }
+    }
+    function loadHrCondition() { alert('条件取得'); }
+    function saveHrCondition() { alert('条件保存'); }
+    function browseBackup() { alert('バックアップデータ参照'); }
+    function browsePersonal() { alert('個人指定参照'); }
+    function browseDepartment() { alert('所属指定参照'); }
+    function browseCategory() { alert('区分指定参照'); }
+    function browseGate() { alert('ゲート指定参照'); }
+    function browseHistory() { alert('履歴データ指定参照'); }
+
     /* ====== 初期化 ====== */
     document.addEventListener('DOMContentLoaded', function () {
+        // データ種別カスタムドロップダウン
+        var dotClasses = { all: '', normal: 'hr-dot-normal', warning: 'hr-dot-warning', error: 'hr-dot-error' };
+        var dtLabels = { all: '全データ表示', normal: '正常データ表示', warning: '軽エラーデータ表示', error: '重エラーデータ表示' };
+        var dtSelected = document.getElementById('hrDataTypeSelected');
+        var dtOptions = document.getElementById('hrDataTypeOptions');
+        var dtDot = document.getElementById('hrDataTypeDot');
+        var dtLabel = document.getElementById('hrDataTypeLabel');
+        if (dtSelected && dtOptions) {
+            dtSelected.addEventListener('click', function (e) {
+                e.stopPropagation();
+                dtOptions.classList.toggle('show');
+            });
+            dtOptions.querySelectorAll('.hr-custom-option').forEach(function (opt) {
+                opt.addEventListener('click', function () {
+                    var value = this.getAttribute('data-value');
+                    hrDataTypeValue = value;
+                    if (dtLabel) dtLabel.textContent = dtLabels[value];
+                    if (dtDot) {
+                        dtDot.className = 'hr-legend-dot ' + (dotClasses[value] || '');
+                        dtDot.style.display = value === 'all' ? 'none' : '';
+                    }
+                    dtOptions.querySelectorAll('.hr-custom-option').forEach(function (o) {
+                        o.classList.toggle('selected', o.getAttribute('data-value') === value);
+                    });
+                    dtOptions.classList.remove('show');
+                    applyAllFilters();
+                });
+            });
+        }
+
         // ページサイズ変更
         var sizeEl = document.getElementById('hrPageSize');
         if (sizeEl) {
@@ -562,14 +647,6 @@
                 pageSize = parseInt(this.value, 10);
                 currentPage = 1;
                 render();
-            });
-        }
-
-        // データ種別フィルター
-        var typeEl = document.getElementById('hrDataType');
-        if (typeEl) {
-            typeEl.addEventListener('change', function () {
-                applyAllFilters();
             });
         }
 
@@ -594,6 +671,32 @@
             thead.addEventListener('click', handleSort);
         }
 
+        // Excelフィルタートリガー（data-column属性から列名を取得）
+        document.querySelectorAll('#hrTable .excel-filter-trigger').forEach(function (trigger) {
+            trigger.addEventListener('click', function (e) {
+                var th = trigger.closest('th');
+                if (!th) return;
+                var colAttr = th.getAttribute('data-column');
+                if (colAttr) showHrFilter(e, colAttr);
+            });
+        });
+
+        // ヘッダーボタン
+        document.getElementById('hrPeriodBtn')?.addEventListener('click', showHrPeriodModal);
+        document.getElementById('hrConditionBtn')?.addEventListener('click', showHrConditionModal);
+
+        // 条件モーダル内ボタン
+        document.getElementById('hrCondLoadBtn')?.addEventListener('click', loadHrCondition);
+        document.getElementById('hrCondSaveBtn')?.addEventListener('click', saveHrCondition);
+        document.getElementById('hrBrowseBackupBtn')?.addEventListener('click', browseBackup);
+        document.getElementById('hrBrowsePersonalBtn')?.addEventListener('click', browsePersonal);
+        document.getElementById('hrBrowseDeptBtn')?.addEventListener('click', browseDepartment);
+        document.getElementById('hrBrowseCatBtn')?.addEventListener('click', browseCategory);
+        document.getElementById('hrBrowseGateBtn')?.addEventListener('click', browseGate);
+        document.getElementById('hrBrowseHistoryBtn')?.addEventListener('click', browseHistory);
+        document.getElementById('hrCondApplyBtn')?.addEventListener('click', applyHrCondition);
+        document.getElementById('hrPeriodApplyBtn')?.addEventListener('click', applyHrPeriod);
+
         // 期間モーダル: カスタム表示切替
         document.querySelectorAll('input[name="hrPeriodOption"]').forEach(function (radio) {
             radio.addEventListener('change', function () {
@@ -610,6 +713,9 @@
             if (!e.target.closest('#hrColumnManager') && !e.target.closest('.column-manager-menu')) {
                 var menu = document.getElementById('hrColumnManagerMenu');
                 if (menu) menu.classList.remove('show');
+            }
+            if (!e.target.closest('#hrDataTypeDropdown')) {
+                if (dtOptions) dtOptions.classList.remove('show');
             }
         });
 
@@ -644,8 +750,7 @@
 
             // データ種別フィルターを設定
             if (paramDataType && paramDataType !== 'all') {
-                var dtEl = document.getElementById('hrDataType');
-                if (dtEl) dtEl.value = paramDataType;
+                hrDataTypeValue = paramDataType;
             }
 
             // ゲート番号でExcelフィルターを自動適用
@@ -675,13 +780,4 @@
         }
     });
 
-    /* ====== グローバル公開 (onclick用) ====== */
-    window.showHrFilter = showHrFilter;
-    window.toggleHrOption = toggleHrOption;
-    window.selectAllHrFilter = selectAllHrFilter;
-    window.clearAllHrFilter = clearAllHrFilter;
-    window.filterHrOptions = filterHrOptions;
-    window.applyHrFilter = applyHrFilter;
-    window.showHrPeriodModal = showHrPeriodModal;
-    window.applyHrPeriod = applyHrPeriod;
 })();
