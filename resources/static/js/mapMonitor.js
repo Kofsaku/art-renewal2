@@ -547,19 +547,19 @@ function showHistorySettingsModal(gate) {
                         '<div class="col-6">' +
                             '<div class="fw-bold small border-bottom pb-1 mb-2"><i class="fas fa-filter me-1"></i>履歴種類</div>' +
                             '<div class="form-check small">' +
-                                '<input class="form-check-input" type="checkbox" id="mmT1" checked>' +
+                                '<input class="form-check-input" type="radio" name="mmHistType" id="mmT1" value="all" checked>' +
                                 '<label class="form-check-label" for="mmT1">全て</label>' +
                             '</div>' +
                             '<div class="form-check small">' +
-                                '<input class="form-check-input" type="checkbox" id="mmT2">' +
+                                '<input class="form-check-input" type="radio" name="mmHistType" id="mmT2" value="normal">' +
                                 '<label class="form-check-label" for="mmT2">正常データのみ</label>' +
                             '</div>' +
                             '<div class="form-check small">' +
-                                '<input class="form-check-input" type="checkbox" id="mmT3">' +
+                                '<input class="form-check-input" type="radio" name="mmHistType" id="mmT3" value="warning">' +
                                 '<label class="form-check-label" for="mmT3">軽エラーデータのみ</label>' +
                             '</div>' +
                             '<div class="form-check small">' +
-                                '<input class="form-check-input" type="checkbox" id="mmT4">' +
+                                '<input class="form-check-input" type="radio" name="mmHistType" id="mmT4" value="error">' +
                                 '<label class="form-check-label" for="mmT4">重エラーデータのみ</label>' +
                             '</div>' +
                         '</div>' +
@@ -579,21 +579,8 @@ function showHistorySettingsModal(gate) {
     modal.querySelector('#mmNavigateReportBtn').addEventListener('click', function() {
         var periodRadio = modal.querySelector('input[name="histPeriod"]:checked');
         var period = periodRadio ? periodRadio.value : '1day';
-        var t1 = modal.querySelector('#mmT1');
-        var t2 = modal.querySelector('#mmT2');
-        var t3 = modal.querySelector('#mmT3');
-        var t4 = modal.querySelector('#mmT4');
-
-        var dataType = 'all';
-        if (t1 && t1.checked) {
-            dataType = 'all';
-        } else if (t2 && t2.checked) {
-            dataType = 'normal';
-        } else if (t3 && t3.checked) {
-            dataType = 'warning';
-        } else if (t4 && t4.checked) {
-            dataType = 'error';
-        }
+        var typeRadio = modal.querySelector('input[name="mmHistType"]:checked');
+        var dataType = typeRadio ? typeRadio.value : 'all';
 
         var params = new URLSearchParams();
         params.set('gate', gate.code);

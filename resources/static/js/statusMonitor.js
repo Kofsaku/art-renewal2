@@ -688,19 +688,19 @@ class StatusMonitor {
                             <div class="col-6">
                                 <div class="fw-bold small border-bottom pb-1 mb-2"><i class="fas fa-filter me-1"></i>履歴種類</div>
                                 <div class="form-check small">
-                                    <input class="form-check-input" type="checkbox" id="t1" checked>
+                                    <input class="form-check-input" type="radio" name="histType" id="t1" value="all" checked>
                                     <label class="form-check-label" for="t1">全て</label>
                                 </div>
                                 <div class="form-check small">
-                                    <input class="form-check-input" type="checkbox" id="t2">
+                                    <input class="form-check-input" type="radio" name="histType" id="t2" value="normal">
                                     <label class="form-check-label" for="t2">正常データのみ</label>
                                 </div>
                                 <div class="form-check small">
-                                    <input class="form-check-input" type="checkbox" id="t3">
+                                    <input class="form-check-input" type="radio" name="histType" id="t3" value="warning">
                                     <label class="form-check-label" for="t3">軽エラーデータのみ</label>
                                 </div>
                                 <div class="form-check small">
-                                    <input class="form-check-input" type="checkbox" id="t4">
+                                    <input class="form-check-input" type="radio" name="histType" id="t4" value="error">
                                     <label class="form-check-label" for="t4">重エラーデータのみ</label>
                                 </div>
                             </div>
@@ -721,22 +721,8 @@ class StatusMonitor {
             // モーダルから選択値を読み取り
             var periodRadio = modal.querySelector('input[name="histPeriod"]:checked');
             var period = periodRadio ? periodRadio.value : '1day';
-            var t1 = modal.querySelector('#t1'); // 全て
-            var t2 = modal.querySelector('#t2'); // 正常データのみ
-            var t3 = modal.querySelector('#t3'); // 軽エラーデータのみ
-            var t4 = modal.querySelector('#t4'); // 重エラーデータのみ
-
-            // データ種別を判定
-            var dataType = 'all';
-            if (t1 && t1.checked) {
-                dataType = 'all';
-            } else if (t2 && t2.checked) {
-                dataType = 'normal';
-            } else if (t3 && t3.checked) {
-                dataType = 'warning';
-            } else if (t4 && t4.checked) {
-                dataType = 'error';
-            }
+            var typeRadio = modal.querySelector('input[name="histType"]:checked');
+            var dataType = typeRadio ? typeRadio.value : 'all';
 
             // URLパラメータで報告書画面に遷移
             var params = new URLSearchParams();
