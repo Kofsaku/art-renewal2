@@ -61,17 +61,32 @@
             transition: background 0.15s, filter 0.15s;
             font-family: inherit;
         }
-        .pr-btn:hover { filter: brightness(0.92); }
+        .pr-btn:hover { filter: none; }
         .pr-btn-blue   { background: #fff; color: #007bff; border-color: #007bff; }
+        .pr-btn-blue:hover { background: #007bff; color: #fff; }
+        .pr-btn-blue:hover .material-symbols-outlined { color: #fff; }
         .pr-btn-blue i { color: #007bff; }
+        .pr-btn-blue:hover i { color: #fff; }
         .pr-btn-green  { background: #fff; color: #007bff; border-color: #007bff; }
+        .pr-btn-green:hover { background: #007bff; color: #fff; }
+        .pr-btn-green:hover .material-symbols-outlined { color: #fff; }
         .pr-btn-green i { color: #007bff; }
+        .pr-btn-green:hover i { color: #fff; }
         .pr-btn-red    { background: #fff; color: #dc3545; border-color: #dc3545; }
+        .pr-btn-red:hover { background: #dc3545; color: #fff; }
+        .pr-btn-red:hover .material-symbols-outlined { color: #fff; }
         .pr-btn-red i  { color: #dc3545; }
+        .pr-btn-red:hover i { color: #fff; }
         .pr-btn-orange { background: #fff; color: #e67e22; border: 1px solid #e67e22; }
+        .pr-btn-orange:hover { background: #e67e22; color: #fff; }
+        .pr-btn-orange:hover .material-symbols-outlined { color: #fff; }
         .pr-btn-orange i { color: #e67e22; }
+        .pr-btn-orange:hover i { color: #fff; }
         .pr-btn-gray   { background: #fff; color: #6c757d; border-color: #adb5bd; }
+        .pr-btn-gray:hover { background: #6c757d; color: #fff; }
+        .pr-btn-gray:hover .material-symbols-outlined { color: #fff; }
         .pr-btn-gray i { color: #6c757d; }
+        .pr-btn-gray:hover i { color: #fff; }
 
         /* ---- 2カラムグリッド（両サイド余白付き） ---- */
         .pr-body {
@@ -768,14 +783,6 @@
                                 </div>
                             </div>
 
-                            <!-- 生体INDEX -->
-                            <div class="pr-form-row">
-                                <div class="pr-form-label">生体INDEX</div>
-                                <div class="pr-form-value">
-                                    <input type="text" id="bioIndex" class="pr-input-code">
-                                </div>
-                            </div>
-
                             <!-- 代替コード -->
                             <div class="pr-form-row">
                                 <div class="pr-form-label">代替コード</div>
@@ -812,6 +819,20 @@
                                 <div class="pr-form-value">
                                     <input type="text" id="bioId" class="pr-input-code">
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- 登録日 / 更新日 -->
+                        <div class="pr-form-row">
+                            <div class="pr-form-label">登録日</div>
+                            <div class="pr-form-value">
+                                <input type="text" id="registeredDate" class="pr-input-mid" readonly style="background:#f0f0f0; color:#495057;">
+                            </div>
+                        </div>
+                        <div class="pr-form-row">
+                            <div class="pr-form-label">更新日</div>
+                            <div class="pr-form-value">
+                                <input type="text" id="updatedDate" class="pr-input-mid" readonly style="background:#f0f0f0; color:#495057;">
                             </div>
                         </div>
 
