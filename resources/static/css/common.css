@@ -442,13 +442,3 @@ body.td-body {
     min-width: var(--td-min-width);
 }
 
-/* ---- フッター ---- */
-.td-footer {
-    background: #f0f4f8;
-    border-top: 1px solid #c0d0e0;
-    padding: 5px 20px;
-    text-align: center;
-    font-size: 0.75rem;
-    color: #556;
-    min-width: var(--td-min-width);
-}
