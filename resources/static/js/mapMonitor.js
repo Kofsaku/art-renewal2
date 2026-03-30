@@ -104,6 +104,12 @@ function setupEventListeners() {
     });
 }
 
+function escapeHtml(value) {
+    var div = document.createElement('div');
+    div.textContent = value == null ? '' : String(value);
+    return div.innerHTML;
+}
+
 /**
  * ゲートインジケーター描画
  */
@@ -158,15 +164,9 @@ function renderGateIndicators() {
         pointer.appendChild(tooltip);
 
         pointer.addEventListener('click', function() {
-            showGateControlModal(this);
-        });
-
-        // 右クリックで履歴表示設定モーダル（ステータスモニター同仕様）
-        pointer.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
             var gateId = parseInt(this.getAttribute('data-gate'), 10);
             var gateData = mapMonitor.gateData.find(function(g) { return g.id === gateId; });
-            if (gateData) showHistorySettingsModal(gateData);
+            if (gateData) showActionModal(gateData);
         });
 
         floorPlan.appendChild(pointer);
@@ -377,6 +377,73 @@ function showGateControlModal(element) {
 }
 
 /**
+ * ゲート制御モーダル表示（ゲートデータ直接指定）
+ */
+function showGateControlModalByData(gateData) {
+    if (!gateData) return;
+
+    var gateStatus = getGateStateLabel(gateData);
+    var displayName = gateData.name + '(' + gateData.code + ')';
+    document.getElementById('modalGateNumber').textContent = displayName;
+    document.getElementById('modalGateStatus').textContent = gateStatus;
+    document.getElementById('modalLastUpdate').textContent = new Date().toLocaleString();
+
+    // ラジオボタンをリセット
+    document.querySelectorAll('input[name="singleRemoteOperation"]').forEach(function(radio) {
+        radio.checked = false;
+    });
+
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('gateDetailModal')).show();
+}
+
+/**
+ * 操作選択モーダル表示
+ */
+function showActionModal(gate) {
+    var existing = document.getElementById('mmActionSelectModal');
+    if (existing) existing.remove();
+
+    var title = '操作選択 - ゲート' + gate.name + '(' + gate.id + ')';
+    var safeTitle = escapeHtml(title);
+
+    var modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'mmActionSelectModal';
+    modal.tabIndex = -1;
+    modal.setAttribute('aria-hidden', 'true');
+
+    modal.innerHTML =
+        '<div class="modal-dialog modal-dialog-centered">' +
+            '<div class="modal-content">' +
+                '<div class="modal-header py-2">' +
+                    '<h6 class="modal-title mb-0">' + safeTitle + '</h6>' +
+                    '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>' +
+                '</div>' +
+                '<div class="modal-body">' +
+                    '<button type="button" class="btn btn-outline-secondary w-100 mb-2" id="mmOpenRemoteBtn">遠隔操作</button>' +
+                    '<button type="button" class="btn btn-outline-secondary w-100" id="mmOpenHistoryBtn">報告書</button>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+
+    document.body.appendChild(modal);
+    var bsModal = new bootstrap.Modal(modal);
+
+    modal.querySelector('#mmOpenRemoteBtn').addEventListener('click', function() {
+        modal.addEventListener('hidden.bs.modal', function() { showGateControlModalByData(gate); }, { once: true });
+        bsModal.hide();
+    });
+
+    modal.querySelector('#mmOpenHistoryBtn').addEventListener('click', function() {
+        modal.addEventListener('hidden.bs.modal', function() { showHistorySettingsModal(gate); }, { once: true });
+        bsModal.hide();
+    });
+
+    bsModal.show();
+    modal.addEventListener('hidden.bs.modal', function() { modal.remove(); });
+}
+
+/**
  * 単一ゲート遠隔操作実行
  */
 function executeSingleRemoteCommand() {
@@ -566,10 +633,8 @@ function showHistorySettingsModal(gate) {
                     '</div>' +
                 '</div>' +
                 '<div class="modal-footer py-2">' +
-                    '<button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">キャンセル</button>' +
-                    '<button type="button" class="btn btn-primary btn-sm" id="mmNavigateReportBtn">' +
-                        '<i class="fas fa-arrow-right me-1"></i>報告書画面へ遷移' +
-                    '</button>' +
+                    '<button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">中止</button>' +
+                    '<button type="button" class="btn btn-primary btn-sm" id="mmNavigateReportBtn">実行</button>' +
                 '</div>' +
             '</div>' +
         '</div>';

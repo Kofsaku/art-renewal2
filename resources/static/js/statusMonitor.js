@@ -417,17 +417,11 @@ class StatusMonitor {
             ${iconGridHtml}
         `;
 
-        // 左クリックで遠隔操作モーダルを表示
+        // 左クリックで操作選択モーダルを表示
         card.addEventListener('click', (e) => {
             if (e.button === 0) {
-                this.showRemoteControl(gate);
+                this.showActionModal(gate);
             }
-        });
-        
-        // 右クリックで履歴表示設定表示 (個人一覧合わせ)
-        card.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            this.showHistorySettingsModal(gate);
         });
 
         return card;
@@ -560,6 +554,50 @@ class StatusMonitor {
     showRemoteControl(gate) {
         this.currentGateId = gate.number;
         this.showRemoteControlModal(gate);
+    }
+
+    showActionModal(gate) {
+        const existingModal = document.getElementById('actionSelectModal');
+        if (existingModal) existingModal.remove();
+
+        const safeDisplayName = this.escapeHtml(this.getGateDisplayName(gate));
+
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = 'actionSelectModal';
+        modal.tabIndex = -1;
+        modal.setAttribute('aria-hidden', 'true');
+
+        modal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header py-2">
+                        <h6 class="modal-title mb-0">操作選択 - ${safeDisplayName}</h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <button type="button" class="btn btn-outline-secondary w-100 mb-2" id="openRemoteControlBtn">遠隔操作</button>
+                        <button type="button" class="btn btn-outline-secondary w-100" id="openHistorySettingsBtn">報告書</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        const bootstrapModal = new bootstrap.Modal(modal);
+
+        modal.querySelector('#openRemoteControlBtn').addEventListener('click', () => {
+            modal.addEventListener('hidden.bs.modal', () => this.showRemoteControlModal(gate), { once: true });
+            bootstrapModal.hide();
+        });
+
+        modal.querySelector('#openHistorySettingsBtn').addEventListener('click', () => {
+            modal.addEventListener('hidden.bs.modal', () => this.showHistorySettingsModal(gate), { once: true });
+            bootstrapModal.hide();
+        });
+
+        bootstrapModal.show();
+        modal.addEventListener('hidden.bs.modal', function () { modal.remove(); });
     }
 
     showRemoteControlModal(gate) {
@@ -707,10 +745,8 @@ class StatusMonitor {
                         </div>
                     </div>
                     <div class="modal-footer py-2">
-                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">キャンセル</button>
-                        <button type="button" class="btn btn-primary btn-sm" id="navigateReportBtn">
-                            <i class="fas fa-arrow-right me-1"></i>報告書画面へ遷移
-                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">中止</button>
+                        <button type="button" class="btn btn-primary btn-sm" id="navigateReportBtn">実行</button>
                     </div>
                 </div>
             </div>

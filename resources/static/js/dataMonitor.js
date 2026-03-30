@@ -101,15 +101,8 @@
                 '<td>' + escapeHtml(row.gateName) + '</td>' +
                 '<td>' + escapeHtml(row.detail) + '</td>';
             tr.style.cursor = 'pointer';
-            tr.addEventListener('click', function () {
-                tbody.querySelectorAll('tr.row-selected').forEach(function (r) {
-                    r.classList.remove('row-selected');
-                });
-                tr.classList.add('row-selected');
-                selectedRowData = row;
-            });
-            tr.addEventListener('contextmenu', function (e) {
-                e.preventDefault();
+            tr.addEventListener('click', function (e) {
+                e.stopPropagation();
                 tbody.querySelectorAll('tr.row-selected').forEach(function (r) {
                     r.classList.remove('row-selected');
                 });

@@ -66,7 +66,7 @@
 
         /* ---- 左サイドバー（フロアタブ） ---- */
         .mm-sidebar {
-            width: 120px;
+            width: 220px;
             flex-shrink: 0;
             display: grid;
             grid-template-columns: 1fr;
@@ -93,6 +93,9 @@
             cursor: pointer;
             transition: all 0.2s ease;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
         }
         .mm-floor-btn:hover {
             background: #e9ecef;
@@ -151,15 +154,15 @@
             width: 14px;
             height: 14px;
             border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 0 0 2px rgba(0,0,0,0.2);
+            border: none;
+            box-shadow: none;
         }
-        .pointer-circle.state-closed-locked   { background: #1f5fbf; box-shadow: 0 0 0 2px #1f5fbf; }
-        .pointer-circle.state-closed-unlocked { background: #28a745; box-shadow: 0 0 0 2px #28a745; }
-        .pointer-circle.state-abnormal        { background: #dc3545; box-shadow: 0 0 0 2px #dc3545; }
-        .pointer-circle.state-open-locked     { background: #6ec6ff; box-shadow: 0 0 0 2px #6ec6ff; }
-        .pointer-circle.state-open-unlocked   { background: #90ee90; box-shadow: 0 0 0 2px #90ee90; }
-        .pointer-circle.state-security-set    { background: #ffc107; box-shadow: 0 0 0 2px #ffc107; }
+        .pointer-circle.state-closed-locked   { background: #1f5fbf; }
+        .pointer-circle.state-closed-unlocked { background: #28a745; }
+        .pointer-circle.state-abnormal        { background: #dc3545; }
+        .pointer-circle.state-open-locked     { background: #6ec6ff; }
+        .pointer-circle.state-open-unlocked   { background: #90ee90; }
+        .pointer-circle.state-security-set    { background: #ffc107; }
 
         /* ---- ツールチップ ---- */
         .gate-tooltip {
@@ -375,10 +378,6 @@
         </div>
     </div>
 
-		<!-- 設定ボタン -->
-		<button class="td-settings-btn" title="設定">
-			<i class="fas fa-cog"></i>
-		</button>
 	</header>
 
 	<!-- メインコンテンツ -->
