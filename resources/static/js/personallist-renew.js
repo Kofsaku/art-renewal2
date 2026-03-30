@@ -164,7 +164,15 @@ function showExcelFilter(event, columnKey) {
     const triggerElement = event.target;
 
     // Get unique values for this column
-    const uniqueValues = [...new Set(personalData.map(item => item[columnKey]))].sort();
+    const baseData = personalData.filter(item => {
+        for (const [key, filterValues] of Object.entries(currentFilters)) {
+            if (key === columnKey) continue;
+            if (!filterValues || filterValues.length === 0) continue;
+            if (!filterValues.includes(item[key])) return false;
+        }
+        return true;
+    });
+    const uniqueValues = [...new Set(baseData.map(item => item[columnKey]))].sort();
 
     const currentFilterValues = currentFilters[columnKey] || [];
     const isFiltered = currentFilterValues.length > 0 && currentFilterValues.length < uniqueValues.length;
@@ -301,10 +309,12 @@ function filterExcelOptions(columnKey, searchTerm) {
 }
 
 function applyExcelFilter(columnKey) {
-    const checkedItems = document.querySelectorAll(`#excel-options-${columnKey} .excel-filter-item:not(.select-all) input[type="checkbox"]:checked`);
-    const selectedValues = Array.from(checkedItems).map(checkbox => {
-        return checkbox.parentElement.querySelector('span').textContent;
-    });
+    const allItems = document.querySelectorAll(`#excel-options-${columnKey} .excel-filter-item:not(.select-all)`);
+    const checkedItems = Array.from(allItems)
+        .filter(item => item.style.display !== 'none')
+        .map(item => item.querySelector('input[type="checkbox"]'))
+        .filter(cb => cb && cb.checked);
+    const selectedValues = Array.from(checkedItems).map(checkbox => checkbox.parentElement.querySelector('span').textContent);
 
     if (selectedValues.length === 0) {
         // No items selected, show none
@@ -757,7 +767,7 @@ function updateTableHeaders() {
 
             // ソート機能
             th.addEventListener('click', (e) => {
-                if (!e.target.closest('.excel-filter-trigger')) {
+                if (!e.target.closest('.excel-filter-trigger') && !e.target.closest('.excel-filter-menu')) {
                     handleSort(columnKey);
                 }
             });
@@ -814,6 +824,7 @@ function handleSort(columnKey) {
     // ページを1に戻してテーブル更新
     currentPage = 1;
     updateTableHeaders();
+    updateFilteredColumnHeaders();
     displayCurrentPage();
     updatePagination();
     

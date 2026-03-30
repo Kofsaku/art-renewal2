@@ -477,6 +477,7 @@
         var allValues = getUniqueValues(colAttr);
         var selectedSet = new Set();
         list.querySelectorAll('.excel-filter-item').forEach(function (item) {
+            if (item.style.display === 'none') return;
             var cb = item.querySelector('input[type="checkbox"]');
             if (cb && cb.checked) selectedSet.add(item.getAttribute('data-value'));
         });

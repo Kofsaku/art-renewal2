@@ -60,24 +60,31 @@
         .hr-btn-orange:hover .material-symbols-outlined { color: #fff; }
         .hr-btn-orange i { color: #e67e22; }
         .hr-btn-orange:hover i { color: #fff; }
+        .hr-header-sep {
+            width: 1px;
+            height: 20px;
+            background: rgba(0,0,0,0.2);
+            align-self: center;
+            margin: 0 2px;
+        }
 
         /* ---- ツールバー ---- */
         .hr-toolbar {
             flex-shrink: 0;
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 6px 10px;
+            gap: 6px;
+            padding: 4px 8px;
             background: #f0f4f8;
             border-bottom: 1px solid var(--td-border);
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
         }
         .hr-count {
-            padding: 3px 10px;
+            padding: 2px 6px;
             background: #fff;
             border: 2px solid #dc3545;
             border-radius: 4px;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             font-weight: 700;
             color: #dc3545;
             white-space: nowrap;
@@ -85,47 +92,60 @@
         .hr-select-group {
             display: flex;
             align-items: center;
-            gap: 4px;
-            font-size: 0.85rem;
+            gap: 2px;
+            font-size: 0.75rem;
+            white-space: nowrap;
         }
         .hr-select {
-            height: 28px;
-            padding: 0 6px;
+            height: 24px;
+            padding: 0 4px;
             border: 1px solid #ced4da;
             border-radius: 4px;
-            font-size: 0.82rem;
+            font-size: 0.75rem;
             background: #fff;
             cursor: pointer;
         }
-        .hr-period-group {
+        .hr-extract-item {
             display: flex;
             align-items: center;
-            gap: 4px;
-            font-size: 0.85rem;
+            gap: 2px;
+            white-space: nowrap;
+        }
+        .hr-extract-label {
+            font-size: 0.72rem;
             font-weight: 600;
-            color: #333;
+            color: #495057;
+        }
+        .hr-extract-input {
+            height: 22px;
+            padding: 0 4px;
+            border: 1px solid #ced4da;
+            border-radius: 3px;
+            font-size: 0.72rem;
+            width: 100px;
+            background: #fff;
         }
         .hr-period-display {
-            padding: 2px 10px;
+            padding: 1px 6px;
             border: 1px solid #ced4da;
             border-radius: 4px;
             background: #fff;
             font-family: monospace;
-            font-size: 0.82rem;
+            font-size: 0.72rem;
             white-space: nowrap;
         }
         .hr-data-type-group {
             display: flex;
             align-items: center;
-            gap: 4px;
-            font-size: 0.85rem;
+            gap: 2px;
+            font-size: 0.75rem;
             font-weight: 600;
             color: #333;
         }
         .hr-spacer { flex: 1; }
         .hr-toolbar-btn {
-            height: 28px;
-            padding: 0 10px;
+            height: 24px;
+            padding: 0 6px;
             background: #fff;
             border: 1px solid #ced4da;
             border-radius: 4px;
@@ -213,7 +233,7 @@
         }
         .excel-filter-trigger.active { opacity: 1; }
         .excel-filter-trigger.active::after {
-            color: #ffc107;
+            color: #000;
         }
         .excel-filter-menu {
             display: none;
@@ -489,6 +509,7 @@
         <button class="hr-btn hr-btn-gray">
             <span class="material-symbols-outlined">file_download</span> 出力
         </button>
+        <div class="hr-header-sep"></div>
         <button class="hr-btn hr-btn-gray" id="hrPeriodBtn">
             <span class="material-symbols-outlined">event</span> 期間抽出
         </button>
@@ -504,7 +525,6 @@
                 <!-- ツールバー -->
                 <div class="hr-toolbar">
                     <span class="hr-count">現条件: <span id="hrRecordCount">0</span>件</span>
-
                     <div class="hr-select-group">
                         <span>表示件数:</span>
                         <select class="hr-select" id="hrPageSize">
@@ -513,43 +533,38 @@
                             <option value="100">100件</option>
                         </select>
                     </div>
-
                     <div class="hr-data-type-group">
-                        <span>◆ データ種別:</span>
+                        <span>◆データ種別:</span>
                         <div class="hr-custom-select" id="hrDataTypeDropdown">
                             <div class="hr-custom-selected" id="hrDataTypeSelected">
                                 <span class="hr-legend-dot" id="hrDataTypeDot" style="display:none;"></span>
                                 <span id="hrDataTypeLabel">全データ表示</span>
                             </div>
                             <div class="hr-custom-options" id="hrDataTypeOptions">
-                                <div class="hr-custom-option selected" data-value="all">
-                                    全データ表示
-                                </div>
-                                <div class="hr-custom-option" data-value="normal">
-                                    <span class="hr-legend-dot hr-dot-normal"></span>正常データ表示
-                                </div>
-                                <div class="hr-custom-option" data-value="warning">
-                                    <span class="hr-legend-dot hr-dot-warning"></span>軽エラーデータ表示
-                                </div>
-                                <div class="hr-custom-option" data-value="error">
-                                    <span class="hr-legend-dot hr-dot-error"></span>重エラーデータ表示
-                                </div>
+                                <div class="hr-custom-option selected" data-value="all">全データ表示</div>
+                                <div class="hr-custom-option" data-value="normal"><span class="hr-legend-dot hr-dot-normal"></span>正常データ表示</div>
+                                <div class="hr-custom-option" data-value="warning"><span class="hr-legend-dot hr-dot-warning"></span>軽エラーデータ表示</div>
+                                <div class="hr-custom-option" data-value="error"><span class="hr-legend-dot hr-dot-error"></span>重エラーデータ表示</div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="hr-period-group">
-                        <span>◆ 抽出期間:</span>
+                    <div class="hr-extract-item">
+                        <span class="hr-extract-label">◆抽出期間:</span>
                         <span class="hr-period-display" id="hrPeriodDisplay">YYYY/MM/DD hh:mm ～ YYYY/MM/DD hh:mm</span>
                     </div>
-
-                    <div class="hr-period-group">
-                        <span>◆ 抽出条件:</span>
-                        <span class="hr-period-display" id="hrConditionDisplay">個人:○○ / ゲート:○○ / 履歴:○○</span>
+                    <div class="hr-extract-item">
+                        <span class="hr-extract-label">◆抽出個人</span>
+                        <input type="text" class="hr-extract-input" id="hrExtractPerson" readonly>
                     </div>
-
+                    <div class="hr-extract-item">
+                        <span class="hr-extract-label">◆抽出ゲート</span>
+                        <input type="text" class="hr-extract-input" id="hrExtractGate" readonly>
+                    </div>
+                    <div class="hr-extract-item">
+                        <span class="hr-extract-label">◆抽出履歴</span>
+                        <input type="text" class="hr-extract-input" id="hrExtractType" readonly>
+                    </div>
                     <div class="hr-spacer"></div>
-
                     <button class="hr-toolbar-btn" id="hrFilterReset">
                         <i class="fas fa-times-circle"></i>フィルターリセット
                     </button>
@@ -557,9 +572,7 @@
                         <button class="hr-toolbar-btn" id="hrColumnManager">
                             <i class="fas fa-columns"></i>列表示管理
                         </button>
-                        <div class="column-manager-menu" id="hrColumnManagerMenu">
-                            <!-- JSで生成 -->
-                        </div>
+                        <div class="column-manager-menu" id="hrColumnManagerMenu"></div>
                     </div>
                 </div>
 

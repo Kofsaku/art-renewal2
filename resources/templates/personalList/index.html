@@ -249,7 +249,11 @@
         }
         .excel-filter-trigger.active { opacity: 1; }
         .excel-filter-trigger.active::after {
-            color: #ffc107;
+            content: '\f0b0';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: #000;
+            font-size: 9px;
         }
         .excel-filter-menu {
             display: none;
@@ -358,11 +362,16 @@
             border-top: 1px solid #eee;
         }
         /* ---- フィルター適用中の列ヘッダー ---- */
-        .data-table th.filtered {
-            background: #495057;
+        .excel-filter-trigger.filtered {
+            opacity: 1;
+            font-size: 10px;
         }
         .excel-filter-trigger.filtered::after {
-            color: #ffc107;
+            content: '\f0b0';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: #000;
+            font-size: 10px;
         }
         /* ---- ソート状態 ---- */
         .data-table th.sort-asc::before {
@@ -524,6 +533,7 @@
         <button class="pl-btn" id="plResendBtn">
             <span class="material-symbols-outlined">replay</span> 未送再送
         </button>
+        <div class="pl-header-sep"></div>
         <button class="pl-btn" id="plRegisterBtn" th:data-href="@{/personalRegistration}">
             <span class="material-symbols-outlined">upload_file</span> 登録
         </button>
@@ -533,6 +543,7 @@
         <button class="pl-btn pl-btn-orange" id="plRevokeBtn">
             <span class="material-symbols-outlined">key_off</span> 権限失効
         </button>
+        <div class="pl-header-sep"></div>
         <button class="pl-btn pl-btn-gray" id="plUploadBtn">
             <span class="material-symbols-outlined">upload_file</span> 取込
         </button>

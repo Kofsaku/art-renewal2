@@ -157,6 +157,21 @@ class PersonalRegistration {
             { code: '0019', name: '屋上扉',         tc: '', df: 'C' },
             { code: '0020', name: '非常口',         tc: '', df: 'C' }
         ];
+        const extraFacilityNames = ['倉庫', '研修室', '食堂', '休憩室', '通用口', '搬入口', '警備室', '受付', '社長室', '役員室'];
+        gates.push(
+            ...extraFacilityNames.map((name, index) => ({
+                code: String(index + 21).padStart(4, '0'),
+                name,
+                tc: '',
+                df: 'C'
+            })),
+            ...Array.from({ length: 70 }, (_, index) => ({
+                code: String(index + 31).padStart(4, '0'),
+                name: `ゲート${index + 31}`,
+                tc: '',
+                df: 'C'
+            }))
+        );
 
         const tbody = document.getElementById('gateTableBody');
         const fragment = document.createDocumentFragment();
@@ -507,6 +522,21 @@ class PersonalRegistration {
                 }
             });
         });
+    }
+}
+
+function toggleDetailSection() {
+    var content = document.getElementById('detailContent');
+    var arrow = document.getElementById('detailArrow');
+    if (!content || !arrow) {
+        return;
+    }
+    if (content.classList.contains('collapsed')) {
+        content.classList.remove('collapsed');
+        arrow.textContent = '▼';
+    } else {
+        content.classList.add('collapsed');
+        arrow.textContent = '▶';
     }
 }
 
