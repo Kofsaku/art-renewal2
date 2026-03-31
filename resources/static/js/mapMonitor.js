@@ -633,8 +633,8 @@ function showHistorySettingsModal(gate) {
                     '</div>' +
                 '</div>' +
                 '<div class="modal-footer py-2">' +
-                    '<button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">中止</button>' +
-                    '<button type="button" class="btn btn-primary btn-sm" id="mmNavigateReportBtn">実行</button>' +
+                    '<button type="button" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" data-bs-dismiss="modal"><span class="material-symbols-outlined" style="font-size:18px">cancel</span> 中止</button>' +
+                    '<button type="button" class="btn btn-outline-success btn-sm d-inline-flex align-items-center gap-1" id="mmNavigateReportBtn"><span class="material-symbols-outlined" style="font-size:18px">play_arrow</span> 実行</button>' +
                 '</div>' +
             '</div>' +
         '</div>';
