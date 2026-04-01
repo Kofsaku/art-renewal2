@@ -73,6 +73,17 @@ window.common = (function() {
 		})
 	};
 
+	// HTML エスケープ（XSS 対策）
+	common.escapeHtml = function(str) {
+		if (str == null) return '';
+		return String(str)
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#039;');
+	};
+
 	return common;
 })();
 
@@ -81,7 +92,7 @@ window.common = (function() {
 
 
 $(document).on('input', '.js-inputtype-integer', function() {
-	
+
 	$me = $(this);
 	var beforeVal = $me.data('before');
 
@@ -89,7 +100,7 @@ $(document).on('input', '.js-inputtype-integer', function() {
 		beforeVal = '';
 	}
 	var toVal = $me.val();
-	
+
 	// 数値以外は許可しない
 	if (toVal.match(/[^0-9]/gi)) {
 		// 数値以外の場合は入力前の値で返す
@@ -101,4 +112,16 @@ $(document).on('input', '.js-inputtype-integer', function() {
 });
 
 
+// ハンバーガーメニュー開閉
+document.addEventListener('DOMContentLoaded', function(){
+	const overlay = document.getElementById('menuOverlay');
+	const menu    = document.getElementById('sideMenu');
+	const open    = document.getElementById('menuOpen');
+	const close   = document.getElementById('menuClose');
+	function show(){ menu.classList.add('open'); overlay.classList.add('open'); }
+	function hide(){ menu.classList.remove('open'); overlay.classList.remove('open'); }
+	open.addEventListener('click', show);
+	close.addEventListener('click', hide);
+	overlay.addEventListener('click', hide);
+});
 

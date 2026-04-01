@@ -80,10 +80,6 @@
         { type: 'error',   date: '2026/01/27 08:45:59', code: '',       name: '',       deptCode: '',    dept: '',       gate: '0002', gateName: 'H=02 A=4',     detail: '通信異常発生' }
     ];
 
-    function escapeHtml(str) {
-        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
     function renderTable(data) {
         var tbody = document.getElementById('dataTableBody');
         if (!tbody) return;
@@ -92,14 +88,14 @@
             var tr = document.createElement('tr');
             tr.className = row.type === 'warning' ? 'row-warning' : row.type === 'error' ? 'row-error' : '';
             tr.innerHTML =
-                '<td><div class="date-cell"><span class="status-dot dot-' + escapeHtml(row.type) + '"></span>' + escapeHtml(row.date) + '</div></td>' +
-                '<td>' + escapeHtml(row.code) + '</td>' +
-                '<td>' + escapeHtml(row.name) + '</td>' +
-                '<td>' + escapeHtml(row.deptCode) + '</td>' +
-                '<td>' + escapeHtml(row.dept) + '</td>' +
-                '<td>' + escapeHtml(row.gate) + '</td>' +
-                '<td>' + escapeHtml(row.gateName) + '</td>' +
-                '<td>' + escapeHtml(row.detail) + '</td>';
+                '<td><div class="date-cell"><span class="status-dot dot-' + common.escapeHtml(row.type) + '"></span>' + common.escapeHtml(row.date) + '</div></td>' +
+                '<td>' + common.escapeHtml(row.code) + '</td>' +
+                '<td>' + common.escapeHtml(row.name) + '</td>' +
+                '<td>' + common.escapeHtml(row.deptCode) + '</td>' +
+                '<td>' + common.escapeHtml(row.dept) + '</td>' +
+                '<td>' + common.escapeHtml(row.gate) + '</td>' +
+                '<td>' + common.escapeHtml(row.gateName) + '</td>' +
+                '<td>' + common.escapeHtml(row.detail) + '</td>';
             tr.style.cursor = 'pointer';
             tr.addEventListener('click', function (e) {
                 e.stopPropagation();
@@ -212,7 +208,7 @@
         var selected = excelFilters[colAttr] || null; // null = 全選択
 
         var html = '';
-        html += '<div class="excel-filter-header">' + escapeHtml(columnDisplayNames[colAttr] || colAttr) + ' のフィルター</div>';
+        html += '<div class="excel-filter-header">' + common.escapeHtml(columnDisplayNames[colAttr] || colAttr) + ' のフィルター</div>';
         html += '<div class="excel-search-section"><input type="text" class="excel-search-box" placeholder="検索..."></div>';
         html += '<div class="excel-filter-actions">';
         html += '<button class="excel-action-btn dm-select-all-btn">すべて選択</button>';
@@ -222,8 +218,8 @@
         html += '<div class="excel-filter-list" id="excel-list-' + colAttr + '">';
         allValues.forEach(function (val) {
             var checked = !selected || selected.has(val) ? 'checked' : '';
-            var displayVal = val === '' ? '(空白)' : escapeHtml(val);
-            html += '<div class="excel-filter-item" data-value="' + escapeHtml(val) + '">';
+            var displayVal = val === '' ? '(空白)' : common.escapeHtml(val);
+            html += '<div class="excel-filter-item" data-value="' + common.escapeHtml(val) + '">';
             html += '<input type="checkbox" ' + checked + '>';
             html += '<label>' + displayVal + '</label>';
             html += '</div>';

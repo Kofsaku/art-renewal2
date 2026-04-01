@@ -104,12 +104,6 @@ function setupEventListeners() {
     });
 }
 
-function escapeHtml(value) {
-    var div = document.createElement('div');
-    div.textContent = value == null ? '' : String(value);
-    return div.innerHTML;
-}
-
 /**
  * ゲートインジケーター描画
  */
@@ -404,7 +398,7 @@ function showActionModal(gate) {
     if (existing) existing.remove();
 
     var title = '操作選択 - ゲート' + gate.name + '(' + gate.id + ')';
-    var safeTitle = escapeHtml(title);
+    var safeTitle = common.escapeHtml(title);
 
     var modal = document.createElement('div');
     modal.className = 'modal fade';

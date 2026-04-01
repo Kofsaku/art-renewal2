@@ -10,17 +10,6 @@ let columnOrder = ['select', 'sendStatus', 'registrationStatus', 'personalCode',
 let hiddenColumns = ['issueCount', 'alternativeCode', 'bioCode', 'readProhibition', 'antipass', 'securityOperation', 'monitorCard', 'registrationDate', 'updateDate'];
 let sortState = { column: null, direction: 'asc' };
 
-// HTML エスケープ（XSS 対策）
-function escapeHtml(str) {
-    if (str == null) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function () {
     generateSampleData();
@@ -214,10 +203,10 @@ function showExcelFilter(event, columnKey) {
 function generateExcelFilterOptions(columnKey, values, currentFilter) {
     return values.map(value => {
         const isChecked = currentFilter.length === 0 || currentFilter.includes(value);
-        const escaped = escapeHtml(value);
+        const escaped = common.escapeHtml(value);
         // data属性で値を安全に受け渡し
         return `
-            <div class="excel-filter-item" data-col="${escapeHtml(columnKey)}" data-val="${escaped}" onclick="toggleExcelOption(this.dataset.col, this.dataset.val, event); event.stopPropagation();">
+            <div class="excel-filter-item" data-col="${common.escapeHtml(columnKey)}" data-val="${escaped}" onclick="toggleExcelOption(this.dataset.col, this.dataset.val, event); event.stopPropagation();">
                 <input type="checkbox" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation();">
                 <span>${escaped}</span>
             </div>
@@ -490,7 +479,7 @@ function displayCurrentPage() {
                     cellContent = `<input type="checkbox" value="${Number(person.id)}" onchange="togglePersonSelection(${Number(person.id)}, this.checked)" onclick="event.stopPropagation();">`;
                     break;
                 default:
-                    cellContent = escapeHtml(person[columnKey] || '');
+                    cellContent = common.escapeHtml(person[columnKey] || '');
                     break;
             }
             rowHTML += `<td>${cellContent}</td>`;
@@ -1004,7 +993,7 @@ function showOperationStatus(message, type = 'success', autoHide = true) {
     statusMessage.innerHTML = `
         <div class="status-message-content">
             <i class="${iconMap[type]}"></i>
-            <div class="status-message-text">${escapeHtml(message)}</div>
+            <div class="status-message-text">${common.escapeHtml(message)}</div>
             <div class="status-message-time">${currentTime}</div>
         </div>
         <button class="status-message-close">
@@ -1216,8 +1205,8 @@ function showHistorySettingsModal(person) {
     const existingModal = document.getElementById('historySettingsModal');
     if (existingModal) existingModal.remove();
 
-    const safeName = escapeHtml(person.name);
-    const safeCode = escapeHtml(person.personalCode);
+    const safeName = common.escapeHtml(person.name);
+    const safeCode = common.escapeHtml(person.personalCode);
 
     const modal = document.createElement('div');
     modal.className = 'modal fade';

@@ -412,7 +412,7 @@ class StatusMonitor {
         card.innerHTML = `
             <div class="gate-info">
                 <div class="gate-status-indicator indicator-${frameStatus}"></div>
-                <div class="gate-number">${this.escapeHtml(gate.number)} : ${this.escapeHtml(gate.name)}</div>
+                <div class="gate-number">${common.escapeHtml(gate.number)} : ${common.escapeHtml(gate.name)}</div>
             </div>
             ${iconGridHtml}
         `;
@@ -541,12 +541,6 @@ class StatusMonitor {
         return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`;
     }
 
-    escapeHtml(str) {
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
-    }
-
     getGateDisplayName(gate) {
         return `ゲート${gate.name}(${gate.number})`;
     }
@@ -560,7 +554,7 @@ class StatusMonitor {
         const existingModal = document.getElementById('actionSelectModal');
         if (existingModal) existingModal.remove();
 
-        const safeDisplayName = this.escapeHtml(this.getGateDisplayName(gate));
+        const safeDisplayName = common.escapeHtml(this.getGateDisplayName(gate));
 
         const modal = document.createElement('div');
         modal.className = 'modal fade';
@@ -604,9 +598,9 @@ class StatusMonitor {
         const existingModal = document.getElementById('remoteControlModal');
         if (existingModal) existingModal.remove();
 
-        const safeDisplayName = this.escapeHtml(this.getGateDisplayName(gate));
-        const statusText = this.escapeHtml(this.getStatusText(gate));
-        const lastUpdated = this.escapeHtml(this.formatDateTime(gate.lastUpdated));
+        const safeDisplayName = common.escapeHtml(this.getGateDisplayName(gate));
+        const statusText = common.escapeHtml(this.getStatusText(gate));
+        const lastUpdated = common.escapeHtml(this.formatDateTime(gate.lastUpdated));
 
         const modal = document.createElement('div');
         modal.className = 'modal fade';
@@ -682,7 +676,7 @@ class StatusMonitor {
         const existingModal = document.getElementById('historySettingsModal');
         if (existingModal) existingModal.remove();
 
-        const safeDisplayName = this.escapeHtml(this.getGateDisplayName(gate));
+        const safeDisplayName = common.escapeHtml(this.getGateDisplayName(gate));
 
         const modal = document.createElement('div');
         modal.className = 'modal fade';

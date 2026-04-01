@@ -47,10 +47,6 @@
     });
 
     /* ====== ユーティリティ ====== */
-    function escapeHtml(s) {
-        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
-                        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
     function pad2(n) { return n < 10 ? '0' + n : '' + n; }
     function fmtDate(d) {
         return d.getFullYear() + '/' + pad2(d.getMonth() + 1) + '/' + pad2(d.getDate()) +
@@ -387,7 +383,7 @@
         var selected = excelFilters[colAttr] || null;
 
         var html = '';
-        html += '<div class="excel-filter-header">' + escapeHtml(COLUMN_NAMES[colAttr] || colAttr) + ' のフィルター</div>';
+        html += '<div class="excel-filter-header">' + common.escapeHtml(COLUMN_NAMES[colAttr] || colAttr) + ' のフィルター</div>';
         html += '<div class="excel-search-section"><input type="text" class="excel-search-box" placeholder="検索..."></div>';
         html += '<div class="excel-filter-actions">';
         html += '<button class="excel-action-btn hr-select-all-btn">すべて選択</button>';
@@ -397,8 +393,8 @@
         html += '<div class="excel-filter-list" id="hr-filter-list-' + colAttr + '">';
         allValues.forEach(function (val) {
             var checked = !selected || selected.has(val) ? 'checked' : '';
-            var displayVal = val === '' ? '(空白)' : escapeHtml(val);
-            html += '<div class="excel-filter-item" data-value="' + escapeHtml(val) + '">';
+            var displayVal = val === '' ? '(空白)' : common.escapeHtml(val);
+            html += '<div class="excel-filter-item" data-value="' + common.escapeHtml(val) + '">';
             html += '<input type="checkbox" ' + checked + '>';
             html += '<label>' + displayVal + '</label>';
             html += '</div>';
