@@ -133,9 +133,24 @@ function generateDate(future = false) {
 function setupEventListeners() {
     // Close Excel filter menus when clicking outside
     document.addEventListener('click', function (e) {
-        if (!e.target.closest('.excel-filter-trigger') && 
+        if (!e.target.closest('.excel-filter-trigger') &&
             !e.target.closest('.excel-filter-menu') &&
             !e.target.closest('.excel-search-box')) {
+            hideAllExcelFilters();
+        }
+    });
+
+    // スクロール時はフィルターメニューを閉じる（position: fixed のズレ防止）
+    const tableContainer = document.querySelector('.pl-table-container');
+    if (tableContainer) {
+        tableContainer.addEventListener('scroll', hideAllExcelFilters);
+    }
+
+    // リサイズ時は横幅変化時のみ閉じる（モバイルのソフトキーボード表示による縦幅変化では閉じない）
+    let _prevWindowWidth = window.innerWidth;
+    window.addEventListener('resize', function () {
+        if (window.innerWidth !== _prevWindowWidth) {
+            _prevWindowWidth = window.innerWidth;
             hideAllExcelFilters();
         }
     });
@@ -149,8 +164,9 @@ function showExcelFilter(event, columnKey) {
 
     const filterMenu = document.getElementById(`excel-filter-${columnKey}`);
     if (!filterMenu) return;
-    
-    const triggerElement = event.target;
+
+    // event.currentTarget を使う（event.target はアイコン等の子要素を指す場合があるため）
+    const triggerElement = event.currentTarget || event.target.closest('.excel-filter-trigger') || event.target;
 
     // Get unique values for this column
     const baseData = personalData.filter(item => {
@@ -197,7 +213,38 @@ function showExcelFilter(event, columnKey) {
         </div>
     `;
 
+    // position: fixed で表示することで、sticky thead + overflow:auto の
+    // スタッキングコンテキスト問題を回避（フィルターメニューが tbody 行の裏に隠れるバグ対策）
+    const rect = triggerElement.getBoundingClientRect();
+
+    // 一時的に visibility:hidden で表示して実寸を計測（定数依存による位置ズレを防ぐ）
+    filterMenu.style.visibility = 'hidden';
+    filterMenu.style.position = 'fixed';
+    filterMenu.style.top = '0';
+    filterMenu.style.left = '0';
+    filterMenu.style.right = 'auto';
+    filterMenu.style.bottom = 'auto';
+    filterMenu.style.zIndex = '9999';
     filterMenu.classList.add('show');
+
+    const menuWidth = filterMenu.offsetWidth;
+    const menuHeight = filterMenu.offsetHeight;
+
+    // 左右位置: 右端にはみ出す場合は左にずらす
+    let leftPos = rect.left;
+    if (leftPos + menuWidth > window.innerWidth) {
+        leftPos = Math.max(0, window.innerWidth - menuWidth - 8);
+    }
+
+    // 上下位置: 下に収まらない場合はトリガーの上に開く
+    let topPos = rect.bottom + 2;
+    if (topPos + menuHeight > window.innerHeight) {
+        topPos = Math.max(0, rect.top - menuHeight - 2);
+    }
+
+    filterMenu.style.top = topPos + 'px';
+    filterMenu.style.left = leftPos + 'px';
+    filterMenu.style.visibility = '';
 }
 
 function generateExcelFilterOptions(columnKey, values, currentFilter) {
@@ -329,6 +376,13 @@ function applyExcelFilter(columnKey) {
 function hideAllExcelFilters() {
     document.querySelectorAll('.excel-filter-menu').forEach(menu => {
         menu.classList.remove('show');
+        // position: fixed で付与したインラインスタイルをすべてリセット
+        menu.style.position = '';
+        menu.style.top = '';
+        menu.style.left = '';
+        menu.style.right = '';
+        menu.style.bottom = '';
+        menu.style.zIndex = '';
     });
 }
 
